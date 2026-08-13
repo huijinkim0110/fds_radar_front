@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate} from 'react-router-dom';
-import { getProducts } from '../../api/productAPI';
-import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/productLabels';
+import { getProducts } from '../../api/financialProduct/productAPI';
+import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/financialProduct/productLabels';
 
 function ProductList() {
     const navigate = useNavigate();

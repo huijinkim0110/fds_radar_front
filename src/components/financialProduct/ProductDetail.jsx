@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProductDetail } from '../../api/productApi';
-import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/productLabels';
+import { getProductDetail } from '../../api/financialProduct/productApi';
+import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/financialProduct/productLabels';
 
 function ProductDetail() {
     const { productId } = useParams();
