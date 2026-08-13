@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductDetail } from '../../api/financialProduct/productApi';
+import { checkSuitability } from '../../api/recommendation/suitabilityCheckAPI';
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/financialProduct/productLabels';
+
+const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
 
 function ProductDetail() {
     const { productId } = useParams();
@@ -10,6 +13,11 @@ function ProductDetail() {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    // 적합성 검사 관련 상태
+    const [checking, setChecking] = useState(false);
+    const [checkResult, setCheckResult] = useState(null); // 검사 결과
+    const [needsDiagnosis, setNeedsDiagnosis] = useState(false); // 진단 필요 여부
 
     useEffect(() => {
         setLoading(true);
@@ -20,6 +28,24 @@ function ProductDetail() {
             .catch(() => setError('상품 정보를 불러오지 못했습니다.'))
             .finally(() => setLoading(false));
     }, [productId]);
+
+    function handleCheckSuitability() {
+        setChecking(true);
+        setCheckResult(null);
+        setNeedsDiagnosis(false);
+
+        checkSuitability(TEMP_USER_ID, productId)
+            .then((data) => setCheckResult(data))
+            .catch((err) => {
+                // 백엔드가 진단 이력 없을 때 INVALID_STATE로 응답하는 걸 감지
+                if (err.response?.data?.errorCode === 'INVALID_STATE') {
+                    setNeedsDiagnosis(true);
+                } else {
+                    alert('적합성 검사에 실패했습니다.');
+                }
+            })
+            .finally(() => setChecking(false));
+    }
 
     if (loading) return <div>불러오는 중...</div>
     if (error) return <div>{error}</div>;
@@ -58,6 +84,34 @@ function ProductDetail() {
                 <dt>상품설명</dt>
                 <dd>{product.description}</dd>
             </dl>
+
+            {/* 적합성 검사 영역 */}
+            <div>
+                <button onClick={handleCheckSuitability} disabled={checking}>
+                    {checking ? '확인 중...' : '이 상품이 나한테 맞는지 확인하기'}
+                </button>
+
+                {/* 진단 이력 없을 때 안내 */}
+                {needsDiagnosis && (
+                    <div>
+                        <p>투자성향 진단 이력이 없어요. 먼저 진단을 받아주세요.</p>
+                        <button onClick={() => navigate('/diagnosis')}>진단하러 가기</button>
+                    </div>
+                )}
+
+                {/* 검사 결과 표시 */}
+                {checkResult && (
+                    <div>
+                        <p>
+                            판정결과:{' '}
+                            <strong>
+                                {checkResult.suitabilityResult === 'SUITABLE' ? '적합' : '부적합'}
+                            </strong>
+                        </p>
+                        <p>{checkResult.checkReason}</p>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
