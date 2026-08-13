@@ -42,7 +42,7 @@ function ProductList() {
                 onChange={(e) => handleFilterChange(setProductType, e.target.value)}
             >
                 <option value="">전체 유형</option>
-                {Object.entries(PRODUCT_TYPE_LABELS).map(([KeyboardEvent, label]) => (
+                {Object.entries(PRODUCT_TYPE_LABELS).map(([key, label]) => (
                     <option key={key} value={key}>{label}</option>
                 ))}
             </select>
@@ -53,7 +53,7 @@ function ProductList() {
             >
                 <option value="">전체 위험등급</option>
                 {Object.entries(RISK_LEVEL_LABELS).map(([key, label]) => (
-                    <option key={key} value={value}>{label}</option>
+                    <option key={key} value={key}>{label}</option>
                 ))}
             </select>
 
