@@ -29,5 +29,40 @@ export const DIAGNOSIS_QUESTIONS = [
             { label: '높음', value: 3},
         ],
     },
-    
-]
+    {
+        id: 'preferredPeriodScore',
+        question: '투자 가능 기간은?',
+        options: [
+            { label: '1년 미만', value: 0 },
+            { label: '1~3년', value: 1 },
+            { label: '3년 이상', value: 2},
+        ],
+    },
+    {
+        id: 'assetRatioScore',
+        question: '자산 대비 투자 가능 금액 비중은?',
+        options: [
+            { label: '낮음', value: 0 },
+            { label: '보통', value: 1 },
+            { label: '높음', value: 2 },
+        ],
+    },
+    {
+        id: 'lossToleranceScore',
+        question: '원금 손실이 발생하면 감내할 수 있는 수준은?',
+        options: [
+            { label: '전혀 안됨', value: 0 },
+            { label: '소폭', value: 1 },
+            { label: '어느 정도', value: 2 },
+            { label: '높은 손실도 가능', value: 3 },
+        ],
+    },
+];
+
+export const PRINCIPAL_PROTECTION_QUESTION = {
+    question: '원금 보장이 꼭 필요하다고 생각하나요?',
+    options: [
+        { label: '그렇다', value: true },
+        { label: '아니다', value: false },
+    ],
+};
