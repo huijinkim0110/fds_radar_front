@@ -63,7 +63,7 @@ function InvestmentDiagnosis() {
         <div>
             <h2>투자성향 진단</h2>
 
-            {DIAGNOSIS_QUESTIONS.map((q) => {
+            {DIAGNOSIS_QUESTIONS.map((q) => (
                 <div key={q.id}>
                     <p>{q.question}</p>
                     {q.options.map((opt) => (
@@ -78,11 +78,11 @@ function InvestmentDiagnosis() {
                         </label>
                     ))}
                 </div>
-            })}
+            ))}
 
             <div>
                 <p>{PRINCIPAL_PROTECTION_QUESTION.question}</p>
-                {PRINCIPAL_PROTECTION_QUESTION.options.map((opt) => {
+                {PRINCIPAL_PROTECTION_QUESTION.options.map((opt) => (
                     <label key={String(opt.value)}>
                         <input 
                             type="radio"
@@ -92,7 +92,7 @@ function InvestmentDiagnosis() {
                         />
                         {opt.label}
                     </label>
-                })}
+                ))}
             </div>
 
             <button onClick={handleSubmit} disabled={!isComplete || submitting}>

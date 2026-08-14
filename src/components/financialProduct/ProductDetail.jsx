@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getProductDetail } from '../../api/financialProduct/productApi';
 import { checkSuitability } from '../../api/recommendation/suitabilityCheckAPI';
+import { hasDiagnosisHistory } from '../../api/finance/investmentProfileAPI';
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/financialProduct/productLabels';
 import FavoriteButton from './FavoriteButton';
 
@@ -35,17 +36,21 @@ function ProductDetail() {
         setCheckResult(null);
         setNeedsDiagnosis(false);
 
-        checkSuitability(TEMP_USER_ID, productId)
-            .then((data) => setCheckResult(data))
-            .catch((err) => {
-                // 백엔드가 진단 이력 없을 때 INVALID_STATE로 응답하는 걸 감지
-                if (err.response?.data?.errorCode === 'INVALID_STATE') {
-                    setNeedsDiagnosis(true);
-                } else {
-                    alert('적합성 검사에 실패했습니다.');
-                }
-            })
-            .finally(() => setChecking(false));
+        try {
+            const hasHistory = await hasDiagnosisHistory(TEMP_USER_ID);
+
+            if (!hasHistory) {
+                setNeedsDiagnosis(true);
+                return;
+            }
+
+            const data = await checkSuitability(TEMP_USER_ID, productId);
+            setCheckResult(data);
+        } catch (err) {
+            alert('적합성 검사에 실패했습니다.');
+        } finally {
+            setChecking(false);
+        }
     }
 
     if (loading) return <div>불러오는 중...</div>
