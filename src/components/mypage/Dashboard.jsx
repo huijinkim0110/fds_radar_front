@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { getFavorites } from "../../api/financialProduct/favoriteProductAPI";
 import { getPortfolio } from "../../api/financialProduct/simulatedSubscriptionAPI";
 import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
+import { getFinancialProfile, hasFinancialProfile } from "../../api/finance/financialProfileAPI";
+import { isStale, formatElapsed } from "../../utils/staleness";
 
 const TEMP_USER_ID = 1;
 
@@ -17,6 +19,8 @@ function Dashboard() {
     const [activeSubscriptionCount, setActiveSubscriptionCount] = useState(null);
     const [latestProfile, setLatestProfile] = useState(null);
     const [hasDiagnosis, setHasDiagnosis] = useState(null);
+    const [financialProfile, setFinancialProfile] = useState(null);
+    const [hasFinProfile, setHasFinProfile] = useState(null);
 
     useEffect(() => {
         getFavorites(TEMP_USER_ID)
@@ -30,6 +34,10 @@ function Dashboard() {
         hasDiagnosisHistory(TEMP_USER_ID)
             .then(setHasDiagnosis)
             .catch(() => {});
+
+        hasFinancialProfile(TEMP_USER_ID)
+            .then(setHasFinProfile)
+            .catch(() => {});
     }, []);
 
     useEffect(() => {
@@ -38,9 +46,33 @@ function Dashboard() {
         }
     }, [hasDiagnosis]);
 
+    useEffect(() => {
+        if (hasFinProfile) {
+            getFinancialProfile(TEMP_USER_ID).then(setFinancialProfile).catch(() => {});
+        }
+    }, [hasFinProfile]);
+
+    // 오래된 데이터 안내 배너용 항목 모으기
+    const staleNotices = [];
+    if (latestProfile && isStale(latestProfile.diagnosedAt)) {
+        staleNotices.push(`투자성향 진단이 ${formatElapsed(latestProfile.diagnosedAt)}이에요. 재진단을 권장해요.`);
+    }
+    if (financialProfile && isStale(financialProfile.updatedAt ?? financialProfile.createdAt)) {
+        staleNotices.push(`재무 프로필을 ${formatElapsed(financialProfile.updatedAt ?? financialProfile.createdAt)} 수정 안했어요. 업데이트를 권장해요.`);
+    }
+
     return (
         <div>
             <h2>대시보드</h2>
+
+            {/* 오래된 데이터 안내 */}
+            {staleNotices.length > 0 && (
+                <section>
+                    {staleNotices.map((msg, i) => (
+                        <p key={i}>⚠ {msg}</p>
+                    ))}
+                </section>
+            )}
 
             {/* 계좌·카드 */}
             <section>
