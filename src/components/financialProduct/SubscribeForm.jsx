@@ -70,7 +70,7 @@ function SubscribeForm({ userId, product }) {
                     <dt>예상 만기금액</dt>
                     <dd>{result.expectedMaturityAmount?.toLocaleString()}원</dd>
                 </dl>
-                <button onClick={() => navigate('/portfolio')}>내 모의가입 목록 보기</button>
+                <button onClick={() => navigate('/mypage/portfolio')}>내 모의가입 목록 보기</button>
                 <button onClick={() => setResult(null)}>다시 가입하기</button>
             </div>
         );

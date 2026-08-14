@@ -17,10 +17,11 @@ function ProductDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // 적합성 검사 관련 상태
-    const [checking, setChecking] = useState(false);
-    const [checkResult, setCheckResult] = useState(null); // 검사 결과
-    const [needsDiagnosis, setNeedsDiagnosis] = useState(false); // 진단 필요 여부
+    // 가입 전 적합성 게이트 상태
+    const [gateStep, setGateStep] = useState('idle');
+    // idle -> checking -> needsDiagnosis | suitable | unsuitable
+    const [checkResult, setCheckResult] = useState(null);
+    const [riskAcknowledged, setRiskAcknowledged] = useState(false);
 
     useEffect(() => {
         setLoading(true);
@@ -32,25 +33,24 @@ function ProductDetail() {
             .finally(() => setLoading(false));
     }, [productId]);
 
-    async function handleCheckSuitability() {
-        setChecking(true);
-        setCheckResult(null);
-        setNeedsDiagnosis(false);
+    async function handleStartSubscribe() {
+        setGateStep('checking');
+        setRiskAcknowledged(false);
 
         try {
             const hasHistory = await hasDiagnosisHistory(TEMP_USER_ID);
 
             if (!hasHistory) {
-                setNeedsDiagnosis(true);
+                setGateStep('needsDiagnosis');
                 return;
             }
 
-            const data = await checkSuitability(TEMP_USER_ID, productId);
-            setCheckResult(data);
+            const result = await checkSuitability(TEMP_USER_ID, productId);
+            setCheckResult(result);
+            setGateStep(result.suitabilityResult === 'SUITABLE' ? 'suitable' : 'unsuitable');
         } catch (err) {
             alert('적합성 검사에 실패했습니다.');
-        } finally {
-            setChecking(false);
+            setGateStep('idle');
         }
     }
 
@@ -93,36 +93,58 @@ function ProductDetail() {
                 <dd>{product.description}</dd>
             </dl>
 
-            {/* 적합성 검사 영역 */}
+            {/* 가입 게이트 */}
             <div>
-                <button onClick={handleCheckSuitability} disabled={checking}>
-                    {checking ? '확인 중...' : '이 상품이 나한테 맞는지 확인하기'}
-                </button>
+                {gateStep === 'idle' && (
+                    <button onClick={handleStartSubscribe}>가입하기</button>
+                )}
 
-                {/* 진단 이력 없을 때 안내 */}
-                {needsDiagnosis && (
+                {gateStep === 'checking' && <p>적합성 검사 중...</p>}
+
+                {gateStep === 'needsDiagnosis' && (
                     <div>
                         <p>투자성향 진단 이력이 없어요. 먼저 진단을 받아주세요.</p>
-                        <button onClick={() => navigate('/diagnosis')}>진단하러 가기</button>
+                        <button onClick={() => navigate('/mypage/diagnosis')}>진단하러 가기</button>
+                        <button onClick={() => setGateStep('idle')}>취소</button>
                     </div>
                 )}
 
-                {/* 검사 결과 표시 */}
-                {checkResult && (
+                {/* 적합 : 조용히 통과 -> 기존 SubscribeForm 바로 노출 */}
+                {gateStep === 'suitable' && (
+                    <SubscribeForm userId={TEMP_USER_ID} product={product} />
+                )}
+
+                {/* 부적합 : 사유 + 체크박스 확인 전엔 SubscribeForm 안 보여줌 */}
+                {gateStep === 'unsuitable' && (
                     <div>
-                        <p>
-                            판정결과:{' '}
-                            <strong>
-                                {checkResult.suitabilityResult === 'SUITABLE' ? '적합' : '부적합'}
-                            </strong>
-                        </p>
-                        <p>{checkResult.checkReason}</p>
+                        <p><strong>이 상품은 회원님의 투자성향과 맞지 않아요.</strong></p>
+                        <p>{checkResult?.checkReason}</p>
+
+                        <label>
+                            <input 
+                                type="checkbox"
+                                checked={riskAcknowledged}
+                                onChange={(e) => setRiskAcknowledged(e.target.checked)}
+                            />
+                            위 내용을 확인했으며, 그럼에도 가입을 진행하겠습니다.
+                        </label>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setGateStep('idle');
+                                setRiskAcknowledged(false);
+                            }}
+                        >
+                            가입 취소
+                        </button>
+
+                        {riskAcknowledged && (
+                            <SubscribeForm userId={TEMP_USER_ID} product={product} />
+                        )}
                     </div>
                 )}
             </div>
-
-            {/* 모의가입 영역 */}
-            <SubscribeForm userId={TEMP_USER_ID} product={product} />
         </div>        
     );
 }

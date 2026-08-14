@@ -49,7 +49,7 @@ function SimulatedSubscriptionList() {
                 <>
                     <p>예상 만기금액 합계 : {totalMaturity.toLocaleString()}원</p>
                     <div>
-                        {subscriptions.map((s) => {
+                        {subscriptions.map((s) => (
                             <div key={s.simulatedSubscriptionId}>
                                 <h3>{s.productName}</h3>
                                 <p>가입금액: {s.subscriptionAmount?.toLocaleString()}원</p>
@@ -66,7 +66,7 @@ function SimulatedSubscriptionList() {
                                     {cancellingId === s.simulatedSubscriptionId ? '해지 중...' : '해지'}
                                 </button>
                             </div>
-                        })}
+                        ))}
                     </div>
                 </>
             )}
