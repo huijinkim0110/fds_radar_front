@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
+import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
 import { getUnifiedRecommendations } from "../../api/recommendation/recommendationAPI";
+import { isStale, formatElapsed } from "../../utils/staleness";
 
 const TEMP_USER_ID = 1;
 
@@ -19,6 +20,7 @@ function RecommendedProducts() {
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState(null);
     const [error, setError] = useState(null);
+    const [latestProfile, setLatestProfile] = useState(null);
 
     useEffect(() => {
         hasDiagnosisHistory(TEMP_USER_ID)
@@ -26,6 +28,12 @@ function RecommendedProducts() {
             .catch(() => {})
             .finally(() => setChecking(false));
     }, []);
+
+    useEffect(() => {
+        if (needsDiagnosis === false) {
+            getLatestProfile(TEMP_USER_ID).then(setLatestProfile).catch(() => {});
+        }
+    }, [needsDiagnosis]);
 
     function handleFetchRecommendations() {
         setLoading(true);
@@ -61,6 +69,10 @@ function RecommendedProducts() {
                     인적사항이 바뀌었나요? 재진단하기
                 </button>
             </p>
+
+            {latestProfile && isStale(latestProfile.diagnosedAt) && (
+                <p>⚠ 투자성향 진단이 {formatElapsed(latestProfile.diagnosedAt)}이에요. 재진단 후 추천받는 것을 권장해요.</p>
+            )}
 
             {error && <p>{error}</p>}
 
