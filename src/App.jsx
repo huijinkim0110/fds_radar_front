@@ -8,6 +8,7 @@ import Dashboard from './components/mypage/Dashboard';
 import RecommendedProducts from './components/mypage/RecommendedProducts';
 import FavoriteProductList from './components/financialProduct/FavoriteProductList';
 import FinancialGoalList from './components/finance/FinancialGoalList';
+import DiagnosisResults from './components/finance/DiagnosisResults';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="favorites" element={<FavoriteProductList />} />
           <Route path="diagnosis" element={<InvestmentDiagnosis />} />
+          <Route path="diagnosis/results" element={<DiagnosisResults />} />
           <Route path="recommendations" element={<RecommendedProducts />} />
           <Route path="financial-goals" element={<FinancialGoalList />} />
         </Route>
