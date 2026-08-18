@@ -3,6 +3,11 @@ import ProductList from './components/financialProduct/ProductList';
 import ProductDetail from './components/financialProduct/ProductDetail';
 import InvestmentDiagnosis from './components/finance/InvestmentDiagnosis';
 import SimulatedSubscriptionList from './components/financialProduct/SimulatedSubscriptionList';
+import MyPageLayout from './components/mypage/MyPageLayout';
+import Dashboard from './components/mypage/Dashboard';
+import RecommendedProducts from './components/mypage/RecommendedProducts';
+import FavoriteProductList from './components/financialProduct/FavoriteProductList';
+import FinancialGoalList from './components/finance/FinancialGoalList';
 
 function App() {
   return (
@@ -10,8 +15,15 @@ function App() {
       <Routes>
         <Route path="/products" element={<ProductList />} />
         <Route path="/products/:productId" element={<ProductDetail />} />
-        <Route path="/diagnosis" element={<InvestmentDiagnosis />} />
         <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
+
+        <Route path="/mypage" element={<MyPageLayout />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="favorites" element={<FavoriteProductList />} />
+          <Route path="diagnosis" element={<InvestmentDiagnosis />} />
+          <Route path="recommendations" element={<RecommendedProducts />} />
+          <Route path="financial-goals" element={<FinancialGoalList />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
