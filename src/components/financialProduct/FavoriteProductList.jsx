@@ -2,7 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { getFavorites, removeFavorite } from "../../api/financialProduct/favoriteProductAPI";
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from "../../constants/financialProduct/productLabels";
 
-export default function FavoriteProductList({ userId }) {
+const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
+
+export default function FavoriteProductList() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -10,11 +12,11 @@ export default function FavoriteProductList({ userId }) {
     const loadFavorites = useCallback(() => {
         setLoading(true);
         setError(null);
-        getFavorites(userId)
+        getFavorites(TEMP_USER_ID)
             .then(setProducts)
             .catch((err) => setError(err.response?.data?.message ?? err.message))
             .finally(() => setLoading(false));
-    }, [userId]);
+    }, []);
 
     useEffect(() => {
         loadFavorites();
@@ -24,7 +26,7 @@ export default function FavoriteProductList({ userId }) {
         const prevProducts = products;
         setProducts((list) => list.filter((p) => p.productId !== productId));
         try {
-            await removeFavorite(userId, productId);
+            await removeFavorite(TEMP_USER_ID, productId);
         } catch (err) {
             setProducts(prevProducts);
             console.error('관심상품 해제 실패:', err.response?.data?.message ?? err.message);
