@@ -10,6 +10,9 @@ import FavoriteProductList from './components/financialProduct/FavoriteProductLi
 import FinancialGoalList from './components/finance/FinancialGoalList';
 import DiagnosisResults from './components/finance/DiagnosisResults';
 import FinancialProfile from './components/finance/FinancialProfile';
+import ChatWidget from './components/chat/ChatWidget';
+import AdminChatRoom from './components/admin/AdminChatRoom';
+import AdminChatList from './components/admin/AdminChatList';
 
 function App() {
   return (
@@ -28,7 +31,12 @@ function App() {
           <Route path="financial-goals" element={<FinancialGoalList />} />
           <Route path="financial-profile" element={<FinancialProfile />} />
         </Route>
+
+        <Route path="/adin/chats" element={<AdminChatList />} />
+        <Route path="/admin/chats/:sessionId" element={<AdinChatRoom />} />
       </Routes>
+
+      <ChatWidget />
     </BrowserRouter>
   );
 }
