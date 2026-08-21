@@ -32,7 +32,7 @@ function App() {
           <Route path="financial-profile" element={<FinancialProfile />} />
         </Route>
 
-        <Route path="/adin/chats" element={<AdminChatList />} />
+        <Route path="/admin/chats" element={<AdminChatList />} />
         <Route path="/admin/chats/:sessionId" element={<AdminChatRoom />} />
       </Routes>
 
