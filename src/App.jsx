@@ -17,35 +17,38 @@ import { ComparisonProvider } from './context/ComparisonContext';
 import ProductComparison from './components/financialProduct/ProductComparison';
 import { ToastProvider } from './context/ToastContext';
 import Toast from './components/common/Toast';
+import { ConfirmProvider } from './context/ConfirmContext';
 
 function App() {
   return (
     <BrowserRouter>
       <ComparisonProvider>
         <ToastProvider>
-          <Routes>
-            <Route path="/products" element={<ProductList />} />
-            <Route path="/products/:productId" element={<ProductDetail />} />
-            <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
+          <ConfirmProvider>
+            <Routes>
+              <Route path="/products" element={<ProductList />} />
+              <Route path="/products/:productId" element={<ProductDetail />} />
+              <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
 
-            <Route path="/mypage" element={<MyPageLayout />}>
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="favorites" element={<FavoriteProductList />} />
-              <Route path="comparisons" element={<ProductComparison />} />
-              <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
-              <Route path="diagnosis" element={<InvestmentDiagnosis />} />
-              <Route path="diagnosis/results" element={<DiagnosisResults />} />
-              <Route path="recommendations" element={<RecommendedProducts />} />
-              <Route path="financial-goals" element={<FinancialGoalList />} />
-              <Route path="financial-profile" element={<FinancialProfile />} />
-            </Route>
+              <Route path="/mypage" element={<MyPageLayout />}>
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="favorites" element={<FavoriteProductList />} />
+                <Route path="comparisons" element={<ProductComparison />} />
+                <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
+                <Route path="diagnosis" element={<InvestmentDiagnosis />} />
+                <Route path="diagnosis/results" element={<DiagnosisResults />} />
+                <Route path="recommendations" element={<RecommendedProducts />} />
+                <Route path="financial-goals" element={<FinancialGoalList />} />
+                <Route path="financial-profile" element={<FinancialProfile />} />
+              </Route>
 
-            <Route path="/admin/chats" element={<AdminChatList />} />
-            <Route path="/admin/chats/:sessionId" element={<AdminChatRoom />} />
-          </Routes>
-          
-          <Toast />
-          <ChatWidget />
+              <Route path="/admin/chats" element={<AdminChatList />} />
+              <Route path="/admin/chats/:sessionId" element={<AdminChatRoom />} />
+            </Routes>
+            
+            <Toast />
+            <ChatWidget />
+          </ConfirmProvider>
         </ToastProvider>
       </ComparisonProvider>
     </BrowserRouter>

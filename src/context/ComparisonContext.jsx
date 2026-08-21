@@ -18,6 +18,7 @@ export function ComparisonProvider({ children }) {
     const [comparisonId, setComparisonId] = useState(null);
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isSaved, setIsSaved] = useState(false);
 
     // 앱 진입 시 기존 비교함이 있으면 불러오고, 없으면 comparisonId=null로 둠(첫 담기 시점에 생성)
     useEffect(() => {
@@ -64,6 +65,7 @@ export function ComparisonProvider({ children }) {
             const created = await createComparison(TEMP_USER_ID, DEFAULT_COMPARISON_NAME);
             targetId = created.comparisonId;
             setComparisonId(targetId);
+            setIsSaved(false); // 새로 만든 비교함은 아직 저장 전 상태
         }
 
         await addItem(targetId, productId);
@@ -74,12 +76,14 @@ export function ComparisonProvider({ children }) {
     const saveComparison = useCallback(async (name) => {
         if (!comparisonId) return;
         await renameComparison(comparisonId, name);
+        setIsSaved(true);
     }, [comparisonId]);
 
     // 비교함 비우기 : 활성 비교함을 초기화. 이후 담는 상품은 새 비교함으로 들어감
     const clearComparison = useCallback(() => {
         setComparisonId(null);
         setItems([]);
+        setIsSaved(false);
     }, []);
 
     const removeProduct = useCallback(async (comparisonItemId) => {
@@ -92,6 +96,7 @@ export function ComparisonProvider({ children }) {
         comparisonId,
         items,
         loading,
+        isSaved,
         isInCompare,
         findItem,
         canAdd,

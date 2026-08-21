@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useComparison } from "../../context/ComparisonContext";
+import { useConfirm } from "../../context/ConfirmContext";
+import { useToast } from "../../context/ToastContext";
 import { getUserComparisons, getComparisonDetail } from "../../api/financialProduct/productComparisonAPI";
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from "../../constants/financialProduct/productLabels";
 
@@ -34,7 +36,9 @@ function isBest(key, item, items) {
 }
 
 function ProductComparison() {
-    const { comparisonId: activeId, items: activeItems, removeProduct, saveComparison, clearComparison, maxItems } = useComparison();
+    const { comparisonId: activeId, items: activeItems, removeProduct, saveComparison, clearComparison, isSaved, maxItems } = useComparison();
+    const confirm = useConfirm();
+    const { showToast } = useToast();
     const { comparisonId: routeId } = useParams(); // /mypage/comparisons/:comparisonId(지난 비교함 볼 때만 존재)
     const navigate = useNavigate();
 
@@ -79,8 +83,15 @@ function ProductComparison() {
     }
 
     // 비교함 비우기 : 화면 초기화, 이후 담는 상품은 새 비교함으로
-    function handleClear() {
+    async function handleClear() {
+        const confirmMessage = isSaved
+            ? '비교함을 비울까요? 저장된 내용은 지난 비교함에서 계속 볼 수 있어요.'
+            : '비교함을 비울까요? 저장하지 않으면 지금 담긴 상품은 다시 볼 수 없어요.';
+        const ok = await confirm(confirmMessage);
+        if (!ok) return;
+
         clearComparison();
+        showToast('비교함을 비웠어요.');
     }
 
     async function handleRemove(comparisonItemId) {
