@@ -2,7 +2,7 @@ import axios from "axios";
 
 const BASE_URL = 'http://localhost:9090';
 
-export async function createComparison(userID, comparisonName) {
+export async function createComparison(userId, comparisonName) {
     const response = await axios.post(`${BASE_URL}/product-comparisons`, null, {
         params: { userId, comparisonName }
     });
