@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate} from 'react-router-dom';
 import { getProducts } from '../../api/financialProduct/productAPI';
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/financialProduct/productLabels';
+import CompareButton from './CompareButton';
 
 function ProductList() {
     const navigate = useNavigate();
@@ -67,6 +68,7 @@ function ProductList() {
                             <p>{p.institutionName}</p>
                             <p>{PRODUCT_TYPE_LABELS[p.productType]} / {RISK_LEVEL_LABELS[p.riskLevel]}</p>
                             <p>{p.expectedReturnRate != null ? `연 ${p.expectedReturnRate}%` : '-'}</p>
+                            <CompareButton productId={p.productId} />
                         </div>
                     ))}
                 </div>

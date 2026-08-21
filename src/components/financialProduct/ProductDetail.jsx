@@ -5,6 +5,7 @@ import { checkSuitability } from '../../api/recommendation/suitabilityCheckAPI';
 import { hasDiagnosisHistory } from '../../api/finance/investmentProfileAPI';
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/financialProduct/productLabels';
 import FavoriteButton from './FavoriteButton';
+import CompareButton from './CompareButton';
 import SubscribeForm from './SubscribeForm';
 
 const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
@@ -64,6 +65,7 @@ function ProductDetail() {
 
             <h2>{product.productName}</h2>
             <FavoriteButton userId={TEMP_USER_ID} productId={productId} />
+            <CompareButton productId={productId} />
             <p>{product.institutionName}</p>
 
             <dl>
