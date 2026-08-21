@@ -33,7 +33,7 @@ function App() {
         </Route>
 
         <Route path="/adin/chats" element={<AdminChatList />} />
-        <Route path="/admin/chats/:sessionId" element={<AdinChatRoom />} />
+        <Route path="/admin/chats/:sessionId" element={<AdminChatRoom />} />
       </Routes>
 
       <ChatWidget />
