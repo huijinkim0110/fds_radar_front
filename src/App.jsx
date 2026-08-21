@@ -16,6 +16,7 @@ import FinancialProfile from "./components/finance/FinancialProfile";
 import ChatWidget from "./components/chat/ChatWidget";
 import AdminChatRoom from "./components/admin/AdminChatRoom";
 import AdminChatList from "./components/admin/AdminChatList";
+import AdminMyPage from "./components/admin/AdminMyPage";
 
 function App() {
     return (
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/admin/fraud-cases" element={<FraudCaseList />} />
                 <Route path="/admin/fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
                 <Route path="/admin/fraud-analysis" element={<FraudAnalysis />} />
+                <Route path="/admin/mypage" element={<AdminMyPage />} />
 
                 <Route path="/products" element={<ProductList />} />
                 <Route path="/products/:productId" element={<ProductDetail />} />
@@ -39,7 +41,7 @@ function App() {
                     <Route path="financial-profile" element={<FinancialProfile />} />
                 </Route>
 
-                <Route path="/adin/chats" element={<AdminChatList />} />
+                <Route path="/admin/chats" element={<AdminChatList />} />
                 <Route path="/admin/chats/:sessionId" element={<AdminChatRoom />} />
             </Routes>
 

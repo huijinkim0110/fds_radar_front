@@ -8,6 +8,23 @@ export async function getAssignableAdmins() {
     return response.data;
 }
 
+// 관리자 마이페이지 대시보드 조회 (배정받은 사건 수 + 오늘 접수된 사건 수)
+// TODO(로그인 기능 붙으면 수정): 지금은 adminId를 직접 넘겨받아서 쿼리 파라미터로 전달
+export async function getAdminDashboard(adminId) {
+    const response = await axios.get(`${BASE_URL}/api/admin/fraud-cases/mypage/dashboard`, {
+        params: { adminId },
+    });
+    return response.data;
+}
+
+// 관리자 마이페이지: 내 담당 사건 목록
+export async function getMyCases(adminId) {
+    const response = await axios.get(`${BASE_URL}/api/admin/fraud-cases/mypage/my-cases`, {
+        params: { adminId },
+    });
+    return response.data;
+}
+
 // 5차: 사건 목록 조회 (페이징)
 export async function getFraudCaseList(page = 0, size = 20) {
     const response = await axios.get(`${BASE_URL}/api/admin/fraud-cases`, {
