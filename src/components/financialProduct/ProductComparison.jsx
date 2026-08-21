@@ -34,7 +34,7 @@ function isBest(key, item, items) {
 }
 
 function ProductComparison() {
-    const { comparisonId: activeId, items: activeItems, removeProduct, startNewComparison } = useComparison();
+    const { comparisonId: activeId, items: activeItems, removeProduct, saveComparison, clearComparison } = useComparison();
     const { comparisonId: routeId } = useParams(); // /mypage/comparisons/:comparisonId(지난 비교함 볼 때만 존재)
     const navigate = useNavigate();
 
@@ -65,11 +65,22 @@ function ProductComparison() {
         );
     }
 
-    async function handleStartNew() {
-        const name = prompt('새 비교함 이름을 입력해주세요.', '비교함');
+    // 저장 : 지금 비교함에 이름만 붙임. 화면(담긴 상품)은 그대로 유지, 지난 비교함 목록만 갱신
+    async function handleSave() {
+        const name = prompt('이 비교함에 붙일 이름을 입력해주세요.', '비교함');
         if (!name) return;
-        await startNewComparison(name);
-        navigate('/mypage/comparisons');
+
+        try {
+            await saveComparison(name);
+            getUserComparisons(TEMP_USER_ID).then(setPastComparisons).catch(() => {});
+        } catch (err) {
+            alert('저장에 실패했습니다.');
+        }
+    }
+
+    // 비교함 비우기 : 화면 초기화, 이후 담는 상품은 새 비교함으로
+    function handleClear() {
+        clearComparison();
     }
 
     async function handleRemove(comparisonItemId) {
@@ -98,7 +109,12 @@ function ProductComparison() {
     return (
         <div>
             <h2>비교상품</h2>
-            <button type="button" onClick={handleStartNew}>새 비교함 만들기</button>
+            {isActive && (
+                <div>
+                    <button type="button" onClick={handleSave}>저장</button>
+                    <button type="button" onClick={handleClear}>비교함 비우기</button>
+                </div>
+            )}
 
             {/* 보여줄 항목 선택 */}
             <div>

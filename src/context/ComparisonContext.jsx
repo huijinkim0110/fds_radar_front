@@ -4,7 +4,8 @@ import {
     addItem,
     removeItem,
     getComparisonDetail,
-    getUserComparisons
+    getUserComparisons,
+    renameComparison
 } from "../api/financialProduct/productComparisonAPI";
 
 const TEMP_USER_ID = 1;
@@ -69,11 +70,16 @@ export function ComparisonProvider({ children }) {
         await refresh(targetId);
     }, [comparisonId, refresh]);
 
-    // 지금 비교함은 이력으로 남기고, 이름을 새로 지어 활성 비교함을 교체
-    const startNewComparison = useCallback(async (name) => {
-        const created = await createComparison(TEMP_USER_ID, name);
-        setComparisonId(created.comparisonId);
-        setItems([]); // 새 비교함은 빈 상태로 시작
+    // 저장 : 지금 비교함 이름만 바꿈. 담긴 상품(화면)은 그대로 유지
+    const saveComparison = useCallback(async (name) => {
+        if (!comparisonId) return;
+        await renameComparison(comparisonId, name);
+    }, [comparisonId]);
+
+    // 비교함 비우기 : 활성 비교함을 초기화. 이후 담는 상품은 새 비교함으로 들어감
+    const clearComparison = useCallback(() => {
+        setComparisonId(null);
+        setItems([]);
     }, []);
 
     const removeProduct = useCallback(async (comparisonItemId) => {
@@ -91,7 +97,8 @@ export function ComparisonProvider({ children }) {
         canAdd,
         addProduct,
         removeProduct,
-        startNewComparison,
+        saveComparison,
+        clearComparison,
         maxItems: MAX_COMPARE_ITEMS
     };
 

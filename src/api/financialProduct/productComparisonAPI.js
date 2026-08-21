@@ -31,3 +31,10 @@ export async function getUserComparisons(userId) {
     });
     return response.data;
 }
+
+export async function renameComparison(comparisonId, comparisonName) {
+    const response = await axios.patch(`${BASE_URL}/product-comparisons/${comparisonId}`, null, {
+        params: { comparisonName }
+    });
+    return response.data;
+}
