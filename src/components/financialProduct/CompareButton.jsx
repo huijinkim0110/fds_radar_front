@@ -38,7 +38,7 @@ export default function CompareButton({ productId }) {
         <button
             type="button"
             onClick={handleClick}
-            disabled={pending || (!inCompare && !canAdd)}
+            disabled={pending}
             aria-pressed={inCompare}
             aria-label={inCompare? '비교함에서 빼기' : '비교함에 넣기'}
             title={inCompare ? '비교함에서 빼기' : '비교함에 넣기'}
