@@ -34,7 +34,7 @@ function isBest(key, item, items) {
 }
 
 function ProductComparison() {
-    const { comparisonId: activeId, items: activeItems, removeProduct, saveComparison, clearComparison } = useComparison();
+    const { comparisonId: activeId, items: activeItems, removeProduct, saveComparison, clearComparison, maxItems } = useComparison();
     const { comparisonId: routeId } = useParams(); // /mypage/comparisons/:comparisonId(지난 비교함 볼 때만 존재)
     const navigate = useNavigate();
 
@@ -99,6 +99,7 @@ function ProductComparison() {
         return (
             <div>
                 <div>비교함에 담긴 상품이 없어요. 상품 목록에서 "비교하기"를 눌러 담아주세요.</div>
+                <button type="button" onClick={() => navigate('/products')}>상품 목록으로 가기</button>
                 {pastComparisons.length > 0 && (
                     <PastComparisonList items={pastComparisons} activeId={activeId} />
                 )}
@@ -109,6 +110,8 @@ function ProductComparison() {
     return (
         <div>
             <h2>비교상품</h2>
+
+            <div>비교함 ({items.length}/{maxItems})</div>
             {isActive && (
                 <div>
                     <button type="button" onClick={handleSave}>저장</button>

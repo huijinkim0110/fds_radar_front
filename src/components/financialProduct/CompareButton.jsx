@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useComparison } from "../../context/ComparisonContext";
+import { useToast } from "../../context/ToastContext";
 
 export default function CompareButton({ productId }) {
     const { isInCompare, findItem, addProduct, removeProduct, canAdd} = useComparison();
+    const { showToast } = useToast();
     const [pending, setPending] = useState(false);
 
     const inCompare = isInCompare(productId);
@@ -16,12 +18,14 @@ export default function CompareButton({ productId }) {
             if (inCompare) {
                 const item = findItem(productId);
                 await removeProduct(item.comparisonItemId);
+                showToast('비교함에서 삭제했어요.');
             } else {
                 if (!canAdd) {
                     alert('비교함은 최대 3개까지 담을 수 있어요.');
                     return;
                 }
                 await addProduct(productId);
+                showToast('비교함에 담았어요.');
             }
         } catch (err) {
             alert('비교함 처리에 실패했습니다.');
@@ -36,8 +40,10 @@ export default function CompareButton({ productId }) {
             onClick={handleClick}
             disabled={pending || (!inCompare && !canAdd)}
             aria-pressed={inCompare}
+            aria-label={inCompare? '비교함에서 빼기' : '비교함에 넣기'}
+            title={inCompare ? '비교함에서 빼기' : '비교함에 넣기'}
         >
-            {inCompare? '비교함에서 빼기' : '비교하기'}
+            {inCompare? '-' : '+'}
         </button>
     );
 }
