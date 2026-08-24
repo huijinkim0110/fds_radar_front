@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "fds_rader_front",
+=======
+  "name": "fds_radar_front",
+>>>>>>> b5a51bb203011154e3bba858b5d480d3ad671ead
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +14,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "axios": "^1.19.0",
+>>>>>>> b5a51bb203011154e3bba858b5d480d3ad671ead
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.2"
