@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 :root{
   --bg:#0A0F1E;--panel:#141B2E;--panel2:#0F1524;--ink:#E5EAF3;--muted:#8394B0;--line:#242F49;
   --blue:#3B82F6;--blue-soft:rgba(59,130,246,0.14);--navy:#0C1324;
@@ -148,7 +148,7 @@ tr:last-child td{border-bottom:none;}
   padding:9px; border-radius:9px; cursor:pointer;
 }
 .logout-btn:hover{ border-color:var(--red); color:var(--red); }
-=======
+
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -260,4 +260,3 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
->>>>>>> b5a51bb203011154e3bba858b5d480d3ad671ead
