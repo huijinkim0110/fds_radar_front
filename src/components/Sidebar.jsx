@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
 
 const MENU = [
@@ -10,7 +10,13 @@ const MENU = [
 ];
 
 export default function Sidebar() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();   // ← logout 가져옴
+  const navigate = useNavigate();
+
+  function handleLogout() {
+    logout();                 // 토큰 삭제 + 유저 비움
+    navigate("/login", { replace: true });   // 로그인으로 이동
+  }
 
   return (
     <aside className="side">
@@ -37,7 +43,8 @@ export default function Sidebar() {
       </nav>
 
       <div className="side-foot">
-        {user ? `${user.name} 님 · 로그인 중` : "로그인 필요"}
+        <div>{user ? `${user.name} 님` : "로그인 필요"}</div>
+        <button className="logout-btn" onClick={handleLogout}>로그아웃</button>
       </div>
     </aside>
   );
