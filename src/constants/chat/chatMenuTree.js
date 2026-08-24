@@ -28,9 +28,7 @@ export const CHAT_MENU_TREE = {
         '이상거래 신고': { implemented: false },
         '계좌·카드 잠금 요청': { implemented: false },
     },
-    '고객센터': {
-        implemented: false,
-    },
+    '고객센터': { implemented: true, action: 'CUSTOMER_SERVICE' },
 };
 
 export const NOT_IMPLEMENTED_MESSAGE = '아직 준비 중인 기능이에요.';
