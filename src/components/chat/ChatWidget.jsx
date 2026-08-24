@@ -33,7 +33,7 @@ function ChatWidget() {
             setSession(data);
             setMessages(data.messages || []);
         });
-    }, [open]);
+    }, [open, session]);
 
     useEffect(() => {
         return () => disconnectChatSocket(socketRef.current);
@@ -116,14 +116,22 @@ function ChatWidget() {
 
     function handleNewChat() {
         if (!session) return;
-        if (!window.confirm('새 대화를 시작하시겠어요? 현재 대화는 이력에 저장돼요.')) return;
+        
+        const confirmMessage = adminMode
+            ? '상담을 종료하시겠어요? 현재 대화는 이력에 저장돼요.'
+            : '새 대화를 시작하시겠어요? 현재 대화는 이력에 저장돼요.';
+        if (!window.confirm(confirmMessage)) return;
+
+        const wasAdminMode = adminMode;
 
         disconnectChatSocket(socketRef.current);
         socketRef.current = null;
 
         closeSession(session.sessionId).then(() => {
             setSession(null);
-            setMessages([]);
+            setMessages(wasAdminMode
+                ? [{ senderType: 'BOT', content: '상담이 종료되었습니다.', createdAt: new Date().toISOString() }]
+                : []);
             setMenuPath([]);
             setAdminMode(false);
         });
@@ -144,7 +152,9 @@ function ChatWidget() {
         <div>
             <div>
                 <span>FDS Radar 챗봇</span>
-                <button onClick={handleNewChat}>새 대화 시작</button>
+                <button onClick={handleNewChat}>
+                    {adminMode ? '상담 종료' : '새 대화 시작'}
+                </button>
                 <button onClick={() => setOpen(false)}>닫기</button>
             </div>
 
