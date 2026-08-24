@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getOrCreateSession, closeSession, sendFreeTextMessage } from "../../api/chat/chatAPI";
+import { getOrCreateSession, closeSession, sendFreeTextMessage, saveChatMessage } from "../../api/chat/chatAPI";
 import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "../../api/chat/chatSocket";
 import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE } from "../../constants/chat/chatMenuTree";
 import { useChatActions } from "../../hooks/chat/useChatActions";
@@ -83,9 +83,14 @@ function ChatWidget() {
         setInputText('');
         setSending(true);
 
+        // 사용자 메시지 저장(화면 표시와 별개로 이력 보존)
+        saveChatMessage(session.sessionId, 'USER', TEMP_USER_ID, text);
+
         sendFreeTextMessage(TEMP_USER_ID, session.sessionId, text)
             .then((result) => {
                 addLocalMessage('BOT', result.reply);
+                // 봇 응답 저장(senderId는 BOT이므로 null)
+                saveChatMessage(session.sessionId, 'BOT', null, result.reply);
 
                 if (result.needsAdmin && !adminMode) {
                     enterAdminMode();

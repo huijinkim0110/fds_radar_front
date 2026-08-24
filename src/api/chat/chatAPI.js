@@ -25,3 +25,13 @@ export async function sendFreeTextMessage(userId, sessionId, message) {
     });
     return response.data; // { reply, needsAdmin }
 }
+
+// 자유입력 메시지 저장(USER/BOT 공용) - FastAPI 응답 받은 후 호출해서 DB에 이력 남기기
+export async function saveChatMessage(sessionId, senderType, senderId, content) {
+    const response = await axios.post(`${BASE_URL}/chat/sessions/${sessionId}/messages`, {
+        senderType,
+        senderId,
+        content
+    });
+    return response.data;
+}
