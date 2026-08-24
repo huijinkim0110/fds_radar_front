@@ -24,7 +24,7 @@ function ChatWidget() {
         setMessages((prev) => [...prev, { senderType, content, navAction, createdAt: new Date().toISOString() }]);
     }
 
-    const { runAction } = useChatActions(addLocalMessage, () => setMenuPath([]));
+    const { runAction } = useChatActions(addLocalMessage, () => setMenuPath([]), enterAdminMode);
 
     useEffect(() => {
         if (!open || session) return;

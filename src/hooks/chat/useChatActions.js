@@ -6,7 +6,8 @@ import { getGoals } from '../../api/finance/financialGoalsAPI';
 const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
 
 // 트리 메뉴에서 implemented: true인 리프 노드 클릭 시 실행할 액션들
-export function useChatActions(addLocalMessage, resetMenu) {
+// connectAdmin: 상담원 연결(소켓 연결 + adminMode 전환) 콜백, ChatWidget의 enterAdminMode 주입
+export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
     const navigate = useNavigate();
 
     function runAction(node) {
@@ -23,6 +24,8 @@ export function useChatActions(addLocalMessage, resetMenu) {
                 return handleDiagnosisResult();
             case 'GOAL':
                 return handleGoal();
+            case 'CUSTOMER_SERVICE':
+                return handleCustomerService();
             default:
                 addLocalMessage('BOT', '처리할 수 없는 요청이에요.');
         }
@@ -82,6 +85,12 @@ export function useChatActions(addLocalMessage, resetMenu) {
             })
             .catch(() => addLocalMessage('BOT', '재무목표 조회 중 오류가 발생했어요.'))
             .finally(resetMenu);
+    }
+
+    function handleCustomerService() {
+        addLocalMessage('BOT', '상담원을 연결해드릴게요. 잠시만 기다려주세요.');
+        connectAdmin();
+        resetMenu();
     }
 
     return { runAction };
