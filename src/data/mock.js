@@ -1,7 +1,7 @@
 // 백엔드 없을 때 쓰는 목데이터. 백엔드 API 응답 형태와 최대한 맞춰둠.
 export const MOCK = {
   dashboard: {
-    balance: "₩ 8,420,000",
+    balance: 8420000,
     kpis: [
       { k: "이번 달 지출", v: "₩ 1.8M", d: "▼ 5.2%", dir: "down", pct: 52, color: "var(--blue)" },
       { k: "최근 거래", v: "42건", d: "모두 정상", dir: "down", pct: 100, color: "var(--green)" },
