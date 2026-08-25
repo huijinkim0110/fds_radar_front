@@ -53,7 +53,7 @@ export default function Home() {
               <h3>{p.name}</h3>
               <div className="rate">{p.rate}</div>
               <p>{p.desc}</p>
-              <span className="go" onClick={() => navigate("/signup")}>가입하기 →</span>
+              <span className="go" onClick={() => navigate("/login")}>가입하기 →</span>
             </div>
           ))}
         </div>
