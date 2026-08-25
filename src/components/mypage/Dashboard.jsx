@@ -1,12 +1,17 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getFavorites } from "../../api/financialProduct/favoriteProductAPI";
 import { getPortfolio } from "../../api/financialProduct/simulatedSubscriptionAPI";
 import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
 import { getFinancialProfile, hasFinancialProfile } from "../../api/finance/financialProfileAPI";
 import { isStale, formatElapsed } from "../../utils/staleness";
+
+// 경로 수정: 현재 mypage 폴더 안에 있으므로 상위 폴더(../)로 두 번 나가야 합니다.
 import TopBar from "../TopBar.jsx";
-import Panel from "../Panel.jsx";
 import KpiCard from "../KpiCard.jsx";
+import TxTable from "../TxTable.jsx";
+import Panel from "../Panel.jsx";
+import { FeedItem } from "../Feed.jsx";
 
 const TEMP_USER_ID = 1;
 
@@ -17,7 +22,34 @@ const RISK_TENDENCY_LABELS = {
   AGGRESSIVE: "공격형",
 };
 
-function Dashboard() {
+export default function Dashboard() {
+  const navigate = useNavigate();
+  
+  // 첫 번째 코드의 잔액/거래/송금 상태
+  const [balance, setBalance] = useState(1500000); // 초기 기본 잔액 예시 (또는 API 연동)
+  const [txns, setTxns] = useState([
+    {
+      time: "08-25 14:10",
+      name: "급여 입금 · 주식회사 핀테크",
+      kind: "입금",
+      amt: "₩ 3,000,000",
+      status: "정상",
+    },
+    {
+      time: "08-24 11:30",
+      name: "온라인 쇼핑 · 무신사",
+      kind: "출금",
+      amt: "₩ 45,000",
+      status: "정상",
+    },
+  ]);
+
+  // 송금 모달 상태
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [form, setForm] = useState({ recipient: "", amount: "" });
+  const [transferMsg, setTransferMsg] = useState("");
+
+  // 두 번째 코드의 API 데이터 상태
   const [favoriteCount, setFavoriteCount] = useState(null);
   const [activeSubscriptionCount, setActiveSubscriptionCount] = useState(null);
   const [latestProfile, setLatestProfile] = useState(null);
@@ -25,6 +57,7 @@ function Dashboard() {
   const [financialProfile, setFinancialProfile] = useState(null);
   const [hasFinProfile, setHasFinProfile] = useState(null);
 
+  // 데이터 로드
   useEffect(() => {
     getFavorites(TEMP_USER_ID)
       .then((list) => setFavoriteCount(list.length))
@@ -63,7 +96,38 @@ function Dashboard() {
     );
   }
 
-  // KPI 카드 데이터 (2번 스타일의 KpiCard 포맷에 맞춤)
+  // 송금 처리 함수
+  async function handleTransfer(e) {
+    e.preventDefault();
+    const amt = Number(form.amount);
+    if (!amt || amt <= 0) return setTransferMsg("금액을 입력해주세요.");
+    if (amt > balance) return setTransferMsg("잔액이 부족합니다.");
+
+    try {
+      // 필요시 실제 백엔드 송금 API 호출 코드 추가 가능
+      setBalance((prev) => prev - amt);  // 화면 잔액 즉시 차감
+      setTxns((prev) => [
+        {
+          time: new Date().toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }),
+          name: `이체 · ${form.recipient}`,
+          kind: "이체",
+          amt: `₩ ${amt.toLocaleString()}`,
+          status: "정상",
+        },
+        ...prev.slice(0, 3),
+      ]);
+      setTransferMsg("송금이 완료되었습니다.");
+      setForm({ recipient: "", amount: "" });
+      setTimeout(() => {
+        setShowTransfer(false);
+        setTransferMsg("");
+      }, 1500);
+    } catch (err) {
+      setTransferMsg("송금에 실패했습니다.");
+    }
+  }
+
+  // KPI 카드 구성 (두 번째 API 데이터 + 첫 번째 스타일 적용)
   const kpis = [
     {
       k: "가입한 상품",
@@ -101,7 +165,103 @@ function Dashboard() {
 
   return (
     <>
-      <TopBar title="내 대시보드" crumb="홈 / 마이페이지" search={false} />
+      <TopBar title="내 대시보드" crumb="홈 / 내 계좌 및 자산 요약" />
+
+      {/* 계좌 잔액 및 송금/신고 버튼 영역 */}
+      <div className="balance">
+        <div>
+          <div className="lbl">내 계좌 잔액</div>
+          <div className="big">₩ {balance.toLocaleString()}</div>
+          <div style={{ marginTop: 12 }}>
+            <span className="safe"><i />계정 보안 상태 · 안전</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            className="report-btn"
+            style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}
+            onClick={() => setShowTransfer(true)}
+          >
+            ↗ 송금하기
+          </button>
+          <button className="report-btn" onClick={() => navigate("/mypage/report")}>
+            ＋ 이상거래 신고
+          </button>
+        </div>
+      </div>
+
+      {/* 송금 모달 */}
+      {showTransfer && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
+        }}>
+          <div style={{
+            background: "#1e293b", borderRadius: 16, padding: 32,
+            width: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.4)"
+          }}>
+            <h3 style={{ color: "#fff", marginBottom: 20 }}>송금하기</h3>
+            <form onSubmit={handleTransfer}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ color: "#94a3b8", fontSize: 13 }}>받는 사람</label>
+                <input
+                  style={{
+                    width: "100%", padding: "10px 12px", marginTop: 6,
+                    background: "#0f172a", border: "1px solid #334155",
+                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
+                  }}
+                  placeholder="이름 또는 계좌번호"
+                  value={form.recipient}
+                  onChange={(e) => setForm({ ...form, recipient: e.target.value })}
+                />
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ color: "#94a3b8", fontSize: 13 }}>금액 (원)</label>
+                <input
+                  type="number"
+                  style={{
+                    width: "100%", padding: "10px 12px", marginTop: 6,
+                    background: "#0f172a", border: "1px solid #334155",
+                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
+                  }}
+                  placeholder="0"
+                  value={form.amount}
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                />
+              </div>
+              {transferMsg && (
+                <div style={{
+                  color: transferMsg.includes("완료") ? "#4ade80" : "#f87171",
+                  marginBottom: 12, fontSize: 14
+                }}>
+                  {transferMsg}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => { setShowTransfer(false); setTransferMsg(""); }}
+                  style={{
+                    flex: 1, padding: "10px 0", borderRadius: 8,
+                    background: "#334155", color: "#fff", border: "none", cursor: "pointer"
+                  }}
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1, padding: "10px 0", borderRadius: 8,
+                    background: "#3b82f6", color: "#fff", border: "none", cursor: "pointer"
+                  }}
+                >
+                  송금
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* 오래된 데이터 안내 배너 */}
       {staleNotices.length > 0 && (
@@ -121,30 +281,17 @@ function Dashboard() {
         </div>
       )}
 
-      {/* KPI 요약 */}
+      {/* KPI 카드 목록 */}
       <div className="kpis">
         {kpis.map((k, i) => (
           <KpiCard key={i} {...k} />
         ))}
       </div>
 
-      {/* 상세 패널들 */}
+      {/* 최근 거래 테이블 및 내 투자·재무 상세 패널 */}
       <div className="cols">
-        <Panel title="자산·거래" sub="계좌·카드·보안">
-          <div className="feed">
-            <div className="fitem">
-              <span className="fdot" style={{ background: "var(--blue)" }} />
-              <div><div className="ft">계좌·카드</div><div className="fm">준비 중입니다.</div></div>
-            </div>
-            <div className="fitem">
-              <span className="fdot" style={{ background: "var(--green)" }} />
-              <div><div className="ft">보안·신고</div><div className="fm">준비 중입니다.</div></div>
-            </div>
-            <div className="fitem">
-              <span className="fdot" style={{ background: "var(--amber)" }} />
-              <div><div className="ft">자산관리</div><div className="fm">준비 중입니다.</div></div>
-            </div>
-          </div>
+        <Panel title="내 최근 거래" sub="의심 거래는 자동 표시" right={<div className="filterpill">전체</div>}>
+          <TxTable rows={txns} />
         </Panel>
 
         <Panel title="내 투자·재무" sub="진단 및 프로필">
@@ -163,12 +310,17 @@ function Dashboard() {
               </div>
             </div>
             <div className="fitem">
-              <span className="fdot" style={{ background: "var(--muted)" }} />
-              <div><div className="ft">재무목표</div><div className="fm">준비 중입니다.</div></div>
+              <span className="fdot" style={{ background: hasFinProfile ? "var(--blue)" : "var(--muted)" }} />
+              <div>
+                <div className="ft">재무 프로필</div>
+                <div className="fm">
+                  {hasFinProfile === false ? "아직 작성되지 않았어요." : hasFinProfile ? "작성 완료" : "불러오는 중…"}
+                </div>
+              </div>
             </div>
             <div className="fitem">
               <span className="fdot" style={{ background: "var(--muted)" }} />
-              <div><div className="ft">내 정보</div><div className="fm">준비 중입니다.</div></div>
+              <div><div className="ft">내 정보 및 목표</div><div className="fm">상태 정상</div></div>
             </div>
           </div>
         </Panel>
@@ -176,5 +328,3 @@ function Dashboard() {
     </>
   );
 }
-
-export default Dashboard;

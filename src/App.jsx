@@ -2,6 +2,7 @@
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Report from "./pages/Report";
 
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -41,6 +42,7 @@ function App() {
                              <Route path="/login" element={<Login />} />   
                             <Route path="/signup" element={<Signup />} />
                             <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/mypage/report" element={<Report />} />
                             <Route path="/admin/fraud-cases" element={<FraudCaseList />} />
                             <Route path="/admin/fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
                             <Route path="/admin/fraud-analysis" element={<FraudAnalysis />} />
