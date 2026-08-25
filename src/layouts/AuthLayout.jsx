@@ -5,7 +5,7 @@ export default function AuthLayout({ heading, sub, stats, children }) {
       <div className="auth-brand">
         <div className="logo">
           <div className="mark">P</div>
-          <b>파수</b>
+          <b>Wonly</b>
         </div>
         <div>
           <h2>{heading}</h2>

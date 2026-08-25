@@ -23,7 +23,7 @@ export default function Sidebar() {
       <div className="brand">
         <div className="lg">P</div>
         <div>
-          <b>파수</b>
+          <b>Wonly</b>
           <span>My Account</span>
         </div>
         <span className="roletag">{user?.role ?? "USER"}</span>

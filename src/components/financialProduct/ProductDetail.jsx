@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getProductDetail } from '../../api/financialProduct/productApi';
+import { getProductDetail } from '../../api/financialProduct/productAPI';
 import { checkSuitability } from '../../api/recommendation/suitabilityCheckAPI';
 import { hasDiagnosisHistory } from '../../api/finance/investmentProfileAPI';
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from '../../constants/financialProduct/productLabels';

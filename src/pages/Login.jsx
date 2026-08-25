@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.jsx";
 import AuthLayout from "../layouts/AuthLayout.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,10 +13,11 @@ export default function Login() {
     setErr("");
     setLoading(true);
     try {
-      const me = await login(form);
-      // role 보고 분기: 관리자면 관제로, 유저면 본인 대시보드로
-      navigate(me.role === "ADMIN" ? "/admin/dashboard" : "/dashboard", { replace: true });
-    } catch (e2) {
+      // 지금은 백엔드 로그인 연동 전이라 일단 홈이나 상품페이지로 이동
+      // 나중에 팀 로그인 API 붙이면 여기서 호출
+      alert("로그인 시도: " + form.email);
+      navigate("/");   // home으로 이동
+    } catch {
       setErr("이메일 또는 비밀번호를 확인하세요.");
     } finally {
       setLoading(false);
@@ -36,28 +35,20 @@ export default function Login() {
       ]}
     >
       <h1>로그인</h1>
-      <div className="lead">파수에 오신 걸 환영합니다.</div>
+      <div className="lead">Wonly에 오신 걸 환영합니다.</div>
 
       <form onSubmit={submit}>
         <div className="field">
           <label>이메일</label>
-          <input
-            type="email"
-            placeholder="name@company.com"
+          <input type="email" placeholder="name@company.com"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-            required
-          />
+            onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         </div>
         <div className="field">
           <label>비밀번호</label>
-          <input
-            type="password"
-            placeholder="••••••••"
+          <input type="password" placeholder="••••••••"
             value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })}
-            required
-          />
+            onChange={(e) => setForm({ ...form, password: e.target.value })} required />
         </div>
 
         {err && <div className="form-err">{err}</div>}

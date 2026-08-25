@@ -1,4 +1,9 @@
 
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+
+import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import FraudCaseList from "./components/fraud/FraudCaseList";
 import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
@@ -27,10 +32,15 @@ import { ConfirmProvider } from "./context/ConfirmContext";
 function App() {
     return (
         <BrowserRouter>
+          <AuthProvider>
             <ComparisonProvider>
                 <ToastProvider>
                     <ConfirmProvider>
                         <Routes>
+                            <Route path="/" element={<Home />} />   
+                             <Route path="/login" element={<Login />} />   
+                            <Route path="/signup" element={<Signup />} />
+                            <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/admin/fraud-cases" element={<FraudCaseList />} />
                             <Route path="/admin/fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
                             <Route path="/admin/fraud-analysis" element={<FraudAnalysis />} />
@@ -61,6 +71,7 @@ function App() {
                     </ConfirmProvider>
                 </ToastProvider>
             </ComparisonProvider>
+            </AuthProvider>
         </BrowserRouter>
     );
 }
