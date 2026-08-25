@@ -23,7 +23,7 @@ export async function sendFreeTextMessage(userId, sessionId, message) {
         sessionId,
         message
     });
-    return response.data; // { reply, needsAdmin }
+    return response.data; // { reply, needsAdmin, navActions: [{path, label}] }
 }
 
 // 자유입력 메시지 저장(USER/BOT 공용) - FastAPI 응답 받은 후 호출해서 DB에 이력 남기기

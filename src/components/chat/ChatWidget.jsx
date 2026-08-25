@@ -20,8 +20,8 @@ function ChatWidget() {
 
     const socketRef = useRef(null);
 
-    function addLocalMessage(senderType, content, navAction = null) {
-        setMessages((prev) => [...prev, { senderType, content, navAction, createdAt: new Date().toISOString() }]);
+    function addLocalMessage(senderType, content, navActions = []) {
+        setMessages((prev) => [...prev, { senderType, content, navActions, createdAt: new Date().toISOString() }]);
     }
 
     const { runAction } = useChatActions(addLocalMessage, () => setMenuPath([]), enterAdminMode);
@@ -88,7 +88,7 @@ function ChatWidget() {
 
         sendFreeTextMessage(TEMP_USER_ID, session.sessionId, text)
             .then((result) => {
-                addLocalMessage('BOT', result.reply);
+                addLocalMessage('BOT', result.reply, result.navActions);
                 // 봇 응답 저장(senderId는 BOT이므로 null)
                 saveChatMessage(session.sessionId, 'BOT', null, result.reply);
 
@@ -162,11 +162,11 @@ function ChatWidget() {
                 {messages.map((msg, idx) => (
                     <div key={idx}>
                         <strong>{msg.senderType}</strong>: {msg.content}
-                        {msg.navAction && (
-                            <button onClick={() => handleNavigateClick(msg.navAction)}>
-                                {msg.navAction.label}
+                        {msg.navActions?.map((nav) => (
+                            <button key={nav.path} onClick={() => handleNavigateClick(nav)}>
+                                {nav.label}
                             </button>
-                        )}
+                        ))}
                     </div>
                 ))}
             </div>

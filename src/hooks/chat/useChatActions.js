@@ -40,14 +40,14 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
                     return;
                 }
                 const names = products.map((p) => p.productName).join(', ');
-                addLocalMessage('BOT', `이런 상품들이 있어요: ${names}`, { path: '/products', label: '상품 목록 보기' });
+                addLocalMessage('BOT', `이런 상품들이 있어요: ${names}`, [{ path: '/products', label: '상품 목록 보기' }]);
             })
             .catch(() => addLocalMessage('BOT', '상품 조회 중 오류가 발생했어요.'))
             .finally(resetMenu);
     }
 
     function handleProductCompare() {
-        addLocalMessage('BOT', '상품 목록에서 비교하고 싶은 상품들을 선택해주세요.', { path: '/products', label: '상품 목록 보기' });
+        addLocalMessage('BOT', '상품 목록에서 비교하고 싶은 상품들을 선택해주세요.', [{ path: '/products', label: '상품 목록 보기' }]);
         resetMenu();
     }
 
@@ -55,9 +55,9 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
         hasDiagnosisHistory(TEMP_USER_ID)
             .then((hasHistory) => {
                 if (!hasHistory) {
-                    addLocalMessage('BOT', '추천을 받으려면 먼저 투자성향 진단이 필요해요.', { path: '/mypage/diagnosis', label: '진단하러 가기' });
+                    addLocalMessage('BOT', '추천을 받으려면 먼저 투자성향 진단이 필요해요.', [{ path: '/mypage/diagnosis', label: '진단하러 가기' }]);
                 } else {
-                    addLocalMessage('BOT', '투자성향에 맞는 상품을 추천해드릴게요.', { path: '/mypage/recommendations', label: '추천 상품 보기' });
+                    addLocalMessage('BOT', '투자성향에 맞는 상품을 추천해드릴게요.', [{ path: '/mypage/recommendations', label: '추천 상품 보기' }]);
                 }
             })
             .catch(() => addLocalMessage('BOT', '추천 처리 중 오류가 발생했어요.'))
@@ -65,12 +65,12 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
     }
 
     function handleDiagnosis() {
-        addLocalMessage('BOT', '투자성향 진단 페이지로 이동할게요.', { path: '/mypage/diagnosis', label: '진단하러 가기' });
+        addLocalMessage('BOT', '투자성향 진단 페이지로 이동할게요.', [{ path: '/mypage/diagnosis', label: '진단하러 가기' }]);
         resetMenu();
     }
 
     function handleDiagnosisResult() {
-        addLocalMessage('BOT', '진단 결과 페이지로 이동할게요.', { path: '/mypage/diagnosis/results', label: '진단 결과 보기' });
+        addLocalMessage('BOT', '진단 결과 페이지로 이동할게요.', [{ path: '/mypage/diagnosis/results', label: '진단 결과 보기' }]);
         resetMenu();
     }
 
@@ -78,9 +78,9 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
         getGoals(TEMP_USER_ID)
             .then((goals) => {
                 if (!goals || goals.length === 0) {
-                    addLocalMessage('BOT', '설정된 재무목표가 없어요. 새로 등록해보시겠어요?', { path: '/mypage/financial-goals', label: '재무목표 보기' });
+                    addLocalMessage('BOT', '설정된 재무목표가 없어요. 새로 등록해보시겠어요?', [{ path: '/mypage/financial-goals', label: '재무목표 보기' }]);
                 } else {
-                    addLocalMessage('BOT', `현재 ${goals.length}개의 재무목표가 진행 중이에요.`, { path: '/mypage/financial-goals', label: '재무목표 보기' });
+                    addLocalMessage('BOT', `현재 ${goals.length}개의 재무목표가 진행 중이에요.`, [{ path: '/mypage/financial-goals', label: '재무목표 보기' }]);
                 }
             })
             .catch(() => addLocalMessage('BOT', '재무목표 조회 중 오류가 발생했어요.'))
