@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import FraudCaseList from "./components/fraud/FraudCaseList";
 import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
 import FraudAnalysis from "./components/fraud/FraudAnalysis";
@@ -23,6 +23,15 @@ import ProductComparison from "./components/financialProduct/ProductComparison";
 import { ToastProvider } from "./context/ToastContext";
 import Toast from "./components/common/Toast";
 import { ConfirmProvider } from "./context/ConfirmContext";
+
+function AppChatWidget() {
+    const location = useLocation();
+    const isAdminRoute = location.pathname.startsWith("/admin");
+
+    if (isAdminRoute) return null;
+
+    return <ChatWidget />;
+}
 
 function App() {
     return (
@@ -57,7 +66,7 @@ function App() {
                         </Routes>
 
                         <Toast />
-                        <ChatWidget />
+                        <AppChatWidget />
                     </ConfirmProvider>
                 </ToastProvider>
             </ComparisonProvider>
