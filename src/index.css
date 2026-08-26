@@ -230,3 +230,14 @@ tr:last-child td{border-bottom:none;}
   padding: 14px 30px; border-radius: 14px;
 }
 .diag-result-text { font-size: 14px; color: var(--muted); }
+
+/* date input 달력 아이콘 - 다크모드 */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
