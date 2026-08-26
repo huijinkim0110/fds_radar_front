@@ -1,12 +1,9 @@
-
+import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Report from "./pages/Report";
-
-import { AuthProvider } from "./context/AuthContext";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import FraudCaseList from "./components/fraud/FraudCaseList";
 import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
 import FraudAnalysis from "./components/fraud/FraudAnalysis";
