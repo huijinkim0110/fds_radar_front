@@ -15,6 +15,12 @@ export const CASE_PRIORITY_LABELS = {
     HIGH: "높음",
 };
 
+// 사건 생성 경로
+export const CASE_ORIGIN_LABELS = {
+    AI_DETECTION: "AI 자동 탐지",
+    USER_REPORT: "사용자 신고",
+};
+
 // 본인확인 (UserConfirmation)
 export const USER_CONFIRMATION_LABELS = {
     CONFIRMED: "본인 확인",
@@ -146,4 +152,8 @@ export function getLockTargetTypeFromTransactionType(transactionType) {
     if (transactionType === "CARD_PAYMENT") return "CARD";
     if (transactionType === "ACCOUNT_TRANSFER") return "ACCOUNT";
     return null;
+}
+
+export function getCaseOriginLabel(value) {
+    return getLabel(CASE_ORIGIN_LABELS, value);
 }
