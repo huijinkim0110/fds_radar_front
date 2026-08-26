@@ -7,6 +7,8 @@ import {
     formatProbabilityPercent,
     formatDateTime,
 } from "../../constants/fraud/fraudCaseLabels";
+import LockRequestApprovalModal from "./LockRequestApprovalModal";
+import FraudAnalysis from "../fraud/FraudAnalysis";
 
 // 관리자 마이페이지
 // TODO(로그인 기능 붙으면 수정): 지금은 로그인이 없어서 "나는 누구인지"를
@@ -25,6 +27,8 @@ function AdminMyPage() {
     const [myCases, setMyCases] = useState([]);
     const [casesLoading, setCasesLoading] = useState(false);
     const [casesError, setCasesError] = useState(null);
+
+    const [showLockModal, setShowLockModal] = useState(false);
 
     async function fetchAdmins() {
         try {
@@ -158,14 +162,17 @@ function AdminMyPage() {
             </section>
 
             <section>
-                <h3>오탐 · 미탐 분석</h3>
-                <p>준비 중 — 기존 FraudAnalysis 컴포넌트 재사용 예정</p>
+                <FraudAnalysis />
             </section>
 
             <section>
                 <h3>잠금 요청 이력</h3>
-                <p>준비 중 — LockRequestRepository 기반 이력 API 추가 예정</p>
+                <button onClick={() => setShowLockModal(true)}>처리 대기 목록 보기</button>
             </section>
+
+            {showLockModal && (
+                <LockRequestApprovalModal onClose={() => setShowLockModal(false)} />
+            )}
 
             <section>
                 <h3>내 정보</h3>
