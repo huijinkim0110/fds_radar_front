@@ -12,6 +12,7 @@ import {
 import {
     getCaseStatusLabel,
     getCasePriorityLabel,
+    getCaseOriginLabel,   // 추가
     getUserConfirmationLabel,
     getFraudDecisionLabel,
     getPredictedResultLabel,
@@ -172,6 +173,7 @@ function FraudCaseDetail() {
                 <p>거래ID: {detail.transactionId}</p>
                 <p>상태: {getCaseStatusLabel(detail.caseStatus)}</p>
                 <p>우선순위: {getCasePriorityLabel(detail.priority)}</p>
+                <p>사건 생성 경로: {getCaseOriginLabel(detail.origin)}</p>
                 <p>본인확인: {getUserConfirmationLabel(detail.confirmation)}</p>
                 <p>최종판정: {detail.fraudDecision ? getFraudDecisionLabel(detail.fraudDecision) : "미판정"}</p>
                 <p>담당자: {detail.assignedAdminId}</p>
