@@ -15,6 +15,12 @@ export const CASE_PRIORITY_LABELS = {
     HIGH: "높음",
 };
 
+// 사건 생성 경로
+export const CASE_ORIGIN_LABELS = {
+    AI_DETECTION: "AI 자동 탐지",
+    USER_REPORT: "사용자 신고",
+};
+
 // 본인확인 (UserConfirmation)
 export const USER_CONFIRMATION_LABELS = {
     CONFIRMED: "본인 확인",
@@ -110,4 +116,44 @@ export function formatDateTime(value) {
     const ss = pad(d.getSeconds());
 
     return `${yyyy}.${mm}.${dd} ${hh}:${mi}:${ss}`;
+}
+
+export const REQUEST_TARGET_TYPE_LABELS = {
+    CARD: "카드",
+    ACCOUNT: "계좌"
+};
+
+export const LOCK_REQUEST_STATUS_LABELS = {
+    RECEIVED: "대기중",
+    COMPLETED: "승인됨",
+    REJECTED: "반려됨",
+};
+
+export function getRequestTargetTypeLabel(value) {
+    return getLabel(REQUEST_TARGET_TYPE_LABELS, value);
+}
+
+export function getLockRequestStatusLabel(value) {
+    return getLabel(LOCK_REQUEST_STATUS_LABELS, value);
+}
+
+// 거래유형 (TransactionType)
+export const TRANSACTION_TYPE_LABELS = {
+    CARD_PAYMENT: "카드결제",
+    ACCOUNT_TRANSFER: "계좌이체",
+};
+
+export function getTransactionTypeLabel(value) {
+    return getLabel(TRANSACTION_TYPE_LABELS, value);
+}
+
+// 거래유형에 따라 잠글 수 있는 대상을 자동으로 결정 (관리자가 임의로 고르지 못하게)
+export function getLockTargetTypeFromTransactionType(transactionType) {
+    if (transactionType === "CARD_PAYMENT") return "CARD";
+    if (transactionType === "ACCOUNT_TRANSFER") return "ACCOUNT";
+    return null;
+}
+
+export function getCaseOriginLabel(value) {
+    return getLabel(CASE_ORIGIN_LABELS, value);
 }

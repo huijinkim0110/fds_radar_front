@@ -12,11 +12,15 @@ import {
 import {
     getCaseStatusLabel,
     getCasePriorityLabel,
+    getCaseOriginLabel,   // 추가
     getUserConfirmationLabel,
     getFraudDecisionLabel,
     getPredictedResultLabel,
     getPredictedFraudTypeLabel,
     getFraudActionTypeLabel,
+    getRequestTargetTypeLabel,
+    getTransactionTypeLabel,
+    getLockTargetTypeFromTransactionType,
     formatProbabilityPercent,
     formatDateTime,
 } from "../../constants/fraud/fraudCaseLabels";
@@ -51,7 +55,6 @@ function FraudCaseDetail() {
     const [detail, setDetail] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [targetType, setTargetType] = useState("CARD");
     const [lockReasonPreset, setLockReasonPreset] = useState("");
     const [customLockReason, setCustomLockReason] = useState("");
     const [admins, setAdmins] = useState([]);
@@ -156,6 +159,7 @@ function FraudCaseDetail() {
     if (loading) return <div>불러오는 중...</div>;
     if (error) return <div>{error}</div>;
     if (!detail) return null;
+    const targetType = getLockTargetTypeFromTransactionType(detail.transactionType);
 
     const isClosed = detail.caseStatus === "CLOSED";
 
@@ -169,6 +173,7 @@ function FraudCaseDetail() {
                 <p>거래ID: {detail.transactionId}</p>
                 <p>상태: {getCaseStatusLabel(detail.caseStatus)}</p>
                 <p>우선순위: {getCasePriorityLabel(detail.priority)}</p>
+                <p>사건 생성 경로: {getCaseOriginLabel(detail.origin)}</p>
                 <p>본인확인: {getUserConfirmationLabel(detail.confirmation)}</p>
                 <p>최종판정: {detail.fraudDecision ? getFraudDecisionLabel(detail.fraudDecision) : "미판정"}</p>
                 <p>담당자: {detail.assignedAdminId}</p>
@@ -216,37 +221,36 @@ function FraudCaseDetail() {
             {!isClosed && (
                 <section>
                     <h3>카드·계좌 잠금 요청</h3>
-                    <select
-                        value={targetType}
-                        onChange={(e) => {
-                            setTargetType(e.target.value);
-                            setLockReasonPreset("");
-                            setCustomLockReason("");
-                        }}
-                    >
-                        <option value="CARD">카드</option>
-                        <option value="ACCOUNT">계좌</option>
-                    </select>
-                    <select
-                        value={lockReasonPreset}
-                        onChange={(e) => setLockReasonPreset(e.target.value)}
-                    >
-                        <option value="">잠금 사유 선택</option>
-                        {LOCK_REASON_PRESETS[targetType].map((reason) => (
-                            <option key={reason} value={reason}>
-                                {reason}
-                            </option>
-                        ))}
-                    </select>
-                    {lockReasonPreset === "기타" && (
-                        <input
-                            type="text"
-                            placeholder="기타 사유 입력"
-                            value={customLockReason}
-                            onChange={(e) => setCustomLockReason(e.target.value)}
-                        />
+                    {!targetType ? (
+                        <p>이 거래의 유형을 확인할 수 없어 잠금 요청을 진행할 수 없습니다.</p>
+                    ) : (
+                        <>
+                            <p>
+                                거래유형: {getTransactionTypeLabel(detail.transactionType)} →
+                                잠금 대상: {getRequestTargetTypeLabel(targetType)}
+                            </p>
+                            <select
+                                value={lockReasonPreset}
+                                onChange={(e) => setLockReasonPreset(e.target.value)}
+                            >
+                                <option value="">잠금 사유 선택</option>
+                                {LOCK_REASON_PRESETS[targetType].map((reason) => (
+                                    <option key={reason} value={reason}>
+                                        {reason}
+                                    </option>
+                                ))}
+                            </select>
+                            {lockReasonPreset === "기타" && (
+                                <input
+                                    type="text"
+                                    placeholder="기타 사유 입력"
+                                    value={customLockReason}
+                                    onChange={(e) => setCustomLockReason(e.target.value)}
+                                />
+                            )}
+                            <button onClick={handleLock}>잠금 요청</button>
+                        </>
                     )}
-                    <button onClick={handleLock}>잠금 요청</button>
                 </section>
             )}
             <section>
