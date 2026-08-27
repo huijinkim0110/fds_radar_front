@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Report from "./pages/Report";
 import UserProfile from "./components/mypage/UserProfile";
+import LoginDeviceHistory from "./components/mypage/LoginDeviceHistory";
+import Notifications from "./components/mypage/Notifications";
 
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -56,6 +58,8 @@ function App() {
                             <Route path="/mypage" element={<MyPageLayout />}>
                                 <Route path="dashboard" element={<Dashboard />} />
                                 <Route path="profile" element={<UserProfile />} />
+                                <Route path="devices" element={<LoginDeviceHistory />} />
+                                <Route path="notifications" element={<Notifications />} />
                                 <Route path="favorites" element={<FavoriteProductList />} />
                                 <Route path="comparisons" element={<ProductComparison />} />
                                 <Route path="comparisons/:comparisonId" element={<ProductComparison />} />

@@ -1,3 +1,4 @@
+// 대시보드 페이지 - 내 정보 (회원 정보 페이지)
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import TopBar from "../TopBar.jsx";
