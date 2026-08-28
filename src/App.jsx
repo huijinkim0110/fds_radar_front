@@ -6,10 +6,13 @@ import UserProfile from "./components/mypage/UserProfile";
 import LoginDeviceHistory from "./components/mypage/LoginDeviceHistory";
 import Notifications from "./components/mypage/Notifications";
 import HomeProductDetail from "./pages/HomeProductDetail";
+import Account from "./components/mypage/Accounts"; 
+import Cards from "./components/mypage/Cards"; 
 
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
-import CustomerCenter from "./components/CustomerCenter"; // 👈 고객센터 컴포넌트 임포트
+import CustomerCenter from "./components/CustomerCenter"; 
+import Transactions from "./components/mypage/Transactions";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
@@ -59,7 +62,7 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
 
-                  {/* 👈 고객센터 경로 추가 */}
+                  
                   <Route path="/support" element={<CustomerCenter />} />
 
                   <Route
@@ -123,6 +126,13 @@ function App() {
                       element={<Dashboard />}
                     />
 
+                    <Route path="accounts" element={<Account />} />
+                    
+                    <Route path="cards" element={<Cards />} />
+
+                    <Route path="transactions" element={<Transactions />} />
+
+
                     <Route
                       path="profile"
                       element={<UserProfile />}
@@ -178,6 +188,8 @@ function App() {
                       element={<FinancialProfile />}
                     />
                   </Route>
+
+                 
 
                   {/* =========================
                       관리자

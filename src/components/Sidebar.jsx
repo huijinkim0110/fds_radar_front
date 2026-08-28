@@ -10,7 +10,7 @@ const MENU = [
 ];
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();   // ← logout 가져옴
+  const { user, logout } = useAuth();   
   const navigate = useNavigate();
 
   function handleLogout() {
