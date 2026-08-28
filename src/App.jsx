@@ -7,7 +7,6 @@ import UserProfile from "./components/mypage/UserProfile";
 import LoginDeviceHistory from "./components/mypage/LoginDeviceHistory";
 import Notifications from "./components/mypage/Notifications";
 import FraudConfirmations from "./components/mypage/FraudConfirmations";
-
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import FraudCaseList from "./components/fraud/FraudCaseList";
