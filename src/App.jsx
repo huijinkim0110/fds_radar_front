@@ -5,9 +5,16 @@ import Report from "./pages/Report";
 import UserProfile from "./components/mypage/UserProfile";
 import LoginDeviceHistory from "./components/mypage/LoginDeviceHistory";
 import Notifications from "./components/mypage/Notifications";
+import TransactionReport from "./components/mypage/TransactionReport"; 
+import ReportHistory from "./components/mypage/ReportHistory";
+
 import HomeProductDetail from "./pages/HomeProductDetail";
 import Account from "./components/mypage/Accounts"; 
 import Cards from "./components/mypage/Cards"; 
+import FraudReportsPage from "./components/mypage/FraudReportsPage";
+import FraudConfirmations from "./components/mypage/FraudConfirmations";
+import DisputesPage from "./components/mypage/DisputesPage";
+import LockRequestsPage from "./components/mypage/LockRequestsPage";
 
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -62,8 +69,26 @@ function App() {
                 <Routes>
                   <Route path="/" element={<Home />} />
 
+
                   
                   <Route path="/support" element={<CustomerCenter />} />
+=
+                            <Route path="/mypage" element={<MyPageLayout />}>
+                                <Route path="dashboard" element={<Dashboard />} />
+                                <Route path="profile" element={<UserProfile />} />
+                                <Route path="devices" element={<LoginDeviceHistory />} />
+                                <Route path="notifications" element={<Notifications />} />
+                                <Route path="fraud-confirmations"element={<FraudConfirmations />}/>
+                                <Route path="favorites" element={<FavoriteProductList />} />
+                                <Route path="comparisons" element={<ProductComparison />} />
+                                <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
+                                <Route path="diagnosis" element={<InvestmentDiagnosis />} />
+                                <Route path="diagnosis/results" element={<DiagnosisResults />} />
+                                <Route path="recommendations" element={<RecommendedProducts />} />
+                                <Route path="financial-goals" element={<FinancialGoalList />} />
+                                <Route path="financial-profile" element={<FinancialProfile />} />
+                            </Route>
+
 
                   <Route
                     path="/home-products/:id"
@@ -73,10 +98,7 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
 
-                  <Route
-                    path="/mypage/report"
-                    element={<Report />}
-                  />
+                
 
                   <Route
                     path="/admin/fraud-cases"
@@ -132,6 +154,8 @@ function App() {
 
                     <Route path="transactions" element={<Transactions />} />
 
+                    <Route path="fraud-reports" element={<FraudReportsPage />} />
+
 
                     <Route
                       path="profile"
@@ -177,6 +201,10 @@ function App() {
                       path="recommendations"
                       element={<RecommendedProducts />}
                     />
+
+                    <Route path="disputes" element={<DisputesPage />} />
+
+                    <Route path="lock-requests" element={<LockRequestsPage />} />
 
                     <Route
                       path="financial-goals"
