@@ -5,6 +5,7 @@ import { getPortfolio } from "../../api/financialProduct/simulatedSubscriptionAP
 import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
 import { getFinancialProfile, hasFinancialProfile } from "../../api/finance/financialProfileAPI";
 import { isStale, formatElapsed } from "../../utils/staleness";
+import { useTheme } from "../../context/ThemeContext";
 
 // 경로 수정: 현재 mypage 폴더 안에 있으므로 상위 폴더(../)로 두 번 나가야 합니다.
 import TopBar from "../TopBar.jsx";
@@ -24,6 +25,7 @@ const RISK_TENDENCY_LABELS = {
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { isDark, toggleDarkMode } = useTheme();
   
   // 첫 번째 코드의 잔액/거래/송금 상태
   const [balance, setBalance] = useState(1500000); // 초기 기본 잔액 예시 (또는 API 연동)
@@ -104,7 +106,6 @@ export default function Dashboard() {
     if (amt > balance) return setTransferMsg("잔액이 부족합니다.");
 
     try {
-      // 필요시 실제 백엔드 송금 API 호출 코드 추가 가능
       setBalance((prev) => prev - amt);  // 화면 잔액 즉시 차감
       setTxns((prev) => [
         {
@@ -324,6 +325,22 @@ export default function Dashboard() {
             </div>
           </div>
         </Panel>
+      </div>
+
+      {/* ── [대시보드 콘텐츠 최하단] 다크모드 설정 바 ── */}
+      <div className="panel" style={{ marginTop: 20 }}>
+        <div className="setrow" style={{ padding: "4px 0", borderBottom: "none" }}>
+          <div>
+            <div className="st">화면 테마 설정</div>
+            <div className="sm">다크모드로 눈의 피로를 줄여보세요.</div>
+          </div>
+          <button
+            type="button"
+            className={`toggle ${isDark ? "on" : ""}`}
+            onClick={toggleDarkMode}
+            aria-label="다크모드 토글"
+          />
+        </div>
       </div>
     </>
   );

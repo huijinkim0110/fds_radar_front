@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AuthLayout from "../layouts/AuthLayout.jsx";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,10 +15,8 @@ export default function Login() {
     setErr("");
     setLoading(true);
     try {
-      // 지금은 백엔드 로그인 연동 전이라 일단 홈이나 상품페이지로 이동
-      // 나중에 팀 로그인 API 붙이면 여기서 호출
-      alert("로그인 시도: " + form.email);
-      navigate("/");   // home으로 이동
+      await login({ email: form.email, password: form.password });  // 실제 백엔드 로그인
+      navigate("/");   // 홈으로
     } catch {
       setErr("이메일 또는 비밀번호를 확인하세요.");
     } finally {

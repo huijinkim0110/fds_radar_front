@@ -1,7 +1,7 @@
 // ── API 클라이언트 ───────────────────────────────────────────────
 import { MOCK } from "../data/mock.js";
 
-export const USE_MOCK = true; // TODO 백엔드 붙이면 false
+export const USE_MOCK = false; 
 
 function authHeader() {
   const token = localStorage.getItem("accessToken");
@@ -47,11 +47,14 @@ export const api = {
     return data;
   },
 
-  signup: ({ name, email, password }) =>
-    USE_MOCK
-      ? delay({ ok: true })
-      : request("/auth/signup", { method: "POST", body: JSON.stringify({ name, email, password }) }),
-
+  signup: ({ name, email, password, birthDate, phoneNumber }) =>
+  USE_MOCK
+    ? delay({ ok: true })
+    : request("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify({ name, email, password, birthDate, phoneNumber }),
+      }),
+      
   logout: () => localStorage.removeItem("accessToken"),
 
   getMe: () => {
@@ -106,3 +109,4 @@ export const api = {
       ? delay({ ok: true })
       : request("/me/security", { method: "PATCH", body: JSON.stringify(payload) }),
 };
+

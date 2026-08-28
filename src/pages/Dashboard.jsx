@@ -6,9 +6,11 @@ import KpiCard from "../components/KpiCard.jsx";
 import TxTable from "../components/TxTable.jsx";
 import Panel from "../components/Panel.jsx";
 import { FeedItem } from "../components/Feed.jsx";
+import { useTheme } from "../context/ThemeContext";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { isDark, toggleDarkMode } = useTheme();
   const [data, setData] = useState(null);
   const [txns, setTxns] = useState([]);
   const [balance, setBalance] = useState(0);
@@ -63,6 +65,22 @@ export default function Dashboard() {
     <>
       <TopBar title="내 대시보드" crumb="홈 / 내 계좌 요약" />
 
+      {/* 대시보드 상단 테마 설정 바 (CSS .setrow 및 .toggle 스타일 적용) */}
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="setrow" style={{ padding: "4px 0", borderBottom: "none" }}>
+          <div>
+            <div className="st">화면 테마 설정</div>
+            <div className="sm">다크모드로 눈의 피로를 줄여보세요.</div>
+          </div>
+          <button
+            type="button"
+            className={`toggle ${isDark ? "on" : ""}`}
+            onClick={toggleDarkMode}
+            aria-label="다크모드 토글"
+          />
+        </div>
+      </div>
+
       <div className="balance">
         <div>
           <div className="lbl">내 계좌 잔액</div>
@@ -92,18 +110,18 @@ export default function Dashboard() {
           display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
         }}>
           <div style={{
-            background: "#1e293b", borderRadius: 16, padding: 32,
-            width: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.4)"
+            background: "var(--panel)", border: "1px solid var(--line)", borderRadius: 16, padding: 32,
+            width: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.2)"
           }}>
-            <h3 style={{ color: "#fff", marginBottom: 20 }}>송금하기</h3>
+            <h3 style={{ color: "var(--ink)", marginBottom: 20 }}>송금하기</h3>
             <form onSubmit={handleTransfer}>
               <div style={{ marginBottom: 16 }}>
-                <label style={{ color: "#94a3b8", fontSize: 13 }}>받는 사람</label>
+                <label style={{ color: "var(--muted)", fontSize: 13 }}>받는 사람</label>
                 <input
                   style={{
                     width: "100%", padding: "10px 12px", marginTop: 6,
-                    background: "#0f172a", border: "1px solid #334155",
-                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
+                    background: "var(--panel2)", border: "1px solid var(--line)",
+                    borderRadius: 8, color: "var(--ink)", fontSize: 15, boxSizing: "border-box"
                   }}
                   placeholder="이름 또는 계좌번호"
                   value={form.recipient}
@@ -111,13 +129,13 @@ export default function Dashboard() {
                 />
               </div>
               <div style={{ marginBottom: 20 }}>
-                <label style={{ color: "#94a3b8", fontSize: 13 }}>금액 (원)</label>
+                <label style={{ color: "var(--muted)", fontSize: 13 }}>금액 (원)</label>
                 <input
                   type="number"
                   style={{
                     width: "100%", padding: "10px 12px", marginTop: 6,
-                    background: "#0f172a", border: "1px solid #334155",
-                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
+                    background: "var(--panel2)", border: "1px solid var(--line)",
+                    borderRadius: 8, color: "var(--ink)", fontSize: 15, boxSizing: "border-box"
                   }}
                   placeholder="0"
                   value={form.amount}
@@ -126,7 +144,7 @@ export default function Dashboard() {
               </div>
               {transferMsg && (
                 <div style={{
-                  color: transferMsg.includes("완료") ? "#4ade80" : "#f87171",
+                  color: transferMsg.includes("완료") ? "var(--green)" : "var(--red)",
                   marginBottom: 12, fontSize: 14
                 }}>
                   {transferMsg}
@@ -138,7 +156,7 @@ export default function Dashboard() {
                   onClick={() => { setShowTransfer(false); setTransferMsg(""); }}
                   style={{
                     flex: 1, padding: "10px 0", borderRadius: 8,
-                    background: "#334155", color: "#fff", border: "none", cursor: "pointer"
+                    background: "var(--panel2)", color: "var(--muted)", border: "1px solid var(--line)", cursor: "pointer", fontWeight: 600
                   }}
                 >
                   취소
@@ -147,7 +165,7 @@ export default function Dashboard() {
                   type="submit"
                   style={{
                     flex: 1, padding: "10px 0", borderRadius: 8,
-                    background: "#3b82f6", color: "#fff", border: "none", cursor: "pointer"
+                    background: "var(--blue)", color: "#fff", border: "none", cursor: "pointer", fontWeight: 600
                   }}
                 >
                   송금
@@ -173,6 +191,7 @@ export default function Dashboard() {
           </div>
         </Panel>
       </div>
+      
     </>
   );
 }
