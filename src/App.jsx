@@ -6,6 +6,7 @@ import Report from "./pages/Report";
 import UserProfile from "./components/mypage/UserProfile";
 import LoginDeviceHistory from "./components/mypage/LoginDeviceHistory";
 import Notifications from "./components/mypage/Notifications";
+import FraudConfirmations from "./components/mypage/FraudConfirmations";
 
 import { AuthProvider } from "./context/AuthContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
@@ -60,6 +61,7 @@ function App() {
                                 <Route path="profile" element={<UserProfile />} />
                                 <Route path="devices" element={<LoginDeviceHistory />} />
                                 <Route path="notifications" element={<Notifications />} />
+                                <Route path="fraud-confirmations"element={<FraudConfirmations />}/>
                                 <Route path="favorites" element={<FavoriteProductList />} />
                                 <Route path="comparisons" element={<ProductComparison />} />
                                 <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
