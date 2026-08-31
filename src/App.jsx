@@ -58,6 +58,14 @@ import Toast from "./components/common/Toast";
 
 import { ConfirmProvider } from "./context/ConfirmContext";
 
+// admin
+import AdminFraudCases from "./components/admin/AdminFraudCases";
+import AdminLockRequests from "./components/admin/AdminLockRequests";
+import AdminFraudAnalysis from "./components/admin/AdminFraudAnalysis";
+import AdminDisputes from "./components/admin/AdminDisputes";
+import AdminReports from "./components/admin/AdminReports";
+
+
 function App() {
   return (
     <BrowserRouter>
@@ -88,6 +96,11 @@ function App() {
                                 <Route path="recommendations" element={<RecommendedProducts />} />
                                 <Route path="financial-goals" element={<FinancialGoalList />} />
                                 <Route path="financial-profile" element={<FinancialProfile />} />
+                                <Route path="admin-fraud-cases" element={<AdminFraudCases />} />
+                                <Route path="admin-lock-requests" element={<AdminLockRequests />} />
+                                <Route path="admin-fraud-analysis" element={<AdminFraudAnalysis />} />
+                                <Route path="admin-disputes" element={<AdminDisputes />} />
+                                <Route path="admin-reports" element={<AdminReports />} />
                             </Route>
 
 

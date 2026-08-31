@@ -26,20 +26,31 @@ export default function Home() {
         </div>
         <div className="home-nav-right">
           {user ? (
-            /* ① 로그인 상태: 유저님 + 로그아웃 */
             <>
-              <span className="home-user">{user.name}님</span>
-              <button className="ghost" onClick={() => { logout(); navigate("/"); }}>
+              <span className="home-user">
+                {user.name}님{user.role === "ADMIN" ? " (관리자)" : ""}
+              </span>
+              {user.role === "ADMIN" ? (
+                <button className="ghost" onClick={() => navigate("/admin/fraud-cases")}>
+                  관리자 페이지
+                </button>
+              ) : (
+                <button className="ghost" onClick={() => navigate("/mypage/dashboard")}>
+                  내 대시보드
+                </button>
+              )}
+              <button className="ghost" onClick={() => {logout(); navigate("/");}}>
                 로그아웃
               </button>
             </>
           ) : (
-            /* 비로그인: 로그인/회원가입 */
             <>
-              <button className="ghost" onClick={() => navigate("/login")}>로그인</button>
-              <button className="fill" onClick={() => navigate("/signup")}>회원가입</button>
+            <button className="ghost" onClick={() => navigate("/login")}>로그인</button>
+            <button className="fill" onClick={() => navigate("/signup")}>회원가입</button>
             </>
           )}
+
+
         </div>
       </nav>
 

@@ -15,8 +15,9 @@ export default function Login() {
     setErr("");
     setLoading(true);
     try {
-      await login({ email: form.email, password: form.password });  // 실제 백엔드 로그인
-      navigate("/");   // 홈으로
+      const data = await login({ email: form.email, password: form.password });
+      // 관리자든 유저든 홈으로 (홈은 동일)
+      navigate("/");
     } catch {
       setErr("이메일 또는 비밀번호를 확인하세요.");
     } finally {

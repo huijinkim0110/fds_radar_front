@@ -364,3 +364,36 @@ body.dark .hpd-notice {
 body.dark input[type="date"] {
   color-scheme: dark;
 }
+
+.admin-stat { display: flex; flex-direction: column; gap: 2px; }
+.admin-stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 0; border-bottom: 1px solid #F0F3F8; font-size: 13.5px;
+}
+.admin-stat-row:last-child { border-bottom: none; }
+.admin-stat-row span { color: var(--muted); }
+.admin-stat-row b { font-size: 16px; font-weight: 800; }
+
+/* ── 이상거래 분석 차트 ── */
+.bar-chart { display: flex; align-items: flex-end; gap: 16px; height: 200px; padding: 10px 0; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.bar-val { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.bar-track { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.bar-fill { width: 100%; background: linear-gradient(180deg, #60A5FA, #2563EB); border-radius: 6px 6px 0 0; transition: 0.3s; min-height: 4px; }
+.bar-label { font-size: 12px; color: var(--muted); margin-top: 8px; font-weight: 600; }
+
+.hbar-list { display: flex; flex-direction: column; gap: 16px; }
+.hbar-item { display: flex; flex-direction: column; gap: 7px; }
+.hbar-top { display: flex; justify-content: space-between; font-size: 13px; }
+.hbar-top b { font-weight: 700; }
+.hbar-track { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+.hbar-fill { height: 100%; border-radius: 6px; transition: 0.3s; }
+
+.risk-bars { display: flex; flex-direction: column; gap: 18px; }
+.risk-row { display: grid; grid-template-columns: 70px 1fr 44px; align-items: center; gap: 12px; }
+.risk-label { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
+.risk-dot { width: 9px; height: 9px; border-radius: 50%; }
+.risk-track { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+.risk-fill { height: 100%; border-radius: 6px; transition: 0.3s; }
+.risk-row b { font-size: 13px; text-align: right; }
+.risk-note { font-size: 11.5px; color: var(--muted); margin-top: 20px; line-height: 1.6; padding-top: 14px; border-top: 1px solid var(--line); }
