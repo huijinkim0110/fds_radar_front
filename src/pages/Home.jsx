@@ -21,8 +21,10 @@ export default function Home() {
         <div className="home-logo"><span className="mark">P</span>Wonly</div>
         <div className="home-menu">
           <a onClick={() => navigate("/products")}>금융 상품</a>
-          <a onClick={() => navigate("/mypage/dashboard")}>내 대시보드</a>
-          <a onClick={() => navigate("/support")} style={{ cursor: "pointer" }}>고객센터</a>
+          <a onClick={() => navigate("/mypage/dashboard")}>
+            {user?.role === "ADMIN" ? "관리자 대시보드" : "내 대시보드"}
+          </a>
+          <a onClick={() => navigate("/support")}>고객센터</a>
         </div>
         <div className="home-nav-right">
           {user ? (
@@ -30,27 +32,16 @@ export default function Home() {
               <span className="home-user">
                 {user.name}님{user.role === "ADMIN" ? " (관리자)" : ""}
               </span>
-              {user.role === "ADMIN" ? (
-                <button className="ghost" onClick={() => navigate("/admin/fraud-cases")}>
-                  관리자 페이지
-                </button>
-              ) : (
-                <button className="ghost" onClick={() => navigate("/mypage/dashboard")}>
-                  내 대시보드
-                </button>
-              )}
-              <button className="ghost" onClick={() => {logout(); navigate("/");}}>
+              <button className="ghost" onClick={() => { logout(); navigate("/"); }}>
                 로그아웃
               </button>
             </>
           ) : (
-            <>
-            <button className="ghost" onClick={() => navigate("/login")}>로그인</button>
-            <button className="fill" onClick={() => navigate("/signup")}>회원가입</button>
+            <>      
+              <button className="ghost" onClick={() => navigate("/login")}>로그인</button>
+              <button className="fill" onClick={() => navigate("/signup")}>회원가입</button>
             </>
           )}
-
-
         </div>
       </nav>
 

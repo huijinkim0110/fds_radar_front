@@ -90,7 +90,7 @@ function MyPageLayout() {
         <div className="mp-brand">
           <div className="mp-lg">P</div>
           <div>
-            <b>파수</b>
+            <b>Wonly</b>
             <span>{isAdmin ? "Admin Page" : "My Page"}</span>
           </div>
           <span className="mp-role">{isAdmin ? "ADMIN" : "USER"}</span>
