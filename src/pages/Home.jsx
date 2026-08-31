@@ -18,24 +18,26 @@ export default function Home() {
     <div className="home">
       {/* 상단 네비 */}
       <nav className="home-nav">
-        <div className="home-logo"><span className="mark">P</span>Wonly</div>
+        <div className="home-logo"><span className="mark">W</span>Wonly</div>
         <div className="home-menu">
           <a onClick={() => navigate("/products")}>금융 상품</a>
-          <a onClick={() => navigate("/mypage/dashboard")}>내 대시보드</a>
-          <a onClick={() => navigate("/support")} style={{ cursor: "pointer" }}>고객센터</a>
+          <a onClick={() => navigate("/mypage/dashboard")}>
+            {user?.role === "ADMIN" ? "관리자 대시보드" : "내 대시보드"}
+          </a>
+          <a onClick={() => navigate("/support")}>고객센터</a>
         </div>
         <div className="home-nav-right">
           {user ? (
-            /* ① 로그인 상태: 유저님 + 로그아웃 */
             <>
-              <span className="home-user">{user.name}님</span>
+              <span className="home-user">
+                {user.name}님{user.role === "ADMIN" ? " (관리자)" : ""}
+              </span>
               <button className="ghost" onClick={() => { logout(); navigate("/"); }}>
                 로그아웃
               </button>
             </>
           ) : (
-            /* 비로그인: 로그인/회원가입 */
-            <>
+            <>      
               <button className="ghost" onClick={() => navigate("/login")}>로그인</button>
               <button className="fill" onClick={() => navigate("/signup")}>회원가입</button>
             </>

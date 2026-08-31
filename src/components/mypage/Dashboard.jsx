@@ -6,8 +6,9 @@ import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investm
 import { getFinancialProfile, hasFinancialProfile } from "../../api/finance/financialProfileAPI";
 import { isStale, formatElapsed } from "../../utils/staleness";
 import { useTheme } from "../../context/ThemeContext";
+import { useAuth } from "../../context/AuthContext.jsx";
+import AdminDashboard from "../admin/AdminMyPage.jsx";
 
-// 경로 수정: 현재 mypage 폴더 안에 있으므로 상위 폴더(../)로 두 번 나가야 합니다.
 import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
 import TxTable from "../TxTable.jsx";
@@ -23,7 +24,12 @@ const RISK_TENDENCY_LABELS = {
   AGGRESSIVE: "공격형",
 };
 
+
 export default function Dashboard() {
+  const { user } = useAuth();
+
+ 
+
   const navigate = useNavigate();
   const { isDark, toggleDarkMode } = useTheme();
   
@@ -163,6 +169,11 @@ export default function Dashboard() {
       color: "var(--blue)",
     },
   ];
+
+ // 관리자 로그인 시 관리자 대시보드로
+  if (user?.role === "ADMIN") {
+    return <AdminDashboard />;
+  }
 
   return (
     <>
