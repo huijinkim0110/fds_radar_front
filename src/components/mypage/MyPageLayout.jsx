@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
 // 유저 메뉴
@@ -81,14 +81,15 @@ const ADMIN_MENU = [
 
 function MyPageLayout() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isAdmin = user?.role === "ADMIN";
   const menu = isAdmin ? ADMIN_MENU : USER_MENU;
 
   return (
     <div className="mp-app">
       <aside className="mp-side">
-        <div className="mp-brand">
-          <div className="mp-lg">P</div>
+        <div className="mp-brand" style={{ cursor: "pointer"}} onClick={() => navigate("/")}>
+          <div className="mp-lg">W</div>
           <div>
             <b>Wonly</b>
             <span>{isAdmin ? "Admin Page" : "My Page"}</span>

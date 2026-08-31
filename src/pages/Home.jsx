@@ -18,7 +18,7 @@ export default function Home() {
     <div className="home">
       {/* 상단 네비 */}
       <nav className="home-nav">
-        <div className="home-logo"><span className="mark">P</span>Wonly</div>
+        <div className="home-logo"><span className="mark">W</span>Wonly</div>
         <div className="home-menu">
           <a onClick={() => navigate("/products")}>금융 상품</a>
           <a onClick={() => navigate("/mypage/dashboard")}>
