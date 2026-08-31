@@ -21,7 +21,7 @@ export default function Sidebar() {
   return (
     <aside className="side">
       <div className="brand">
-        <div className="lg">P</div>
+        <div className="lg">W</div>
         <div>
           <b>Wonly</b>
           <span>My Account</span>

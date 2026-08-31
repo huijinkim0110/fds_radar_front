@@ -9,6 +9,9 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  // 비밀번호 표시 여부
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(e) {
     e.preventDefault();
@@ -16,7 +19,6 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login({ email: form.email, password: form.password });
-      // 관리자든 유저든 홈으로 (홈은 동일)
       navigate("/");
     } catch {
       setErr("이메일 또는 비밀번호를 확인하세요.");
@@ -45,11 +47,37 @@ export default function Login() {
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         </div>
+
+        {/* 비밀번호 필드 영역 */}
         <div className="field">
           <label>비밀번호</label>
-          <input type="password" placeholder="••••••••"
-            value={form.password}
-            onChange={(e) => setForm({ ...form, password: e.target.value })} required />
+          <div className="password-wrapper" style={{ position: "relative" }}>
+            <input 
+              type={showPassword ? "text" : "password"} 
+              placeholder="••••••••"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })} 
+              required 
+              style={{ width: "100%", paddingRight: "40px" }} // 버튼 공간 확보
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                fontSize: "12px",
+                color: "#666"
+              }}
+            >
+              {showPassword ? "숨기기" : "보기"}
+            </button>
+          </div>
         </div>
 
         {err && <div className="form-err">{err}</div>}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext"; // 다크모드용 Context 추가
 import { getAdminDashboard, getMyCases } from "../../api/fraud/fraudCaseAPI";
 import {
   getCaseStatusLabel,
@@ -12,10 +13,10 @@ import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 import KpiCard from "../KpiCard.jsx";
 
-
 export default function AdminMyPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isDark, toggleDarkMode } = useTheme(); // 다크모드 상태 및 토글 함수
   const adminId = user?.userId;   // 로그인한 관리자 ID (드롭다운 대체)
 
   const [dashboard, setDashboard] = useState(null);
@@ -63,7 +64,7 @@ export default function AdminMyPage() {
 
   return (
     <>
-      <TopBar title="관리자 대시보드" crumb={`관리자 / ${user.name}님`} search={false} />
+      <TopBar title="관리자 대시보드" crumb={`관리자 / ${user?.name || "관리자"}님`} search={false} />
 
       {/* KPI */}
       {loading ? (
@@ -90,7 +91,7 @@ export default function AdminMyPage() {
           )}
         </Panel>
 
-        {/* 준비중이던 것들 → 우리가 만든 페이지로 바로가기 */}
+        {/* 바로가기 */}
         <Panel title="바로가기" sub="관리 업무">
           <div className="feed">
             <div className="fitem" style={{ cursor: "pointer" }} onClick={() => navigate("/mypage/admin-fraud-analysis")}>
@@ -147,6 +148,22 @@ export default function AdminMyPage() {
           </table>
         )}
       </Panel>
+
+      {/* 관리자 대시보드 하단 다크모드 설정 바 */}
+      <div className="panel" style={{ marginTop: 20 }}>
+        <div className="setrow" style={{ padding: "4px 0", borderBottom: "none" }}>
+          <div>
+            <div className="st">화면 테마 설정</div>
+            <div className="sm">다크모드로 눈의 피로를 줄여보세요.</div>
+          </div>
+          <button
+            type="button"
+            className={`toggle ${isDark ? "on" : ""}`}
+            onClick={toggleDarkMode}
+            aria-label="다크모드 토글"
+          />
+        </div>
+      </div>
     </>
   );
 }
