@@ -8,7 +8,6 @@ import Notifications from "./components/mypage/Notifications";
 import TransactionReport from "./components/mypage/TransactionReport"; 
 import ReportHistory from "./components/mypage/ReportHistory";
 
-import HomeProductDetail from "./pages/HomeProductDetail";
 import Account from "./components/mypage/Accounts"; 
 import Cards from "./components/mypage/Cards"; 
 import FraudReportsPage from "./components/mypage/FraudReportsPage";
@@ -88,7 +87,6 @@ function App() {
                 <Route path="/support" element={<CustomerCenter />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/home-products/:id" element={<HomeProductDetail />} />
 
                 {/* 상품 */}
                 <Route path="/products" element={<ProductList />} />

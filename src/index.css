@@ -479,3 +479,58 @@ body.dark input[type="date"] {
   cursor: pointer; white-space: nowrap; flex: none;
 }
 .topbar-back:hover { border-color: var(--blue); color: var(--blue); }
+
+
+/* ── 상품 비교 ── */
+.cmp-empty { text-align: center; padding: 30px 0; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.cmp-empty-ic { font-size: 40px; margin-bottom: 6px; }
+.cmp-empty p { font-size: 15px; font-weight: 700; color: var(--ink); }
+.cmp-empty span { font-size: 13px; color: var(--muted); }
+
+.cmp-fields { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.cmp-field {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); background: var(--panel2); color: var(--muted);
+  font-size: 12.5px; padding: 7px 12px; border-radius: 8px; cursor: pointer;
+}
+.cmp-field input { accent-color: var(--blue); }
+.cmp-field.on { border-color: var(--blue); color: var(--blue); background: rgba(37,99,235,0.08); font-weight: 600; }
+
+.cmp-table-wrap { overflow-x: auto; }
+.cmp-table { width: 100%; border-collapse: collapse; }
+.cmp-table th, .cmp-table td {
+  border: 1px solid var(--line); padding: 14px 16px; text-align: center; font-size: 13px;
+}
+.cmp-th-field, .cmp-field-label {
+  background: var(--panel2); font-weight: 700; color: var(--muted);
+  text-align: left; white-space: nowrap; width: 110px;
+}
+.cmp-prod-head { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.cmp-prod-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.cmp-remove {
+  font-size: 11px; color: var(--red); background: var(--red-soft);
+  border: none; padding: 3px 10px; border-radius: 6px; cursor: pointer;
+}
+.cmp-best { color: var(--blue); font-weight: 800; background: rgba(37,99,235,0.06); }
+
+.cmp-past { display: flex; flex-direction: column; gap: 8px; }
+.cmp-past-item {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 10px; text-decoration: none;
+  color: var(--ink); font-size: 13.5px; font-weight: 600;
+}
+.cmp-past-item:hover { border-color: var(--blue); background: var(--panel2); }
+.cmp-past-now { font-size: 11px; color: #fff; background: var(--blue); padding: 2px 8px; border-radius: 10px; }
+
+/* ── 계좌 관리 ── */
+.acc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.acc-card { border-radius: 16px; padding: 22px; color: #fff; cursor: pointer; transition: 0.2s; }
+.acc-card:hover { transform: translateY(-2px); }
+.acc-name { font-size: 14px; opacity: 0.9; margin-bottom: 10px; }
+.acc-name span { opacity: 0.7; font-size: 12px; }
+.acc-balance { font-size: 24px; font-weight: 800; margin-bottom: 16px; }
+.acc-foot { display: flex; justify-content: space-between; font-size: 12px; opacity: 0.85; }
+.acc-detail { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.acc-detail-item { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.acc-detail-label { font-size: 12.5px; color: var(--muted); margin-bottom: 6px; }
+.acc-detail-value { font-size: 17px; font-weight: 700; }
