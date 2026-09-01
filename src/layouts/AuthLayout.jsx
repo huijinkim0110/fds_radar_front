@@ -4,7 +4,7 @@ export default function AuthLayout({ heading, sub, stats, children }) {
     <div className="auth">
       <div className="auth-brand">
         <div className="logo">
-          <div className="mark">P</div>
+          <div className="mark">W</div>
           <b>Wonly</b>
         </div>
         <div>

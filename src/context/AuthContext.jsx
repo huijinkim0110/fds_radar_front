@@ -1,35 +1,30 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 import { api } from "../api/client.js";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);   // { name, role }
-  const [ready, setReady] = useState(false); // getMe 완료 여부
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("user");
+    return saved ? JSON.parse(saved) : null;
+  });
 
-  useEffect(() => {
-    if (localStorage.getItem("accessToken")) {
-      api.getMe().then(setUser).catch(() => setUser(null)).finally(() => setReady(true));
-    } else {
-      setReady(true);
-    }
-  }, []);
-
-  // 로그인: 토큰 받고 → 유저 정보 세팅
   async function login(credentials) {
-    await api.login(credentials);
-    const me = await api.getMe();
-    setUser(me);
-    return me; // role 보고 페이지에서 라우팅
+    const data = await api.login(credentials);   // 실제 API 호출
+    const userInfo = { name: data.name, email: data.email, role: data.role, userId: data.userId };
+    setUser(userInfo);
+    localStorage.setItem("user", JSON.stringify(userInfo));
+    return data;
   }
 
   function logout() {
-    api.logout();
     setUser(null);
+    localStorage.removeItem("user");
+    localStorage.removeItem("accessToken");
   }
 
   return (
-    <AuthContext.Provider value={{ user, ready, login, logout, setUser }}>
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

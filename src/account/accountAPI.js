@@ -23,17 +23,8 @@ export const createAccount = async (userId, accountData) => {
 
 // 내 계좌 목록
 export const getMyAccounts = async (userId) => {
-  const response = await fetch(
-    `${config.API_BASE_URL}/accounts?userId=${userId}`,
-    {
-      method: 'GET',
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error('계좌 목록 조회에 실패했습니다.');
-  }
-
+  const response = await fetch(`/api/accounts?userId=${userId}`, { method: 'GET' });
+  if (!response.ok) throw new Error('계좌 목록 조회에 실패했습니다.');
   return response.json();
 };
 
@@ -95,3 +86,4 @@ export const closeAccount = async (userId, accountId) => {
 
   return true;
 };
+

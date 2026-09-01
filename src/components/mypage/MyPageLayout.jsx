@@ -1,10 +1,11 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
-const MENU_GROUPS = [
+// 유저 메뉴
+const USER_MENU = [
   { type: "single", path: "dashboard", label: "대시보드" },
   {
-    type: "group",
-    label: "계좌·카드",
+    type: "group", label: "계좌·카드",
     children: [
       { path: "accounts", label: "계좌 관리" },
       { path: "cards", label: "카드 관리" },
@@ -12,8 +13,7 @@ const MENU_GROUPS = [
     ],
   },
   {
-    type: "group",
-    label: "보안·신고",
+    type: "group", label: "보안·신고",
     children: [
       { path: "fraud-confirmations", label: "이상거래 확인" },
       { path: "fraud-reports", label: "거래 신고" },
@@ -22,8 +22,7 @@ const MENU_GROUPS = [
     ],
   },
   {
-    type: "group",
-    label: "자산관리",
+    type: "group", label: "자산관리",
     children: [
       { path: "financial-profile", label: "재무 프로필" },
       { path: "favorites", label: "관심상품" },
@@ -31,8 +30,7 @@ const MENU_GROUPS = [
     ],
   },
   {
-    type: "group",
-    label: "내 투자성향",
+    type: "group", label: "내 투자성향",
     children: [
       { path: "diagnosis", label: "투자성향 진단" },
       { path: "diagnosis/results", label: "진단 결과" },
@@ -40,8 +38,7 @@ const MENU_GROUPS = [
     ],
   },
   {
-    type: "group",
-    label: "내 정보",
+    type: "group", label: "내 정보",
     children: [
       { path: "profile", label: "회원정보" },
       { path: "devices", label: "로그인 기기·이력" },
@@ -50,21 +47,58 @@ const MENU_GROUPS = [
   },
 ];
 
+// 관리자 메뉴
+const ADMIN_MENU = [
+  { type: "single", path: "dashboard", label: "관리자 대시보드" },
+  {
+    type: "group", label: "이상거래 관리",
+    children: [
+      { path: "admin-fraud-cases", label: "이상거래 사건" },
+      { path: "admin-fraud-analysis", label: "이상거래 분석" },
+    ],
+  },
+  {
+    type: "group", label: "요청 처리",
+    children: [
+      { path: "admin-lock-requests", label: "잠금 요청 처리" },
+      { path: "admin-disputes", label: "이의제기 심사" },
+      { path: "admin-reports", label: "신고 처리" },
+    ],
+  },
+  {
+    type: "group", label: "상담",
+    children: [
+      { path: "admin-chats", label: "상담 관리" },
+    ],
+  },
+  {
+    type: "group", label: "내 정보",
+    children: [
+      { path: "profile", label: "회원정보" },
+    ],
+  },
+];
+
 function MyPageLayout() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = user?.role === "ADMIN";
+  const menu = isAdmin ? ADMIN_MENU : USER_MENU;
+
   return (
     <div className="mp-app">
       <aside className="mp-side">
-        <div className="mp-brand">
-          <div className="mp-lg">P</div>
+        <div className="mp-brand" style={{ cursor: "pointer"}} onClick={() => navigate("/")}>
+          <div className="mp-lg">W</div>
           <div>
             <b>Wonly</b>
-            <span>My Page</span>
+            <span>{isAdmin ? "Admin Page" : "My Page"}</span>
           </div>
-          <span className="mp-role">USER</span>
+          <span className="mp-role">{isAdmin ? "ADMIN" : "USER"}</span>
         </div>
 
         <nav className="mp-nav">
-          {MENU_GROUPS.map((item) =>
+          {menu.map((item) =>
             item.type === "single" ? (
               <NavLink
                 key={item.path}
