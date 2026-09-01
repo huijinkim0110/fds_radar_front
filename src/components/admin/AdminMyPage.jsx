@@ -138,7 +138,7 @@ export default function AdminMyPage() {
                   <td>{getCaseStatusLabel(c.caseStatus)}</td>
                   <td style={{ fontSize: 11.5, color: "var(--muted)" }}>{formatDateTime(c.openedAt)}</td>
                   <td>
-                    <button className="minibtn" onClick={() => navigate(`/admin/fraud-cases/${c.fraudCaseId}`)}>
+                    <button className="minibtn" onClick={() => navigate(`/mypage/admin-fraud-cases/${c.fraudCaseId}`)}>
                       상세
                     </button>
                   </td>

@@ -22,10 +22,6 @@ import { ThemeProvider } from "./context/ThemeContext";
 import CustomerCenter from "./components/CustomerCenter";
 import Transactions from "./components/mypage/Transactions";
 
-import FraudCaseList from "./components/fraud/FraudCaseList";
-import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
-import FraudAnalysis from "./components/fraud/FraudAnalysis";
-
 import ProductList from "./components/financialProduct/ProductList";
 import ProductDetail from "./components/financialProduct/ProductDetail";
 
@@ -50,14 +46,11 @@ import { useAuth } from "./context/AuthContext";
 // admin
 import AdminFraudCases from "./components/admin/AdminFraudCases";
 import AdminLockRequests from "./components/admin/AdminLockRequests";
+import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
 import AdminFraudAnalysis from "./components/admin/AdminFraudAnalysis";
 import AdminDisputes from "./components/admin/AdminDisputes";
 import AdminReports from "./components/admin/AdminReports";
 import AdminProfile from "./components/admin/AdminProfile";
-
-import AdminChatRoom from "./components/admin/AdminChatRoom";
-import AdminChatList from "./components/admin/AdminChatList";
-import AdminMyPage from "./components/admin/AdminMyPage";
 
 import { ComparisonProvider } from "./context/ComparisonContext";
 import ProductComparison from "./components/financialProduct/ProductComparison";
@@ -97,14 +90,6 @@ function App() {
                     <Route path="/products/:productId" element={<ProductDetail />} />
                     <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
 
-                    {/* 관리자 (별도 구역) */}
-                    <Route path="/admin/fraud-cases" element={<FraudCaseList />} />
-                    <Route path="/admin/fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
-                    <Route path="/admin/fraud-analysis" element={<FraudAnalysis />} />
-                    <Route path="/admin/mypage" element={<AdminMyPage />} />
-                    <Route path="/admin/chats" element={<AdminChatList />} />
-                    <Route path="/admin/chats/:sessionId" element={<AdminChatRoom />} />
-
                     {/* 마이페이지 (유저+관리자 공용, 하나로 통일) */}
                     <Route path="/mypage" element={<MyPageLayout />}>
                       <Route path="dashboard" element={<Dashboard />} />
@@ -131,10 +116,10 @@ function App() {
                       {/* 관리자 */}
                       <Route path="admin-fraud-cases" element={<AdminFraudCases />} />
                       <Route path="admin-lock-requests" element={<AdminLockRequests />} />
+                      <Route path="admin-fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
                       <Route path="admin-fraud-analysis" element={<AdminFraudAnalysis />} />
                       <Route path="admin-disputes" element={<AdminDisputes />} />
                       <Route path="admin-reports" element={<AdminReports />} />
-
 
                       {/* profile — role로 갈림 (아래 2번 참고) */}
                       <Route path="profile" element={<ProfileRouter />} />
