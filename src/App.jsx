@@ -127,6 +127,7 @@ function App() {
                   {/* 관리자 */}
                   <Route path="admin-fraud-cases" element={<AdminFraudCases />} />
                   <Route path="admin-lock-requests" element={<AdminLockRequests />} />
+                  <Route path="admin-fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
                   <Route path="admin-fraud-analysis" element={<AdminFraudAnalysis />} />
                   <Route path="admin-disputes" element={<AdminDisputes />} />
                   <Route path="admin-reports" element={<AdminReports />} />
