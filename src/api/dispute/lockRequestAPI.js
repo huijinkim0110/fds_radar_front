@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from 'axios';
 
 const BASE_URL = "http://localhost:9090";
 
@@ -14,5 +14,13 @@ export async function processLockRequest(lockRequestId, requestStatus) {
         `${BASE_URL}/api/locks/admin/${lockRequestId}`,
         { requestStatus}
     );
+    return response.data;
+}
+
+// 내 잠금 요청 목록 조회(챗봇 건수 안내용)
+export async function getMyLockRequests(userId) {
+    const response = await axios.get(`${BASE_URL}/api/locks`, {
+        params: { userId },
+    });
     return response.data;
 }
