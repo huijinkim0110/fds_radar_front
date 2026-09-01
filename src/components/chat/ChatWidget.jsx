@@ -181,8 +181,8 @@ function ChatWidget() {
                 {msg.content}
                 {msg.navActions?.length > 0 && (
                   <div className="cw-navs">
-                    {msg.navActions.map((nav) => (
-                      <button key={nav.path} className="cw-nav-btn" onClick={() => handleNavigateClick(nav)}>
+                    {msg.navActions.map((nav, i) => (
+                      <button key={`${nav.path}-${i}`} className="cw-nav-btn" onClick={() => handleNavigateClick(nav)}>
                         {nav.label} →
                       </button>
                     ))}
