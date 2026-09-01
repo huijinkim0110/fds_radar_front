@@ -46,6 +46,8 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
                 return handleLockRequestHistory();
             case 'CUSTOMER_SERVICE':
                 return handleCustomerService();
+            case 'CUSTOMER_CENTER_PAGE':
+                return handleCustomerCenterPage();
             default:
                 addLocalMessage('BOT', '처리할 수 없는 요청이에요.');
         }
@@ -171,6 +173,11 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
     function handleCustomerService() {
         addLocalMessage('BOT', '상담원을 연결해드릴게요. 잠시만 기다려주세요.');
         connectAdmin();
+        resetMenu();
+    }
+
+    function handleCustomerCenterPage() {
+        addLocalMessage('BOT', '고객센터 페이지로 이동할게요. FAQ와 전화 상담 안내를 확인하실 수 있어요.', [{ path: '/support', label: '고객센터 보기'}]);
         resetMenu();
     }
 

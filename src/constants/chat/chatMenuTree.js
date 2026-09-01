@@ -40,7 +40,10 @@ export const CHAT_MENU_TREE = {
             '요청 내역 보기': { implemented: true, action: 'LOCK_REQUEST_HISTORY' },
          },
     },
-    '고객센터': { implemented: true, action: 'CUSTOMER_SERVICE' },
+    '고객센터': { 
+        '1:1 상담문의': { implemented: true, action: 'CUSTOMER_SERVICE' },
+        '고객센터 페이지 보기': { implemented: true, action: 'CUSTOMER_CENTER_PAGE' },
+     },
 };
 
 export const NOT_IMPLEMENTED_MESSAGE = '아직 준비 중인 기능이에요.';
