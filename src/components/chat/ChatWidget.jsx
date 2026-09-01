@@ -133,6 +133,7 @@ function ChatWidget() {
         : []);
       setMenuPath([]);
       setAdminMode(false);
+      clearPendingAdminConnect();
     });
   }
 
