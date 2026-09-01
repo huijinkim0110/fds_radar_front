@@ -13,3 +13,9 @@ export async function getFalseNegatives() {
     const response = await axios.get(`${BASE_URL}/api/admin/fraud-analysis/false-negatives`);
     return response.data;
 }
+
+// 이상거래 분석 통계
+export async function getStats() {
+    const response = await axios.get(`${BASE_URL}/api/admin/fraud-analysis/stats`);
+    return response.data;
+}
