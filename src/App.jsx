@@ -15,17 +15,12 @@ import FraudConfirmations from "./components/mypage/FraudConfirmations";
 import DisputesPage from "./components/mypage/DisputesPage";
 import LockRequestsPage from "./components/mypage/LockRequestsPage";
 
-
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import CustomerCenter from "./components/CustomerCenter"; 
 import Transactions from "./components/mypage/Transactions";
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import FraudCaseList from "./components/fraud/FraudCaseList";
-import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
-import FraudAnalysis from "./components/fraud/FraudAnalysis";
 
 import ProductList from "./components/financialProduct/ProductList";
 import ProductDetail from "./components/financialProduct/ProductDetail";
@@ -45,11 +40,6 @@ import FinancialProfile from "./components/finance/FinancialProfile";
 
 import ChatWidget from "./components/chat/ChatWidget";
 
-import AdminChatRoom from "./components/admin/AdminChatRoom";
-import AdminChatList from "./components/admin/AdminChatList";
-import AdminMyPage from "./components/admin/AdminMyPage";
-
-
 import { ComparisonProvider } from "./context/ComparisonContext";
 import ProductComparison from "./components/financialProduct/ProductComparison";
 
@@ -63,6 +53,7 @@ import { useAuth } from "./context/AuthContext";
 // admin
 import AdminFraudCases from "./components/admin/AdminFraudCases";
 import AdminLockRequests from "./components/admin/AdminLockRequests";
+import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
 import AdminFraudAnalysis from "./components/admin/AdminFraudAnalysis";
 import AdminDisputes from "./components/admin/AdminDisputes";
 import AdminReports from "./components/admin/AdminReports";
@@ -92,14 +83,6 @@ function App() {
                 <Route path="/products" element={<ProductList />} />
                 <Route path="/products/:productId" element={<ProductDetail />} />
                 <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
-
-                {/* 관리자 (별도 구역) */}
-                <Route path="/admin/fraud-cases" element={<FraudCaseList />} />
-                <Route path="/admin/fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
-                <Route path="/admin/fraud-analysis" element={<FraudAnalysis />} />
-                <Route path="/admin/mypage" element={<AdminMyPage />} />
-                <Route path="/admin/chats" element={<AdminChatList />} />
-                <Route path="/admin/chats/:sessionId" element={<AdminChatRoom />} />
 
                 {/* 마이페이지 (유저+관리자 공용, 하나로 통일) */}
                 <Route path="/mypage" element={<MyPageLayout />}>
