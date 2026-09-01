@@ -17,7 +17,6 @@ import FraudConfirmations from "./components/mypage/FraudConfirmations";
 import DisputesPage from "./components/mypage/DisputesPage";
 import LockRequestsPage from "./components/mypage/LockRequestsPage";
 
-import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import CustomerCenter from "./components/CustomerCenter"; 
 import Transactions from "./components/mypage/Transactions";

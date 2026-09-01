@@ -14,19 +14,31 @@ export const CHAT_MENU_TREE = {
         '추천받기': { implemented: true, action: 'RECOMMENDATION' },
     },
     '내 정보': {
+        '재무목표': { implemented: true, action: 'GOAL' },
         '투자성향 진단': { implemented: true, action: 'DIAGNOSIS' },
         '진단 결과': { implemented: true, action: 'DIAGNOSIS_RESULT' },
-        '재무목표': { implemented: true, action: 'GOAL' },
-        '내 회원정보': { implemented: false },
+        '내 회원정보': { implemented: true },
     },
     '내 거래': {
-        '계좌 조회/관리': { implemented: false },
-        '카드 조회/관리': { implemented: false },
+        '계좌 조회/관리': {
+            '내 계좌 보기': { implemented: true, action: 'ACCOUNT_LIST' },
+            '새 계좌 개설하기': { implemented: true, action: 'ACCOUNT_NEW' },
+        },
+        '카드 조회/관리': { 
+            '내 카드 보기': { implemented: true, action: 'CARD_LIST' },
+            '새 카드 발급하기': {implemented: true, action: 'CARD_NEW' },
+         },
         '이체': { implemented: false },
     },
     '사기·보안': {
-        '이상거래 신고': { implemented: false },
-        '계좌·카드 잠금 요청': { implemented: false },
+        '이상거래 신고': { 
+            '새로 신고하기': { implemented: true, action: 'FRAUD_REPORT_NEW' },
+            '신고 내역 보기': { implemented: true, action: 'FRAUD_REPORT_HISTORY' },
+         },
+        '계좌·카드 잠금 요청': { 
+            '잠금 신청하기': { implemented: true, action: 'LOCK_REQUEST_NEW' },
+            '요청 내역 보기': { implemented: true, action: 'LOCK_REQUEST_HISTORY' },
+         },
     },
     '고객센터': { implemented: true, action: 'CUSTOMER_SERVICE' },
 };
