@@ -1,15 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
-
-// 목데이터 (나중에 백엔드 fraudCaseAPI로 교체)
-const MOCK_CASES = [
-  { id: 101, user: "user***@naver.com", amt: 2400000, risk: "HIGH", score: 0.94, time: "2026-08-31 10:12", desc: "해외 결제 · 심야 다발", status: "PENDING" },
-  { id: 102, user: "kim***@gmail.com", amt: 890000, risk: "HIGH", score: 0.91, time: "2026-08-31 09:40", desc: "알 수 없는 가맹점", status: "PENDING" },
-  { id: 103, user: "lee***@daum.net", amt: 540000, risk: "MEDIUM", score: 0.83, time: "2026-08-31 08:55", desc: "짧은 시간 반복 결제", status: "PENDING" },
-  { id: 104, user: "park***@naver.com", amt: 1200000, risk: "MEDIUM", score: 0.81, time: "2026-08-30 23:18", desc: "평소와 다른 지역", status: "REVIEWING" },
-  { id: 105, user: "choi***@gmail.com", amt: 320000, risk: "LOW", score: 0.73, time: "2026-08-30 21:05", desc: "신규 가맹점 결제", status: "RESOLVED" },
-];
+import { getFraudCaseList, updateFraudCaseStatus, finalizeFraudDecision } from "../../api/fraud/fraudCaseAPI";
+import {
+  getCaseStatusLabel,
+  getCasePriorityLabel,
+  formatProbabilityPercent,
+  formatDateTime,
+} from "../../constants/fraud/fraudCaseLabels";
 
 const RISK = {
   HIGH: { label: "높음", color: "var(--red)", bg: "rgba(220,38,38,0.12)" },
@@ -18,38 +17,78 @@ const RISK = {
 };
 
 const STATUS = {
-  PENDING: { label: "미검토", color: "var(--red)", bg: "rgba(220,38,38,0.12)" },
-  REVIEWING: { label: "검토중", color: "var(--amber)", bg: "rgba(217,119,6,0.12)" },
-  RESOLVED: { label: "처리완료", color: "var(--green)", bg: "rgba(5,150,105,0.12)" },
+  RECEIVED: { label: "접수", color: "var(--red)", bg: "rgba(220,38,38,0.12)" },
+  INVESTIGATING: { label: "조사중", color: "var(--amber)", bg: "rgba(217,119,6,0.12)" },
+  CLOSED: { label: "종결", color: "var(--green)", bg: "rgba(5,150,105,0.12)" },
 };
 
 export default function AdminFraudCases() {
-  const [cases, setCases] = useState(MOCK_CASES);
+  const navigate = useNavigate();
+  const [cases, setCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState("ALL");
+  const [busyId, setBusyId] = useState(null);
 
-  const filtered = filter === "ALL" ? cases : cases.filter((c) => c.status === filter);
-
-  // 판정 처리 (목: 화면에서 상태만 변경)
-  function judge(id, decision) {
-    setCases((prev) =>
-      prev.map((c) =>
-        c.id === id ? { ...c, status: decision === "block" ? "RESOLVED" : "RESOLVED" } : c
-      )
-    );
-    alert(decision === "block" ? "차단 처리했습니다." : "정상 처리했습니다.");
+  async function fetchCases() {
+    try {
+      setLoading(true);
+      const data = await getFraudCaseList();
+      setCases(data.content); // Spring Page 응답이라 실제 목록은 content 안에 있음
+      setError(null);
+    } catch (err) {
+      setError("사건 목록을 불러오지 못했습니다.");
+    } finally {
+      setLoading(false);
+    }
   }
+
+  useEffect(() => {
+    fetchCases();
+  }, []);
+
+  const filtered = filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter);
+
+  // 조사 시작: 접수(RECEIVED) -> 조사중(INVESTIGATING)
+  async function startInvestigation(fraudCaseId) {
+    try {
+      setBusyId(fraudCaseId);
+      await updateFraudCaseStatus(fraudCaseId, "INVESTIGATING");
+      await fetchCases();
+    } catch (err) {
+      alert("상태 변경에 실패했습니다: " + (err.response?.data?.message ?? err.message));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  // 최종 판정: 조사중(INVESTIGATING) -> 종결(CLOSED), 정상(NORMAL) 또는 사기(FRAUD)
+  async function judge(fraudCaseId, decision) {
+    try {
+      setBusyId(fraudCaseId);
+      await finalizeFraudDecision(fraudCaseId, decision);
+      await fetchCases();
+    } catch (err) {
+      alert("최종 판정에 실패했습니다: " + (err.response?.data?.message ?? err.message));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (loading) return <div>불러오는 중...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <>
       <TopBar title="이상거래 사건" crumb="관리자 / 이상거래 관리" search={false} />
 
-      {/* 상태 필터 */}
+      {/* 상태 필터 — 백엔드 CaseStatus(RECEIVED/INVESTIGATING/CLOSED) 기준 */}
       <div className="tabs" style={{ marginBottom: 16 }}>
         {[
           ["ALL", "전체"],
-          ["PENDING", "미검토"],
-          ["REVIEWING", "검토중"],
-          ["RESOLVED", "처리완료"],
+          ["RECEIVED", "접수"],
+          ["INVESTIGATING", "조사중"],
+          ["CLOSED", "종결"],
         ].map(([key, label]) => (
           <button key={key} className={filter === key ? "on" : ""} onClick={() => setFilter(key)}>
             {label}
@@ -61,31 +100,44 @@ export default function AdminFraudCases() {
         <table>
           <thead>
             <tr>
-              <th>사건번호</th><th>회원</th><th>금액</th><th>내용</th>
-              <th>위험도</th><th>AI점수</th><th>탐지시각</th><th>상태</th><th>처리</th>
+              <th>사건번호</th><th>거래ID</th><th>우선순위</th>
+              <th>AI 이상확률</th><th>접수일시</th><th>담당자</th><th>상태</th><th>처리</th>
             </tr>
           </thead>
           <tbody>
+            {filtered.length === 0 && (
+              <tr><td colSpan={8} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 사건이 없습니다.</td></tr>
+            )}
             {filtered.map((c) => {
-              const r = RISK[c.risk];
-              const s = STATUS[c.status];
+              const r = RISK[c.priority] ?? { label: getCasePriorityLabel(c.priority), color: "var(--muted)", bg: "transparent" };
+              const s = STATUS[c.caseStatus] ?? { label: getCaseStatusLabel(c.caseStatus), color: "var(--muted)", bg: "transparent" };
+              const isBusy = busyId === c.fraudCaseId;
               return (
-                <tr key={c.id}>
-                  <td className="tx">#{c.id}</td>
-                  <td className="tx">{c.user}</td>
-                  <td className="amt">₩ {c.amt.toLocaleString()}</td>
-                  <td style={{ fontSize: 12, color: "var(--muted)" }}>{c.desc}</td>
+                <tr
+                  key={c.fraudCaseId}
+                  onClick={() => navigate(`/mypage/admin-fraud-cases/${c.fraudCaseId}`)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <td className="tx">#{c.fraudCaseId}</td>
+                  <td className="tx">{c.transactionId}</td>
                   <td><span className="chip" style={{ color: r.color, background: r.bg }}>{r.label}</span></td>
-                  <td className="tx">{c.score}</td>
-                  <td style={{ fontSize: 11.5, color: "var(--muted)" }}>{c.time}</td>
+                  <td className="tx">{formatProbabilityPercent(c.fraudProbability)}</td>
+                  <td style={{ fontSize: 11.5, color: "var(--muted)" }}>{formatDateTime(c.openedAt)}</td>
+                  <td className="tx">{c.assignedAdminId}</td>
                   <td><span className="chip" style={{ color: s.color, background: s.bg }}>{s.label}</span></td>
-                  <td>
-                    {c.status !== "RESOLVED" ? (
+                  <td onClick={(e) => e.stopPropagation()}>
+                    {c.caseStatus === "RECEIVED" && (
+                      <button className="minibtn" disabled={isBusy} onClick={() => startInvestigation(c.fraudCaseId)}>
+                        조사 시작
+                      </button>
+                    )}
+                    {c.caseStatus === "INVESTIGATING" && (
                       <div style={{ display: "flex", gap: 6 }}>
-                        <button className="minibtn warn" onClick={() => judge(c.id, "block")}>차단</button>
-                        <button className="minibtn" onClick={() => judge(c.id, "pass")}>정상</button>
+                        <button className="minibtn warn" disabled={isBusy} onClick={() => judge(c.fraudCaseId, "FRAUD")}>사기 처리</button>
+                        <button className="minibtn" disabled={isBusy} onClick={() => judge(c.fraudCaseId, "NORMAL")}>정상 처리</button>
                       </div>
-                    ) : (
+                    )}
+                    {c.caseStatus === "CLOSED" && (
                       <span style={{ fontSize: 11.5, color: "var(--muted)" }}>완료</span>
                     )}
                   </td>
