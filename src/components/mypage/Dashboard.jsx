@@ -13,6 +13,7 @@ import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
 import TxTable from "../TxTable.jsx";
 import Panel from "../Panel.jsx";
+import { FeedItem } from "../Feed.jsx";
 
 const TEMP_USER_ID = 1;
 
@@ -23,36 +24,17 @@ const RISK_TENDENCY_LABELS = {
   AGGRESSIVE: "공격형",
 };
 
-const CHOSUNG = [
-  "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ",
-  "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ",
-  "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ",
-];
-
-function getChosung(text = "") {
-  return String(text)
-    .split("")
-    .map((char) => {
-      const code = char.charCodeAt(0);
-
-      if (code >= 0xac00 && code <= 0xd7a3) {
-        return CHOSUNG[Math.floor((code - 0xac00) / 588)];
-      }
-
-      return char;
-    })
-    .join("");
-}
 
 export default function Dashboard() {
   const { user } = useAuth();
+
+ 
+
   const navigate = useNavigate();
   const { isDark, toggleDarkMode } = useTheme();
-
-  // 잔액/거래 상태
-  const [balance, setBalance] = useState(1500000);
-  const [searchTerm, setSearchTerm] = useState("");
-
+  
+  // 첫 번째 코드의 잔액/거래/송금 상태
+  const [balance, setBalance] = useState(1500000); // 초기 기본 잔액 예시 (또는 API 연동)
   const [txns, setTxns] = useState([
     {
       time: "08-25 14:10",
@@ -70,47 +52,12 @@ export default function Dashboard() {
     },
   ]);
 
-  // 거래 검색
-  const filteredTxns = txns.filter((txn) => {
-    const keyword = searchTerm.trim();
-
-    if (!keyword) {
-      return true;
-    }
-
-    const target = [
-      txn.time,
-      txn.name,
-      txn.kind,
-      txn.amt,
-      txn.status,
-    ].join(" ");
-
-    const isChosungSearch = /^[ㄱ-ㅎ]+$/.test(
-      keyword.replace(/\s/g, "")
-    );
-
-    if (isChosungSearch) {
-      const targetChosung = getChosung(target).replace(/\s/g, "");
-      const keywordChosung = keyword.replace(/\s/g, "");
-
-      return targetChosung.includes(keywordChosung);
-    }
-
-    return target
-      .toLowerCase()
-      .includes(keyword.toLowerCase());
-  });
-
   // 송금 모달 상태
   const [showTransfer, setShowTransfer] = useState(false);
-  const [form, setForm] = useState({
-    recipient: "",
-    amount: "",
-  });
+  const [form, setForm] = useState({ recipient: "", amount: "" });
   const [transferMsg, setTransferMsg] = useState("");
 
-  // API 데이터 상태
+  // 두 번째 코드의 API 데이터 상태
   const [favoriteCount, setFavoriteCount] = useState(null);
   const [activeSubscriptionCount, setActiveSubscriptionCount] = useState(null);
   const [latestProfile, setLatestProfile] = useState(null);
@@ -126,88 +73,49 @@ export default function Dashboard() {
 
     getPortfolio(TEMP_USER_ID)
       .then((list) =>
-        setActiveSubscriptionCount(
-          list.filter((s) => s.subscriptionStatus === "ACTIVE").length
-        )
+        setActiveSubscriptionCount(list.filter((s) => s.subscriptionStatus === "ACTIVE").length)
       )
       .catch(() => {});
 
-    hasDiagnosisHistory(TEMP_USER_ID)
-      .then(setHasDiagnosis)
-      .catch(() => {});
-
-    hasFinancialProfile(TEMP_USER_ID)
-      .then(setHasFinProfile)
-      .catch(() => {});
+    hasDiagnosisHistory(TEMP_USER_ID).then(setHasDiagnosis).catch(() => {});
+    hasFinancialProfile(TEMP_USER_ID).then(setHasFinProfile).catch(() => {});
   }, []);
 
   useEffect(() => {
     if (hasDiagnosis) {
-      getLatestProfile(TEMP_USER_ID)
-        .then(setLatestProfile)
-        .catch(() => {});
+      getLatestProfile(TEMP_USER_ID).then(setLatestProfile).catch(() => {});
     }
   }, [hasDiagnosis]);
 
   useEffect(() => {
     if (hasFinProfile) {
-      getFinancialProfile(TEMP_USER_ID)
-        .then(setFinancialProfile)
-        .catch(() => {});
+      getFinancialProfile(TEMP_USER_ID).then(setFinancialProfile).catch(() => {});
     }
   }, [hasFinProfile]);
 
   // 오래된 데이터 안내
   const staleNotices = [];
-
   if (latestProfile && isStale(latestProfile.diagnosedAt)) {
+    staleNotices.push(`투자성향 진단이 ${formatElapsed(latestProfile.diagnosedAt)}이에요. 재진단을 권장해요.`);
+  }
+  if (financialProfile && isStale(financialProfile.updatedAt ?? financialProfile.createdAt)) {
     staleNotices.push(
-      `투자성향 진단이 ${formatElapsed(
-        latestProfile.diagnosedAt
-      )}이에요. 재진단을 권장해요.`
+      `재무 프로필을 ${formatElapsed(financialProfile.updatedAt ?? financialProfile.createdAt)} 수정 안했어요. 업데이트를 권장해요.`
     );
   }
 
-  if (
-    financialProfile &&
-    isStale(
-      financialProfile.updatedAt ??
-        financialProfile.createdAt
-    )
-  ) {
-    staleNotices.push(
-      `재무 프로필을 ${formatElapsed(
-        financialProfile.updatedAt ??
-          financialProfile.createdAt
-      )} 수정 안했어요. 업데이트를 권장해요.`
-    );
-  }
-
-  // 송금 처리
+  // 송금 처리 함수
   async function handleTransfer(e) {
     e.preventDefault();
-
     const amt = Number(form.amount);
-
-    if (!amt || amt <= 0) {
-      return setTransferMsg("금액을 입력해주세요.");
-    }
-
-    if (amt > balance) {
-      return setTransferMsg("잔액이 부족합니다.");
-    }
+    if (!amt || amt <= 0) return setTransferMsg("금액을 입력해주세요.");
+    if (amt > balance) return setTransferMsg("잔액이 부족합니다.");
 
     try {
-      setBalance((prev) => prev - amt);
-
+      setBalance((prev) => prev - amt);  // 화면 잔액 즉시 차감
       setTxns((prev) => [
         {
-          time: new Date().toLocaleString("ko-KR", {
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: new Date().toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }),
           name: `이체 · ${form.recipient}`,
           kind: "이체",
           amt: `₩ ${amt.toLocaleString()}`,
@@ -215,13 +123,8 @@ export default function Dashboard() {
         },
         ...prev.slice(0, 3),
       ]);
-
       setTransferMsg("송금이 완료되었습니다.");
-      setForm({
-        recipient: "",
-        amount: "",
-      });
-
+      setForm({ recipient: "", amount: "" });
       setTimeout(() => {
         setShowTransfer(false);
         setTransferMsg("");
@@ -231,130 +134,69 @@ export default function Dashboard() {
     }
   }
 
-  // KPI 카드
+  // KPI 카드 구성 (두 번째 API 데이터 + 첫 번째 스타일 적용)
   const kpis = [
     {
       k: "가입한 상품",
-      v:
-        activeSubscriptionCount === null
-          ? "…"
-          : `${activeSubscriptionCount}건`,
+      v: activeSubscriptionCount === null ? "…" : `${activeSubscriptionCount}건`,
       d: "가입중",
       dir: "down",
-      pct: activeSubscriptionCount
-        ? Math.min(activeSubscriptionCount * 20, 100)
-        : 0,
+      pct: activeSubscriptionCount ? Math.min(activeSubscriptionCount * 20, 100) : 0,
       color: "var(--blue)",
     },
     {
       k: "관심 상품",
-      v:
-        favoriteCount === null
-          ? "…"
-          : `${favoriteCount}건`,
+      v: favoriteCount === null ? "…" : `${favoriteCount}건`,
       d: "등록됨",
       dir: "down",
-      pct: favoriteCount
-        ? Math.min(favoriteCount * 20, 100)
-        : 0,
+      pct: favoriteCount ? Math.min(favoriteCount * 20, 100) : 0,
       color: "var(--green)",
     },
     {
       k: "투자성향",
-      v:
-        hasDiagnosis === false
-          ? "미진단"
-          : latestProfile
-          ? RISK_TENDENCY_LABELS[
-              latestProfile.riskTendency
-            ]
-          : "…",
-      d:
-        hasDiagnosis === false
-          ? "진단 필요"
-          : "최근 진단",
-      dir:
-        hasDiagnosis === false
-          ? "up"
-          : "down",
+      v: hasDiagnosis === false ? "미진단" : latestProfile ? RISK_TENDENCY_LABELS[latestProfile.riskTendency] : "…",
+      d: hasDiagnosis === false ? "진단 필요" : "최근 진단",
+      dir: hasDiagnosis === false ? "up" : "down",
       pct: latestProfile ? 100 : 20,
       color: "var(--amber)",
     },
     {
       k: "재무 프로필",
-      v:
-        hasFinProfile === false
-          ? "미작성"
-          : hasFinProfile
-          ? "작성됨"
-          : "…",
-      d:
-        hasFinProfile === false
-          ? "작성 필요"
-          : "정상",
-      dir:
-        hasFinProfile === false
-          ? "up"
-          : "down",
+      v: hasFinProfile === false ? "미작성" : hasFinProfile ? "작성됨" : "…",
+      d: hasFinProfile === false ? "작성 필요" : "정상",
+      dir: hasFinProfile === false ? "up" : "down",
       pct: hasFinProfile ? 100 : 20,
       color: "var(--blue)",
     },
   ];
 
-  // 관리자
+ // 관리자 로그인 시 관리자 대시보드로
   if (user?.role === "ADMIN") {
     return <AdminDashboard />;
   }
 
   return (
     <>
-      <TopBar
-        title="내 대시보드"
-        crumb="홈 / 내 계좌 및 자산 요약"
-      />
+      <TopBar title="내 대시보드" crumb="홈 / 내 계좌 및 자산 요약" />
 
-      {/* 계좌 잔액 */}
+      {/* 계좌 잔액 및 송금/신고 버튼 영역 */}
       <div className="balance">
         <div>
           <div className="lbl">내 계좌 잔액</div>
-          <div className="big">
-            ₩ {balance.toLocaleString()}
-          </div>
-
+          <div className="big">₩ {balance.toLocaleString()}</div>
           <div style={{ marginTop: 12 }}>
-            <span className="safe">
-              <i />
-              계정 보안 상태 · 안전
-            </span>
+            <span className="safe"><i />계정 보안 상태 · 안전</span>
           </div>
         </div>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 12,
-          }}
-        >
+        <div style={{ display: "flex", gap: 12 }}>
           <button
             className="report-btn"
-            style={{
-              background:
-                "rgba(255,255,255,0.15)",
-              color: "#fff",
-            }}
-            onClick={() =>
-              setShowTransfer(true)
-            }
+            style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}
+            onClick={() => setShowTransfer(true)}
           >
             ↗ 송금하기
           </button>
-
-          <button
-            className="report-btn"
-            onClick={() =>
-              navigate("/mypage/report")
-            }
-          >
+          <button className="report-btn" onClick={() => navigate("/mypage/report")}>
             ＋ 이상거래 신고
           </button>
         </div>
@@ -362,167 +204,67 @@ export default function Dashboard() {
 
       {/* 송금 모달 */}
       {showTransfer && (
-        <div
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1000,
-          }}
-        >
-          <div
-            style={{
-              background: "#1e293b",
-              borderRadius: 16,
-              padding: 32,
-              width: 360,
-              boxShadow:
-                "0 8px 32px rgba(0,0,0,0.4)",
-            }}
-          >
-            <h3
-              style={{
-                color: "#fff",
-                marginBottom: 20,
-              }}
-            >
-              송금하기
-            </h3>
-
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
+        }}>
+          <div style={{
+            background: "#1e293b", borderRadius: 16, padding: 32,
+            width: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.4)"
+          }}>
+            <h3 style={{ color: "#fff", marginBottom: 20 }}>송금하기</h3>
             <form onSubmit={handleTransfer}>
-              <div
-                style={{
-                  marginBottom: 16,
-                }}
-              >
-                <label
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: 13,
-                  }}
-                >
-                  받는 사람
-                </label>
-
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ color: "#94a3b8", fontSize: 13 }}>받는 사람</label>
                 <input
                   style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    marginTop: 6,
-                    background: "#0f172a",
-                    border:
-                      "1px solid #334155",
-                    borderRadius: 8,
-                    color: "#fff",
-                    fontSize: 15,
-                    boxSizing: "border-box",
+                    width: "100%", padding: "10px 12px", marginTop: 6,
+                    background: "#0f172a", border: "1px solid #334155",
+                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
                   }}
                   placeholder="이름 또는 계좌번호"
                   value={form.recipient}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      recipient:
-                        e.target.value,
-                    })
-                  }
+                  onChange={(e) => setForm({ ...form, recipient: e.target.value })}
                 />
               </div>
-
-              <div
-                style={{
-                  marginBottom: 20,
-                }}
-              >
-                <label
-                  style={{
-                    color: "#94a3b8",
-                    fontSize: 13,
-                  }}
-                >
-                  금액 (원)
-                </label>
-
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ color: "#94a3b8", fontSize: 13 }}>금액 (원)</label>
                 <input
                   type="number"
                   style={{
-                    width: "100%",
-                    padding: "10px 12px",
-                    marginTop: 6,
-                    background: "#0f172a",
-                    border:
-                      "1px solid #334155",
-                    borderRadius: 8,
-                    color: "#fff",
-                    fontSize: 15,
-                    boxSizing: "border-box",
+                    width: "100%", padding: "10px 12px", marginTop: 6,
+                    background: "#0f172a", border: "1px solid #334155",
+                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
                   }}
                   placeholder="0"
                   value={form.amount}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      amount: e.target.value,
-                    })
-                  }
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
                 />
               </div>
-
               {transferMsg && (
-                <div
-                  style={{
-                    color:
-                      transferMsg.includes(
-                        "완료"
-                      )
-                        ? "#4ade80"
-                        : "#f87171",
-                    marginBottom: 12,
-                    fontSize: 14,
-                  }}
-                >
+                <div style={{
+                  color: transferMsg.includes("완료") ? "#4ade80" : "#f87171",
+                  marginBottom: 12, fontSize: 14
+                }}>
                   {transferMsg}
                 </div>
               )}
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: 10,
-                }}
-              >
+              <div style={{ display: "flex", gap: 10 }}>
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowTransfer(false);
-                    setTransferMsg("");
-                  }}
+                  onClick={() => { setShowTransfer(false); setTransferMsg(""); }}
                   style={{
-                    flex: 1,
-                    padding: "10px 0",
-                    borderRadius: 8,
-                    background: "#334155",
-                    color: "#fff",
-                    border: "none",
-                    cursor: "pointer",
+                    flex: 1, padding: "10px 0", borderRadius: 8,
+                    background: "#334155", color: "#fff", border: "none", cursor: "pointer"
                   }}
                 >
                   취소
                 </button>
-
                 <button
                   type="submit"
                   style={{
-                    flex: 1,
-                    padding: "10px 0",
-                    borderRadius: 8,
-                    background: "#3b82f6",
-                    color: "#fff",
-                    border: "none",
-                    cursor: "pointer",
+                    flex: 1, padding: "10px 0", borderRadius: 8,
+                    background: "#3b82f6", color: "#fff", border: "none", cursor: "pointer"
                   }}
                 >
                   송금
@@ -533,225 +275,79 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* 오래된 데이터 안내 */}
+      {/* 오래된 데이터 안내 배너 */}
       {staleNotices.length > 0 && (
-        <div
-          className="cols"
-          style={{
-            gridTemplateColumns: "1fr",
-            marginBottom: 16,
-          }}
-        >
-          <Panel
-            title="확인이 필요해요"
-            sub="오래된 정보"
-          >
+        <div className="cols" style={{ gridTemplateColumns: "1fr", marginBottom: 16 }}>
+          <Panel title="확인이 필요해요" sub="오래된 정보">
             <div className="feed">
-              {staleNotices.map(
-                (msg, i) => (
-                  <div
-                    className="fitem"
-                    key={i}
-                  >
-                    <span
-                      className="fdot"
-                      style={{
-                        background:
-                          "var(--amber)",
-                      }}
-                    />
-
-                    <div>
-                      <div className="ft">
-                        {msg}
-                      </div>
-                    </div>
+              {staleNotices.map((msg, i) => (
+                <div className="fitem" key={i}>
+                  <span className="fdot" style={{ background: "var(--amber)" }} />
+                  <div>
+                    <div className="ft">{msg}</div>
                   </div>
-                )
-              )}
+                </div>
+              ))}
             </div>
           </Panel>
         </div>
       )}
 
-      {/* KPI */}
+      {/* KPI 카드 목록 */}
       <div className="kpis">
         {kpis.map((k, i) => (
-          <KpiCard
-            key={i}
-            {...k}
-          />
+          <KpiCard key={i} {...k} />
         ))}
       </div>
 
-      {/* 최근 거래 + 투자·재무 */}
+      {/* 최근 거래 테이블 및 내 투자·재무 상세 패널 */}
       <div className="cols">
-        <Panel
-          title="내 최근 거래"
-          sub="거래명 또는 초성으로 검색"
-        >
-          <div
-            style={{
-              marginBottom: 14,
-            }}
-          >
-            <input
-              type="text"
-              placeholder="거래 검색"
-              onInput={(e) =>
-                setSearchTerm(
-                  e.currentTarget.value
-                )
-              }
-              style={{
-                width: 220,
-                height: 38,
-                padding: "0 12px",
-                border:
-                  "1px solid var(--line)",
-                borderRadius: 8,
-                background:
-                  "var(--panel)",
-                color: "var(--ink)",
-                fontSize: 14,
-                outline: "none",
-                boxSizing: "border-box",
-                pointerEvents: "auto",
-                position: "relative",
-                zIndex: 10,
-              }}
-            />
-          </div>
-
-          <TxTable rows={filteredTxns} />
-
-          {searchTerm &&
-            filteredTxns.length === 0 && (
-              <div
-                style={{
-                  padding: "18px 0",
-                  color: "var(--muted)",
-                  fontSize: 13,
-                  textAlign: "center",
-                }}
-              >
-                검색 결과가 없습니다.
-              </div>
-            )}
+        <Panel title="내 최근 거래" sub="의심 거래는 자동 표시" right={<div className="filterpill">전체</div>}>
+          <TxTable rows={txns} />
         </Panel>
 
-        <Panel
-          title="내 투자·재무"
-          sub="진단 및 프로필"
-        >
+        <Panel title="내 투자·재무" sub="진단 및 프로필">
           <div className="feed">
             <div className="fitem">
-              <span
-                className="fdot"
-                style={{
-                  background:
-                    latestProfile
-                      ? "var(--green)"
-                      : "var(--muted)",
-                }}
-              />
-
+              <span className="fdot" style={{ background: latestProfile ? "var(--green)" : "var(--muted)" }} />
               <div>
-                <div className="ft">
-                  투자성향
-                </div>
-
+                <div className="ft">투자성향</div>
                 <div className="fm">
                   {hasDiagnosis === false
                     ? "아직 진단 이력이 없어요."
                     : latestProfile
-                    ? RISK_TENDENCY_LABELS[
-                        latestProfile
-                          .riskTendency
-                      ]
+                    ? RISK_TENDENCY_LABELS[latestProfile.riskTendency]
                     : "불러오는 중…"}
                 </div>
               </div>
             </div>
-
             <div className="fitem">
-              <span
-                className="fdot"
-                style={{
-                  background:
-                    hasFinProfile
-                      ? "var(--blue)"
-                      : "var(--muted)",
-                }}
-              />
-
+              <span className="fdot" style={{ background: hasFinProfile ? "var(--blue)" : "var(--muted)" }} />
               <div>
-                <div className="ft">
-                  재무 프로필
-                </div>
-
+                <div className="ft">재무 프로필</div>
                 <div className="fm">
-                  {hasFinProfile === false
-                    ? "아직 작성되지 않았어요."
-                    : hasFinProfile
-                    ? "작성 완료"
-                    : "불러오는 중…"}
+                  {hasFinProfile === false ? "아직 작성되지 않았어요." : hasFinProfile ? "작성 완료" : "불러오는 중…"}
                 </div>
               </div>
             </div>
-
             <div className="fitem">
-              <span
-                className="fdot"
-                style={{
-                  background:
-                    "var(--muted)",
-                }}
-              />
-
-              <div>
-                <div className="ft">
-                  내 정보 및 목표
-                </div>
-                <div className="fm">
-                  상태 정상
-                </div>
-              </div>
+              <span className="fdot" style={{ background: "var(--muted)" }} />
+              <div><div className="ft">내 정보 및 목표</div><div className="fm">상태 정상</div></div>
             </div>
           </div>
         </Panel>
       </div>
 
-      {/* 다크모드 */}
-      <div
-        className="panel"
-        style={{
-          marginTop: 20,
-        }}
-      >
-        <div
-          className="setrow"
-          style={{
-            padding: "4px 0",
-            borderBottom: "none",
-          }}
-        >
+      {/* ── [대시보드 콘텐츠 최하단] 다크모드 설정 바 ── */}
+      <div className="panel" style={{ marginTop: 20 }}>
+        <div className="setrow" style={{ padding: "4px 0", borderBottom: "none" }}>
           <div>
-            <div className="st">
-              화면 테마 설정
-            </div>
-
-            <div className="sm">
-              다크모드로 눈의 피로를
-              줄여보세요.
-            </div>
+            <div className="st">화면 테마 설정</div>
+            <div className="sm">다크모드로 눈의 피로를 줄여보세요.</div>
           </div>
-
           <button
             type="button"
-            className={`toggle ${
-              isDark ? "on" : ""
-            }`}
+            className={`toggle ${isDark ? "on" : ""}`}
             onClick={toggleDarkMode}
             aria-label="다크모드 토글"
           />
