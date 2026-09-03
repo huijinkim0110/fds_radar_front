@@ -2,12 +2,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const PRODUCTS = [
-  { id: "deposit", ic: "💳", bg: "#EFF6FF", name: "입출금 통장", rate: "연 3.0%", desc: "수수료 0원, 하루만 맡겨도 이자." },
-  { id: "savings", ic: "🐷", bg: "#ECFDF5", name: "자유 적금", rate: "연 5.2%", desc: "원할 때 넣고 빼는 목표 적금." },
-  { id: "loan", ic: "💸", bg: "#FFF7ED", name: "비상금 대출", rate: "연 4.9%~", desc: "최대 300만원, 30초 심사." },
-  { id: "card", ic: "🪙", bg: "#F5F3FF", name: "체크카드", rate: "최대 5% 캐시백", desc: "쓸수록 쌓이는 혜택." },
-  { id: "invest", ic: "📈", bg: "#FEF2F2", name: "소액 투자", rate: "1,000원부터", desc: "커피 한 잔 값으로 분산 투자." },
-  { id: "care", ic: "🛡️", bg: "#EFF6FF", name: "안심 케어", rate: "무료 제공", desc: "이상거래 실시간 알림·신고." },
+  { id: "deposit", ic: "💳", bg: "#EFF6FF", name: "입출금 통장", rate: "연 3.0%", desc: "수수료 0원, 하루만 맡겨도 이자.", path: "/home-products/deposit" },
+  { id: "savings", ic: "🐷", bg: "#ECFDF5", name: "자유 적금", rate: "연 5.2%", desc: "원할 때 넣고 빼는 목표 적금.", path: "/home-products/savings" },
+  { id: "loan", ic: "💸", bg: "#FFF7ED", name: "비상금 대출", rate: "연 4.9%~", desc: "최대 300만원, 30초 심사.", path: "/home-products/loan" },
+  { id: "card", ic: "🪙", bg: "#F5F3FF", name: "체크카드", rate: "최대 5% 캐시백", desc: "쓸수록 쌓이는 혜택.", path: "home-products/card" },
+  { id: "invest", ic: "📈", bg: "#FEF2F2", name: "투자성향 진단", rate: "1분이면 끝", desc: "내게 맞는 투자 스타일을 알아보세요.", path: "/investment-diagnosis" },
+  { id: "care", ic: "🛡️", bg: "#EFF6FF", name: "안심 케어", rate: "무료 제공", desc: "이상거래 실시간 알림·신고.", path: "/home-products/care" },
 ];
 
 export default function Home() {
@@ -72,7 +72,7 @@ export default function Home() {
         </div>
         <div className="prod-grid">
   {PRODUCTS.map((p) => (
-    <div className="pcard" key={p.id} onClick={() => navigate(`/home-products/${p.id}`)}>
+    <div className="pcard" key={p.id} onClick={() => navigate(p.path)}>
       <div className="ic" style={{ background: p.bg }}>{p.ic}</div>
       <h3>{p.name}</h3>
       <div className="rate">{p.rate}</div>

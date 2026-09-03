@@ -25,16 +25,16 @@ const USER_MENU = [
     type: "group", label: "자산관리",
     children: [
       { path: "financial-profile", label: "재무 프로필" },
+      { path: "financial-goals", label: "재무 목표"},
       { path: "favorites", label: "관심상품" },
       { path: "comparisons", label: "비교상품" },
+      { path: "portfolio", label: "모의가입 상품" },
     ],
   },
   {
     type: "group", label: "내 투자성향",
     children: [
-      { path: "diagnosis", label: "투자성향 진단" },
-      { path: "diagnosis/results", label: "진단 결과" },
-      { path: "recommendations", label: "추천 상품" },
+      { path: "diagnosis/results", label: "진단·추천 결과" },
     ],
   },
   {

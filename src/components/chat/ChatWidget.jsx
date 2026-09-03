@@ -1,16 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { getOrCreateSession, closeSession, sendFreeTextMessage, saveChatMessage } from "../../api/chat/chatAPI";
 import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "../../api/chat/chatSocket";
-import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE } from "../../constants/chat/chatMenuTree";
+import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE, REQUIRES_AUTH_MESSAGE } from "../../constants/chat/chatMenuTree";
 import { useChatActions } from "../../hooks/chat/useChatActions";
+import { useChatWidget } from "../../context/ChatWidgetContext";
 
 const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
 
 function ChatWidget() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
-  const [open, setOpen] = useState(false);
+  const { open, setOpen, pendingAdminConnect, clearPendingAdminConnect } = useChatWidget();
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [menuPath, setMenuPath] = useState([]);
@@ -39,6 +43,14 @@ function ChatWidget() {
     return () => disconnectChatSocket(socketRef.current);
   }, []);
 
+  // 고객센터 등 다른 페이지에서 "상담원 연결" 요청이 예약되어 있으면, 세션이 준비되는 대로 자동 연결
+  useEffect(() => {
+    if (pendingAdminConnect && session && !adminMode) {
+      enterAdminMode();
+      clearPendingAdminConnect();
+    }
+  }, [pendingAdminConnect, session, adminMode]);
+
   // 메시지 늘어나면 맨 아래로 스크롤
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -59,6 +71,12 @@ function ChatWidget() {
       addLocalMessage("BOT", NOT_IMPLEMENTED_MESSAGE);
       return;
     }
+
+    if (nextNode.requiresAuth && !isLoggedIn) {
+      addLocalMessage('BOT', REQUIRES_AUTH_MESSAGE, [{ path: '/login', label: '로그인하러 가기'}]);
+      return;
+    }
+    
     if (nextNode.implemented === true) {
       runAction(nextNode);
       return;
@@ -124,6 +142,7 @@ function ChatWidget() {
         : []);
       setMenuPath([]);
       setAdminMode(false);
+      clearPendingAdminConnect();
     });
   }
 
@@ -171,8 +190,8 @@ function ChatWidget() {
                 {msg.content}
                 {msg.navActions?.length > 0 && (
                   <div className="cw-navs">
-                    {msg.navActions.map((nav) => (
-                      <button key={nav.path} className="cw-nav-btn" onClick={() => handleNavigateClick(nav)}>
+                    {msg.navActions.map((nav, i) => (
+                      <button key={`${nav.path}-${i}`} className="cw-nav-btn" onClick={() => handleNavigateClick(nav)}>
                         {nav.label} →
                       </button>
                     ))}
