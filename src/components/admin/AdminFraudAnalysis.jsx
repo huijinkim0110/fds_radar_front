@@ -37,6 +37,7 @@ export default function AdminFraudAnalysis() {
     { k: "이번 달 탐지", v: `${stats.monthlyDetectionCount}건`, d: "이번 달 누적", dir: "up", pct: Math.min(stats.monthlyDetectionCount * 5, 100), color: "var(--red)" },
     { k: "차단 처리", v: `${stats.blockedCount}건`, d: "종결·사기 확정", dir: "down", pct: Math.min(stats.blockedCount * 5, 100), color: "var(--blue)" },
     { k: "오탐(정상판정)", v: `${stats.falsePositiveCount}건`, d: "AI는 이상, 결과는 정상", dir: "down", pct: Math.min(stats.falsePositiveCount * 5, 100), color: "var(--amber)" },
+    { k: "미탐(사후 확정)", v: `${stats.falseNegativeCount}건`, d: "AI는 정상, 결과는 사기", dir: "up", pct: Math.min(stats.falseNegativeCount * 5, 100), color: "var(--red)" },
     { k: "평균 AI점수", v: formatProbabilityPercent(stats.averageFraudProbability), d: "전체 사건 평균", dir: "up", pct: Math.round(stats.averageFraudProbability * 100), color: "var(--green)" },
   ];
 
