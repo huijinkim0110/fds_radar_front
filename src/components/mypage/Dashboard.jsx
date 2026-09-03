@@ -4,6 +4,7 @@ import { getFavorites } from "../../api/financialProduct/favoriteProductAPI";
 import { getPortfolio } from "../../api/financialProduct/simulatedSubscriptionAPI";
 import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
 import { getFinancialProfile, hasFinancialProfile } from "../../api/finance/financialProfileAPI";
+import { getGoals } from "../../api/finance/financialGoalsAPI";
 import { isStale, formatElapsed } from "../../utils/staleness";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -59,7 +60,8 @@ export default function Dashboard() {
 
   // 두 번째 코드의 API 데이터 상태
   const [favoriteCount, setFavoriteCount] = useState(null);
-  const [activeSubscriptionCount, setActiveSubscriptionCount] = useState(null);
+  const [subscriptions, setSubscriptions] = useState(null);
+  const [goals, setGoals] = useState(null);
   const [latestProfile, setLatestProfile] = useState(null);
   const [hasDiagnosis, setHasDiagnosis] = useState(null);
   const [financialProfile, setFinancialProfile] = useState(null);
@@ -72,9 +74,11 @@ export default function Dashboard() {
       .catch(() => {});
 
     getPortfolio(TEMP_USER_ID)
-      .then((list) =>
-        setActiveSubscriptionCount(list.filter((s) => s.subscriptionStatus === "ACTIVE").length)
-      )
+      .then((list) => setSubscriptions(list))
+      .catch(() => {});
+
+    getGoals(TEMP_USER_ID)
+      .then((list) => setGoals(list.filter((g) => g.goalStatus === 'IN_PROGRESS')))
       .catch(() => {});
 
     hasDiagnosisHistory(TEMP_USER_ID).then(setHasDiagnosis).catch(() => {});
@@ -103,6 +107,19 @@ export default function Dashboard() {
       `재무 프로필을 ${formatElapsed(financialProfile.updatedAt ?? financialProfile.createdAt)} 수정 안했어요. 업데이트를 권장해요.`
     );
   }
+
+  // 모의가입 전체 달성률 (실제 누적 납입액 / 목표 납입액)
+  const totalPaid = (subscriptions ?? []).reduce((sum, s) => sum + (s.paidAmount ?? 0), 0);
+  const totalTarget = (subscriptions ?? []).reduce((sum, s) => {
+    const target = s.monthlyPayment != null ? s.monthlyPayment * s.subscriptionPeriod : s.subscriptionAmount;
+    return sum + (target ?? 0);
+  }, 0);
+  const subscriptionAchievementRate = totalTarget === 0 ? 0 : Math.round((totalPaid / totalTarget) * 1000) / 10;
+
+  // 재무목표 전체 평균 달성률
+  const avgGoalAchievement = !goals || goals.length === 0
+    ? 0
+    : Math.round((goals.reduce((sum, g) => sum + (g.achievementRate ?? 0), 0) / goals.length) * 10) / 10;
 
   // 송금 처리 함수
   async function handleTransfer(e) {
@@ -138,10 +155,10 @@ export default function Dashboard() {
   const kpis = [
     {
       k: "가입한 상품",
-      v: activeSubscriptionCount === null ? "…" : `${activeSubscriptionCount}건`,
-      d: "가입중",
+      v: subscriptions === null ? "…" : `${subscriptions.length}건`,
+      d: subscriptions === null ? "가입중" : `평균 달성률 ${subscriptionAchievementRate}%`,
       dir: "down",
-      pct: activeSubscriptionCount ? Math.min(activeSubscriptionCount * 20, 100) : 0,
+      pct: subscriptions ? subscriptionAchievementRate : 0,
       color: "var(--blue)",
     },
     {
