@@ -25,8 +25,10 @@ const USER_MENU = [
     type: "group", label: "자산관리",
     children: [
       { path: "financial-profile", label: "재무 프로필" },
+      { path: "financial-goals", label: "재무 목표"},
       { path: "favorites", label: "관심상품" },
       { path: "comparisons", label: "비교상품" },
+      { path: "portfolio", label: "모의가입 상품" },
     ],
   },
   {

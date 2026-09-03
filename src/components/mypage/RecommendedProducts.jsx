@@ -1,18 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
-import { getUnifiedRecommendations } from "../../api/recommendation/recommendationAPI";
+import { getUnifiedRecommendations, getRecommendationHistory, getRecommendationHistoryItems } from "../../api/recommendation/recommendationAPI";
 import { isStale, formatElapsed } from "../../utils/staleness";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
 
 const TEMP_USER_ID = 1;
-
-const SOURCE_LABELS = {
-    AI_SECURITIES: 'AI 증권 추천', 
-    AI_INSURANCE: 'AI 보험 추천',
-    RULE_BASED: '예적금 (규칙 기반)'
-};
 
 export default function RecommendedProducts() {
     const navigate = useNavigate();
@@ -23,6 +17,8 @@ export default function RecommendedProducts() {
     const [results, setResults] = useState(null);
     const [error, setError] = useState(null);
     const [latestProfile, setLatestProfile] = useState(null);
+    const [goalMissing, setGoalMissing] = useState(false);
+    const [history, setHistory] = useState([]);
 
     useEffect(() => {
         hasDiagnosisHistory(TEMP_USER_ID)
@@ -34,8 +30,32 @@ export default function RecommendedProducts() {
     useEffect(() => {
         if (needsDiagnosis === false) {
             getLatestProfile(TEMP_USER_ID).then(setLatestProfile).catch(() => {});
+            loadHistory();
         }
     }, [needsDiagnosis]);
+
+    // 저장된 추천 이력 불러오기 - 가장 최근 것을 자동으로 화면에 표시
+    function loadHistory() {
+        getRecommendationHistory(TEMP_USER_ID)
+            .then((list) => {
+                setHistory(list);
+                if (list.length > 0) {
+                    loadHistoryItems(list[0].recommendationResultId);
+                }
+            })
+            .catch(() => {});
+    }
+
+    // 특정 이력의 상품 목록을 불러와 결과 화면에 표시
+    function loadHistoryItems(recommendationResultId) {
+        getRecommendationHistoryItems(recommendationResultId).then((items) => {
+            setResults(items.map((i) => ({
+                productId: i.product.productId,
+                productName: i.product.productName,
+                score: i.suitabilityScore,
+            })));
+        });
+    }
 
     function handleFetchRecommendations() {
         setLoading(true);
@@ -43,7 +63,11 @@ export default function RecommendedProducts() {
         setResults(null);
 
         getUnifiedRecommendations({ userId: TEMP_USER_ID })
-            .then(setResults)
+            .then((data) => {
+                setResults(data.results);
+                setGoalMissing(data.goalMissing);
+                loadHistory(); // 방금 받은 결과도 이력 목록에 반영
+            })
             .catch(() => setError('AI 추천 서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.'))
             .finally(() => setLoading(false));
     }
@@ -69,7 +93,7 @@ export default function RecommendedProducts() {
                         <button
                             type="button"
                             className="minibtn"
-                            onClick={() => navigate('/mypage/diagnosis')}
+                            onClick={() => navigate('/investment-diagnosis')}
                             style={{ padding: "10px 20px", background: "var(--blue)", color: "#fff", borderColor: "var(--blue)", fontSize: "13px" }}
                         >
                             진단하러 가기
@@ -111,7 +135,7 @@ export default function RecommendedProducts() {
                     <button
                         type="button"
                         className="minibtn"
-                        onClick={() => navigate('/mypage/diagnosis')}
+                        onClick={() => navigate('/investment-diagnosis')}
                         style={{ background: "var(--panel2)", color: "var(--ink)", borderColor: "var(--line)" }}
                     >
                         인적사항 변경 / 재진단
@@ -144,6 +168,13 @@ export default function RecommendedProducts() {
                 >
                     ⚠ 투자성향 진단이 {formatElapsed(latestProfile.diagnosedAt)}이에요. 정확한 추천을 위해 재진단 후 이용하시는 것을 권장해요.
                 </div>
+            )}
+
+            {goalMissing && (
+                <p>
+                    ⚠ 설정된 재무목표가 없어서 추천 정확도가 떨어질 수 있어요.{' '}
+                    <button type="button" onClick={() => navigate('/mypage/financial-goals')}>재무목표 등록하기</button>
+                </p>
             )}
 
             {/* 에러 메시지 */}
@@ -184,21 +215,6 @@ export default function RecommendedProducts() {
                                 onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--line)")}
                             >
                                 <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                                    <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                                        <span
-                                            style={{
-                                                fontSize: "11px",
-                                                fontWeight: "700",
-                                                padding: "2px 8px",
-                                                borderRadius: "4px",
-                                                background: "var(--panel)",
-                                                border: "1px solid var(--line)",
-                                                color: "var(--blue)",
-                                            }}
-                                        >
-                                            {SOURCE_LABELS[item.source] ?? item.source}
-                                        </span>
-                                    </div>
                                     <div style={{ fontSize: "15px", fontWeight: "700", color: "var(--ink)" }}>
                                         {item.productName}
                                     </div>
@@ -215,6 +231,37 @@ export default function RecommendedProducts() {
                     </div>
                 )}
             </Panel>
+
+            {history.length > 1 && (
+                <Panel title="이전 추천 이력" sub="지난번에 받았던 추천 결과를 다시 볼 수 있어요.">
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {history.slice(1).map((h) => (
+                            <div
+                                key={h.recommendationResultId}
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    padding: "10px 14px",
+                                    borderRadius: "8px",
+                                    border: "1px solid var(--line)",
+                                }}
+                            >
+                                <span style={{ fontSize: "13px", color: "var(--muted)"}}>
+                                    {h.requestedAt?.slice(0, 10)} 추천
+                                </span>
+                                <button
+                                    type="button"
+                                    className="minibtn"
+                                    onClick={() => loadHistoryItems(h.recommendationResultId)}
+                                >
+                                    다시 보기
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </Panel>
+            )}
         </>
     );
 }

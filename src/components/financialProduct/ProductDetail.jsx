@@ -120,14 +120,17 @@ function ProductDetail() {
                 {gateStep === 'needsDiagnosis' && (
                     <div>
                         <p>투자성향 진단 이력이 없어요. 먼저 진단을 받아주세요.</p>
-                        <button onClick={() => navigate('/mypage/diagnosis')}>진단하러 가기</button>
+                        <button onClick={() => navigate('/investment-diagnosis')}>진단하러 가기</button>
                         <button onClick={() => setGateStep('idle')}>취소</button>
                     </div>
                 )}
 
                 {/* 적합 : 조용히 통과 -> 기존 SubscribeForm 바로 노출 */}
                 {gateStep === 'suitable' && (
-                    <SubscribeForm userId={TEMP_USER_ID} product={product} />
+                    <>
+                        {checkResult?.goalNote && <p>ℹ {checkResult.goalNote}</p>}
+                        <SubscribeForm userId={TEMP_USER_ID} product={product}/>
+                    </>
                 )}
 
                 {/* 부적합 : 사유 + 체크박스 확인 전엔 SubscribeForm 안 보여줌 */}
@@ -135,6 +138,7 @@ function ProductDetail() {
                     <div>
                         <p><strong>이 상품은 회원님의 투자성향과 맞지 않아요.</strong></p>
                         <p>{checkResult?.checkReason}</p>
+                        {checkResult?.goalNote && <p>ℹ {checkResult.goalNote}</p>}
 
                         <label>
                             <input 
