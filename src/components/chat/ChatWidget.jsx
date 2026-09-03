@@ -73,7 +73,7 @@ function ChatWidget() {
     }
 
     if (nextNode.requiresAuth && !isLoggedIn) {
-      addLocalMessage('BOT', REQUIRES_AUTH_MESSAGE, { path: '/login', label: '로그인하러 가기'});
+      addLocalMessage('BOT', REQUIRES_AUTH_MESSAGE, [{ path: '/login', label: '로그인하러 가기'}]);
       return;
     }
     
