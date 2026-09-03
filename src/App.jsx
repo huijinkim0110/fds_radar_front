@@ -122,7 +122,6 @@ function App() {
                       <Route path="comparisons" element={<ProductComparison />} />
                       <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
                       <Route path="diagnosis/results" element={<DiagnosisResults />} />
-                      <Route path="recommendations" element={<RecommendedProducts />} />
                       <Route path="portfolio" element={<SimulatedSubscriptionList />} />
                       <Route path="financial-goals" element={<FinancialGoalList />} />
                       <Route path="financial-profile" element={<FinancialProfile />} />

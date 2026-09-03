@@ -34,8 +34,7 @@ const USER_MENU = [
   {
     type: "group", label: "내 투자성향",
     children: [
-      { path: "diagnosis/results", label: "진단 결과" },
-      { path: "recommendations", label: "추천 상품" },
+      { path: "diagnosis/results", label: "진단·추천 결과" },
     ],
   },
   {
