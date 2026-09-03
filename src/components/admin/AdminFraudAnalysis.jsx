@@ -53,7 +53,7 @@ export default function AdminFraudAnalysis() {
       <TopBar title="이상거래 분석" crumb="관리자 / 이상거래 관리" search={false} />
 
       {/* KPI */}
-      <div className="kpis">
+      <div className="kpis kpis-5">
         {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
       </div>
 
