@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { getProductDetail } from '../../api/financialProduct/productAPI';
 import { checkSuitability } from '../../api/recommendation/suitabilityCheckAPI';
 import { hasDiagnosisHistory } from '../../api/finance/investmentProfileAPI';
@@ -13,6 +14,8 @@ const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
 function ProductDetail() {
     const { productId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const isLoggedIn = !!user;
 
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -35,6 +38,10 @@ function ProductDetail() {
     }, [productId]);
 
     async function handleStartSubscribe() {
+        if (!isLoggedIn) {
+            navigate('/login');
+            return;
+        }
         setGateStep('checking');
         setRiskAcknowledged(false);
 
@@ -97,8 +104,15 @@ function ProductDetail() {
 
             {/* 가입 게이트 */}
             <div>
-                {gateStep === 'idle' && (
+                {gateStep === 'idle' && isLoggedIn && (
                     <button onClick={handleStartSubscribe}>가입하기</button>
+                )}
+
+                {gateStep === 'idle' && !isLoggedIn && (
+                    <div>
+                        <p>가입은 로그인 후 이용 가능해요.</p>
+                        <button onClick={() => navigate('/login')}>로그인하러 가기</button>
+                    </div>
                 )}
 
                 {gateStep === 'checking' && <p>적합성 검사 중...</p>}

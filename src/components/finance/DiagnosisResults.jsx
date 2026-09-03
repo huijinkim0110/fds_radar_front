@@ -56,7 +56,7 @@ export default function DiagnosisResults() {
                         <button
                             type="button"
                             className="minibtn"
-                            onClick={() => navigate('/mypage/diagnosis')}
+                            onClick={() => navigate('/investment-diagnosis')}
                             style={{ padding: "10px 20px", background: "var(--blue)", color: "#fff", borderColor: "var(--blue)", fontSize: "13px" }}
                         >
                             진단하러 가기
@@ -99,7 +99,7 @@ export default function DiagnosisResults() {
                 <button
                     type="button"
                     className="minibtn"
-                    onClick={() => navigate('/mypage/diagnosis')}
+                    onClick={() => navigate('/investment-diagnosis')}
                     style={{ background: "var(--blue)", color: "#fff", borderColor: "var(--blue)", padding: "8px 16px" }}
                 >
                     🔄 재진단하기
