@@ -6,6 +6,7 @@ import { getFraudCaseList, updateFraudCaseStatus, finalizeFraudDecision } from "
 import {
   getCaseStatusLabel,
   getCasePriorityLabel,
+  getTransactionTypeLabel,   // 추가
   formatProbabilityPercent,
   formatDateTime,
 } from "../../constants/fraud/fraudCaseLabels";
@@ -100,13 +101,13 @@ export default function AdminFraudCases() {
         <table>
           <thead>
             <tr>
-              <th>사건번호</th><th>거래ID</th><th>우선순위</th>
+              <th>사건번호</th><th>거래ID</th><th>거래유형</th><th>우선순위</th>
               <th>AI 이상확률</th><th>접수일시</th><th>담당자</th><th>상태</th><th>처리</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={8} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 사건이 없습니다.</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 사건이 없습니다.</td></tr>
             )}
             {filtered.map((c) => {
               const r = RISK[c.priority] ?? { label: getCasePriorityLabel(c.priority), color: "var(--muted)", bg: "transparent" };
@@ -120,6 +121,7 @@ export default function AdminFraudCases() {
                 >
                   <td className="tx">#{c.fraudCaseId}</td>
                   <td className="tx">{c.transactionId}</td>
+                  <td className="tx">{getTransactionTypeLabel(c.transactionType)}</td>
                   <td><span className="chip" style={{ color: r.color, background: r.bg }}>{r.label}</span></td>
                   <td className="tx">{formatProbabilityPercent(c.fraudProbability)}</td>
                   <td style={{ fontSize: 11.5, color: "var(--muted)" }}>{formatDateTime(c.openedAt)}</td>
