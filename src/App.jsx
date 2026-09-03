@@ -94,7 +94,6 @@ function App() {
                     {/* 상품 */}
                     <Route path="/products" element={<ProductList />} />
                     <Route path="/products/:productId" element={<ProductDetail />} />
-                    <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
 
                     {/* 관리자 (별도 구역) */}
                     <Route path="/admin/fraud-cases" element={<FraudCaseList />} />
@@ -124,6 +123,7 @@ function App() {
                       <Route path="diagnosis" element={<InvestmentDiagnosis />} />
                       <Route path="diagnosis/results" element={<DiagnosisResults />} />
                       <Route path="recommendations" element={<RecommendedProducts />} />
+                      <Route path="portfolio" element={<SimulatedSubscriptionList />} />
                       <Route path="financial-goals" element={<FinancialGoalList />} />
                       <Route path="financial-profile" element={<FinancialProfile />} />
 
