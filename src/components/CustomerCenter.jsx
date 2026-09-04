@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "./TopBar.jsx";
 import Panel from "./Panel.jsx";
-import { useChatWidget } from "../context/ChatWidgetContext.jsx";
 
 const FAQS = [
   { q: "실시간 이상거래 탐지(FDS)는 어떻게 작동하나요?", a: "Wonly는 24시간 동안 고객님의 거래 패턴을 AI로 실시간 모니터링하여 평소와 다른 이상 거래가 감지될 경우 즉시 차단하고 알림을 보냅니다." },
@@ -13,7 +12,6 @@ const FAQS = [
 
 export default function CustomerCenter() {
   const navigate = useNavigate();
-  const { openAdminChat } = useChatWidget();
   const [openIndex, setOpenIndex] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -47,7 +45,7 @@ export default function CustomerCenter() {
           </div>
           <div style={{ display: "flex", gap: "16px", marginTop: "16px" }}>
             <button 
-              onClick={() => { console.log('클릭됨'); openAdminChat();}}
+              onClick={() => alert("1:1 문의 연결 기능은 준비 중입니다.")}
               className="fill" 
               style={{ padding: "10px 20px", borderRadius: "8px", cursor: "pointer", border: "none" }}
             >

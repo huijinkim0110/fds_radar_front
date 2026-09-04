@@ -50,15 +50,31 @@ export default function FavoriteButton({ userId, productId, initialFavorited }) 
         }
     };
 
-    return (
+       return (
         <button
-            type="button"
-            onClick={handleClick}
-            disabled={loading || pending}
-            aria-pressed={isFavorited}
-            aria-label={isFavorited ? '관심상품 해제' : '관심상품 등록'}
-        >
-            {isFavorited ? '★' : '☆'}
-        </button>
+  type="button"
+  onClick={handleClick}
+  disabled={loading || pending}
+  aria-pressed={isFavorited}
+  aria-label={isFavorited ? "관심상품 해제" : "관심상품 등록"}
+  title={isFavorited ? "관심상품 해제" : "관심상품 등록"}
+  style={{
+    width: "32px",
+    height: "32px",
+    padding: 0,
+    border: "none",
+    background: "transparent",
+    color: isFavorited ? "#F5B301" : "#AAB2C0",
+    fontSize: "25px",
+    lineHeight: 1,
+    cursor: pending ? "default" : "pointer",
+    opacity: pending ? 0.6 : 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  }}
+>
+  {isFavorited ? "★" : "☆"}
+</button>
     );
 }

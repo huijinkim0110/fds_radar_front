@@ -4,8 +4,6 @@ import { getFavorites } from "../../api/financialProduct/favoriteProductAPI";
 import { getPortfolio } from "../../api/financialProduct/simulatedSubscriptionAPI";
 import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
 import { getFinancialProfile, hasFinancialProfile } from "../../api/finance/financialProfileAPI";
-import { getMyAccounts } from "../../account/accountAPI";
-import { getMyCards } from "../../account/cardAPI";
 import { isStale, formatElapsed } from "../../utils/staleness";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext.jsx";
@@ -13,7 +11,9 @@ import AdminDashboard from "../admin/AdminMyPage.jsx";
 
 import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
+import TxTable from "../TxTable.jsx";
 import Panel from "../Panel.jsx";
+import { FeedItem } from "../Feed.jsx";
 
 const TEMP_USER_ID = 1;
 
@@ -24,17 +24,40 @@ const RISK_TENDENCY_LABELS = {
   AGGRESSIVE: "공격형",
 };
 
+
 export default function Dashboard() {
   const { user } = useAuth();
+
+ 
+
   const navigate = useNavigate();
   const { isDark, toggleDarkMode } = useTheme();
-  const userId = user?.userId;
+  
+  // 첫 번째 코드의 잔액/거래/송금 상태
+  const [balance, setBalance] = useState(1500000); // 초기 기본 잔액 예시 (또는 API 연동)
+  const [txns, setTxns] = useState([
+    {
+      time: "08-25 14:10",
+      name: "급여 입금 · 주식회사 핀테크",
+      kind: "입금",
+      amt: "₩ 3,000,000",
+      status: "정상",
+    },
+    {
+      time: "08-24 11:30",
+      name: "온라인 쇼핑 · 무신사",
+      kind: "출금",
+      amt: "₩ 45,000",
+      status: "정상",
+    },
+  ]);
 
-  // ── 진짜 계좌·카드 (DB) ──
-  const [accounts, setAccounts] = useState([]);
-  const [cards, setCards] = useState([]);
+  // 송금 모달 상태
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [form, setForm] = useState({ recipient: "", amount: "" });
+  const [transferMsg, setTransferMsg] = useState("");
 
-  // 투자·재무 API 데이터
+  // 두 번째 코드의 API 데이터 상태
   const [favoriteCount, setFavoriteCount] = useState(null);
   const [activeSubscriptionCount, setActiveSubscriptionCount] = useState(null);
   const [latestProfile, setLatestProfile] = useState(null);
@@ -42,33 +65,33 @@ export default function Dashboard() {
   const [financialProfile, setFinancialProfile] = useState(null);
   const [hasFinProfile, setHasFinProfile] = useState(null);
 
-  // 계좌·카드 로드 (로그인 유저 기준)
+  // 데이터 로드
   useEffect(() => {
-    if (!userId) return;
-    getMyAccounts(userId).then(setAccounts).catch(() => {});
-    getMyCards(userId).then(setCards).catch(() => {});
-  }, [userId]);
-
-  // 투자·재무 로드
-  useEffect(() => {
-    getFavorites(TEMP_USER_ID).then((list) => setFavoriteCount(list.length)).catch(() => {});
-    getPortfolio(TEMP_USER_ID)
-      .then((list) => setActiveSubscriptionCount(list.filter((s) => s.subscriptionStatus === "ACTIVE").length))
+    getFavorites(TEMP_USER_ID)
+      .then((list) => setFavoriteCount(list.length))
       .catch(() => {});
+
+    getPortfolio(TEMP_USER_ID)
+      .then((list) =>
+        setActiveSubscriptionCount(list.filter((s) => s.subscriptionStatus === "ACTIVE").length)
+      )
+      .catch(() => {});
+
     hasDiagnosisHistory(TEMP_USER_ID).then(setHasDiagnosis).catch(() => {});
     hasFinancialProfile(TEMP_USER_ID).then(setHasFinProfile).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (hasDiagnosis) getLatestProfile(TEMP_USER_ID).then(setLatestProfile).catch(() => {});
+    if (hasDiagnosis) {
+      getLatestProfile(TEMP_USER_ID).then(setLatestProfile).catch(() => {});
+    }
   }, [hasDiagnosis]);
 
   useEffect(() => {
-    if (hasFinProfile) getFinancialProfile(TEMP_USER_ID).then(setFinancialProfile).catch(() => {});
+    if (hasFinProfile) {
+      getFinancialProfile(TEMP_USER_ID).then(setFinancialProfile).catch(() => {});
+    }
   }, [hasFinProfile]);
-
-  // 총 잔액 (진짜 계좌 합)
-  const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
 
   // 오래된 데이터 안내
   const staleNotices = [];
@@ -76,81 +99,193 @@ export default function Dashboard() {
     staleNotices.push(`투자성향 진단이 ${formatElapsed(latestProfile.diagnosedAt)}이에요. 재진단을 권장해요.`);
   }
   if (financialProfile && isStale(financialProfile.updatedAt ?? financialProfile.createdAt)) {
-    staleNotices.push(`재무 프로필을 ${formatElapsed(financialProfile.updatedAt ?? financialProfile.createdAt)} 수정 안했어요. 업데이트를 권장해요.`);
+    staleNotices.push(
+      `재무 프로필을 ${formatElapsed(financialProfile.updatedAt ?? financialProfile.createdAt)} 수정 안했어요. 업데이트를 권장해요.`
+    );
   }
 
+  // 송금 처리 함수
+  async function handleTransfer(e) {
+    e.preventDefault();
+    const amt = Number(form.amount);
+    if (!amt || amt <= 0) return setTransferMsg("금액을 입력해주세요.");
+    if (amt > balance) return setTransferMsg("잔액이 부족합니다.");
+
+    try {
+      setBalance((prev) => prev - amt);  // 화면 잔액 즉시 차감
+      setTxns((prev) => [
+        {
+          time: new Date().toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }),
+          name: `이체 · ${form.recipient}`,
+          kind: "이체",
+          amt: `₩ ${amt.toLocaleString()}`,
+          status: "정상",
+        },
+        ...prev.slice(0, 3),
+      ]);
+      setTransferMsg("송금이 완료되었습니다.");
+      setForm({ recipient: "", amount: "" });
+      setTimeout(() => {
+        setShowTransfer(false);
+        setTransferMsg("");
+      }, 1500);
+    } catch (err) {
+      setTransferMsg("송금에 실패했습니다.");
+    }
+  }
+
+  // KPI 카드 구성 (두 번째 API 데이터 + 첫 번째 스타일 적용)
   const kpis = [
-    { k: "가입한 상품", v: activeSubscriptionCount === null ? "…" : `${activeSubscriptionCount}건`, d: "가입중", dir: "down", pct: activeSubscriptionCount ? Math.min(activeSubscriptionCount * 20, 100) : 0, color: "var(--blue)" },
-    { k: "관심 상품", v: favoriteCount === null ? "…" : `${favoriteCount}건`, d: "등록됨", dir: "down", pct: favoriteCount ? Math.min(favoriteCount * 20, 100) : 0, color: "var(--green)" },
-    { k: "투자성향", v: hasDiagnosis === false ? "미진단" : latestProfile ? RISK_TENDENCY_LABELS[latestProfile.riskTendency] : "…", d: hasDiagnosis === false ? "진단 필요" : "최근 진단", dir: hasDiagnosis === false ? "up" : "down", pct: latestProfile ? 100 : 20, color: "var(--amber)" },
-    { k: "재무 프로필", v: hasFinProfile === false ? "미작성" : hasFinProfile ? "작성됨" : "…", d: hasFinProfile === false ? "작성 필요" : "정상", dir: hasFinProfile === false ? "up" : "down", pct: hasFinProfile ? 100 : 20, color: "var(--blue)" },
+    {
+      k: "가입한 상품",
+      v: activeSubscriptionCount === null ? "…" : `${activeSubscriptionCount}건`,
+      d: "가입중",
+      dir: "down",
+      pct: activeSubscriptionCount ? Math.min(activeSubscriptionCount * 20, 100) : 0,
+      color: "var(--blue)",
+    },
+    {
+      k: "관심 상품",
+      v: favoriteCount === null ? "…" : `${favoriteCount}건`,
+      d: "등록됨",
+      dir: "down",
+      pct: favoriteCount ? Math.min(favoriteCount * 20, 100) : 0,
+      color: "var(--green)",
+    },
+    {
+      k: "투자성향",
+      v: hasDiagnosis === false ? "미진단" : latestProfile ? RISK_TENDENCY_LABELS[latestProfile.riskTendency] : "…",
+      d: hasDiagnosis === false ? "진단 필요" : "최근 진단",
+      dir: hasDiagnosis === false ? "up" : "down",
+      pct: latestProfile ? 100 : 20,
+      color: "var(--amber)",
+    },
+    {
+      k: "재무 프로필",
+      v: hasFinProfile === false ? "미작성" : hasFinProfile ? "작성됨" : "…",
+      d: hasFinProfile === false ? "작성 필요" : "정상",
+      dir: hasFinProfile === false ? "up" : "down",
+      pct: hasFinProfile ? 100 : 20,
+      color: "var(--blue)",
+    },
   ];
 
-  // 관리자면 관리자 대시보드로
-  if (user?.role === "ADMIN") return <AdminDashboard />;
+ // 관리자 로그인 시 관리자 대시보드로
+  if (user?.role === "ADMIN") {
+    return <AdminDashboard />;
+  }
 
   return (
     <>
       <TopBar title="내 대시보드" crumb="홈 / 내 계좌 및 자산 요약" />
 
-      {/* 잔액 (송금하기 삭제, 잔액만) */}
+      {/* 계좌 잔액 및 송금/신고 버튼 영역 */}
       <div className="balance">
         <div>
-          <div className="lbl">내 총 자산</div>
-          <div className="big">₩ {totalBalance.toLocaleString()}</div>
+          <div className="lbl">내 계좌 잔액</div>
+          <div className="big">₩ {balance.toLocaleString()}</div>
           <div style={{ marginTop: 12 }}>
             <span className="safe"><i />계정 보안 상태 · 안전</span>
           </div>
         </div>
-        <button className="report-btn" onClick={() => navigate("/mypage/report")}>
-          ＋ 이상거래 신고
-        </button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button
+            className="report-btn"
+            style={{ background: "rgba(255,255,255,0.15)", color: "#fff" }}
+            onClick={() => setShowTransfer(true)}
+          >
+            ↗ 송금하기
+          </button>
+          <button className="report-btn" onClick={() => navigate("/mypage/report")}>
+            ＋ 이상거래 신고
+          </button>
+        </div>
       </div>
 
-      {/* 계좌(왼쪽) / 카드(오른쪽) — 나란히 */}
-<div className="ac-row" style={{ marginTop: 16 }}>
-  {/* 계좌 슬라이드 */}
-  <Panel title="내 계좌" sub={`${accounts.length}개`}>
-    <div className="slide-row">
-      {accounts.map((a) => (
-        <div key={a.id} className="slide-card acc" onClick={() => navigate("/mypage/accounts")}>
-          <div className="slide-top">
-            <span className="slide-tag">계좌</span>
-            <span className="slide-num">{a.accountNumber}</span>
+      {/* 송금 모달 */}
+      {showTransfer && (
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000
+        }}>
+          <div style={{
+            background: "#1e293b", borderRadius: 16, padding: 32,
+            width: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.4)"
+          }}>
+            <h3 style={{ color: "#fff", marginBottom: 20 }}>송금하기</h3>
+            <form onSubmit={handleTransfer}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ color: "#94a3b8", fontSize: 13 }}>받는 사람</label>
+                <input
+                  style={{
+                    width: "100%", padding: "10px 12px", marginTop: 6,
+                    background: "#0f172a", border: "1px solid #334155",
+                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
+                  }}
+                  placeholder="이름 또는 계좌번호"
+                  value={form.recipient}
+                  onChange={(e) => setForm({ ...form, recipient: e.target.value })}
+                />
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ color: "#94a3b8", fontSize: 13 }}>금액 (원)</label>
+                <input
+                  type="number"
+                  style={{
+                    width: "100%", padding: "10px 12px", marginTop: 6,
+                    background: "#0f172a", border: "1px solid #334155",
+                    borderRadius: 8, color: "#fff", fontSize: 15, boxSizing: "border-box"
+                  }}
+                  placeholder="0"
+                  value={form.amount}
+                  onChange={(e) => setForm({ ...form, amount: e.target.value })}
+                />
+              </div>
+              {transferMsg && (
+                <div style={{
+                  color: transferMsg.includes("완료") ? "#4ade80" : "#f87171",
+                  marginBottom: 12, fontSize: 14
+                }}>
+                  {transferMsg}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button
+                  type="button"
+                  onClick={() => { setShowTransfer(false); setTransferMsg(""); }}
+                  style={{
+                    flex: 1, padding: "10px 0", borderRadius: 8,
+                    background: "#334155", color: "#fff", border: "none", cursor: "pointer"
+                  }}
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    flex: 1, padding: "10px 0", borderRadius: 8,
+                    background: "#3b82f6", color: "#fff", border: "none", cursor: "pointer"
+                  }}
+                >
+                  송금
+                </button>
+              </div>
+            </form>
           </div>
-          <div className="slide-name">{a.accountName}</div>
-          <div className="slide-value">₩ {Number(a.balance).toLocaleString()}</div>
         </div>
-      ))}
-    </div>
-  </Panel>
+      )}
 
-  {/* 카드 슬라이드 */}
-  <Panel title="내 카드" sub={`${cards.length}장`}>
-    <div className="slide-row">
-      {cards.map((c) => (
-        <div key={c.id} className="slide-card card" onClick={() => navigate("/mypage/cards")}>
-          <div className="slide-top">
-            <span className="slide-tag">{c.cardType === "CREDIT" ? "신용" : "체크"}</span>
-            <span className="slide-num">{c.cardNumber}</span>
-          </div>
-          <div className="slide-name">{c.cardName}</div>
-          <div className="slide-value">한도 ₩ {Number(c.availableLimit).toLocaleString()}</div>
-        </div>
-      ))}
-    </div>
-  </Panel>
-</div>
-
-      {/* 오래된 데이터 안내 */}
+      {/* 오래된 데이터 안내 배너 */}
       {staleNotices.length > 0 && (
-        <div className="cols" style={{ gridTemplateColumns: "1fr", marginBottom: 16, marginTop: 16 }}>
+        <div className="cols" style={{ gridTemplateColumns: "1fr", marginBottom: 16 }}>
           <Panel title="확인이 필요해요" sub="오래된 정보">
             <div className="feed">
               {staleNotices.map((msg, i) => (
                 <div className="fitem" key={i}>
                   <span className="fdot" style={{ background: "var(--amber)" }} />
-                  <div><div className="ft">{msg}</div></div>
+                  <div>
+                    <div className="ft">{msg}</div>
+                  </div>
                 </div>
               ))}
             </div>
@@ -158,17 +293,17 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* KPI */}
-      <div className="kpis" style={{ marginTop: 16 }}>
-        {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
+      {/* KPI 카드 목록 */}
+      <div className="kpis">
+        {kpis.map((k, i) => (
+          <KpiCard key={i} {...k} />
+        ))}
       </div>
 
-      {/* 최근 거래 / 투자·재무 — 높이 맞춤 */}
-      <div className="cols cols-eq">
+      {/* 최근 거래 테이블 및 내 투자·재무 상세 패널 */}
+      <div className="cols">
         <Panel title="내 최근 거래" sub="의심 거래는 자동 표시" right={<div className="filterpill">전체</div>}>
-          <div className="dash-empty">
-            거래 내역은 <span onClick={() => navigate("/mypage/transactions")} style={{ color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}>거래내역 페이지</span>에서 확인하세요.
-          </div>
+          <TxTable rows={txns} />
         </Panel>
 
         <Panel title="내 투자·재무" sub="진단 및 프로필">
@@ -178,7 +313,11 @@ export default function Dashboard() {
               <div>
                 <div className="ft">투자성향</div>
                 <div className="fm">
-                  {hasDiagnosis === false ? "아직 진단 이력이 없어요." : latestProfile ? RISK_TENDENCY_LABELS[latestProfile.riskTendency] : "불러오는 중…"}
+                  {hasDiagnosis === false
+                    ? "아직 진단 이력이 없어요."
+                    : latestProfile
+                    ? RISK_TENDENCY_LABELS[latestProfile.riskTendency]
+                    : "불러오는 중…"}
                 </div>
               </div>
             </div>
@@ -186,7 +325,9 @@ export default function Dashboard() {
               <span className="fdot" style={{ background: hasFinProfile ? "var(--blue)" : "var(--muted)" }} />
               <div>
                 <div className="ft">재무 프로필</div>
-                <div className="fm">{hasFinProfile === false ? "아직 작성되지 않았어요." : hasFinProfile ? "작성 완료" : "불러오는 중…"}</div>
+                <div className="fm">
+                  {hasFinProfile === false ? "아직 작성되지 않았어요." : hasFinProfile ? "작성 완료" : "불러오는 중…"}
+                </div>
               </div>
             </div>
             <div className="fitem">
@@ -197,14 +338,19 @@ export default function Dashboard() {
         </Panel>
       </div>
 
-      {/* 다크모드 설정 */}
+      {/* ── [대시보드 콘텐츠 최하단] 다크모드 설정 바 ── */}
       <div className="panel" style={{ marginTop: 20 }}>
         <div className="setrow" style={{ padding: "4px 0", borderBottom: "none" }}>
           <div>
             <div className="st">화면 테마 설정</div>
             <div className="sm">다크모드로 눈의 피로를 줄여보세요.</div>
           </div>
-          <button type="button" className={`toggle ${isDark ? "on" : ""}`} onClick={toggleDarkMode} aria-label="다크모드 토글" />
+          <button
+            type="button"
+            className={`toggle ${isDark ? "on" : ""}`}
+            onClick={toggleDarkMode}
+            aria-label="다크모드 토글"
+          />
         </div>
       </div>
     </>

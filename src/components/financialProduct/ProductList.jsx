@@ -46,8 +46,16 @@ function ProductList() {
   }
 
   return (
-    <>
-      <TopBar title="금융 상품" crumb="홈 / 금융 상품" search={false} />
+  <div
+  style={{
+    width: "100%",
+    maxWidth: "1180px",
+    margin: "0 auto",
+    padding: "32px 24px 60px",
+    boxSizing: "border-box",
+  }}
+>
+    <TopBar title="금융 상품" crumb="홈 / 금융 상품" search={false} />
 
       {/* 필터 */}
       <Panel title="상품 찾기" sub="유형·위험등급으로 필터링">
@@ -92,7 +100,33 @@ function ProductList() {
                     ● {RISK_LEVEL_LABELS[p.riskLevel]}
                   </span>
                 </div>
-                <h3 className="fp-name">{p.productName}</h3>
+                <div
+  style={{
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    marginBottom: "6px",
+  }}
+>
+  <h3
+    className="fp-name"
+    style={{
+      fontSize: "18px",
+      fontWeight: "bold",
+      margin: 0,
+    }}
+  >
+    {p.productName}
+  </h3>
+
+  <div onClick={(e) => e.stopPropagation()}>
+    <FavoriteButton
+      userId={TEMP_USER_ID}
+      productId={p.productId}
+    />
+  </div>
+</div>
                 <div className="fp-inst">{p.institutionName}</div>
                 <div className="fp-rate">
                   {p.expectedReturnRate != null ? (
@@ -105,7 +139,6 @@ function ProductList() {
 
               {/* 액션 버튼 (진짜 productId 숫자) */}
               <div className="fp-actions" onClick={(e) => e.stopPropagation()}>
-                <FavoriteButton userId={TEMP_USER_ID} productId={p.productId} />
                 <CompareButton productId={p.productId} />
               </div>
             </div>
@@ -121,7 +154,7 @@ function ProductList() {
           <button className="fp-pg-btn" disabled={page + 1 >= totalPages} onClick={() => setPage(page + 1)}>다음 →</button>
         </div>
       )}
-    </>
+    </div>
   );
 }
 

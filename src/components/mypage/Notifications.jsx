@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
 
-export default function notifications() {
+export default function Notifications() {
     const [filter, setFilter] = useState("all");
 
     const [notifications, setNotifications] = useState([

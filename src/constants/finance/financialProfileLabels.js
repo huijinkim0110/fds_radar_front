@@ -1,5 +1,5 @@
 export const INCOME_SOURCE_LABELS = {
-    EARNED_INCOME: '근로소득(급여',
+    EARNED_INCOME: '근로소득(급여)',
     BUSINESS_INCOME: '사업소득(자영업 등)',
     PENSION_INCOME: '연금소득',
     INVESTMENT_INCOME: '이자 · 배당 · 투자소득',

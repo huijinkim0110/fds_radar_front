@@ -1,6 +1,7 @@
 // 대시보드 페이지 - 내 정보 (회원 정보 페이지)
 import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { getUserProfile } from "../../api/user/userProfilAPI";
 import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 
@@ -15,14 +16,24 @@ export default function UserProfile() {
     birthDate: "",
   });
 
-  useEffect(() => {
-    setForm({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      birthDate: user?.birthDate || "",
+useEffect(() => {
+  if (!user?.userId) return;
+
+  getUserProfile(user.userId)
+    .then((data) => {
+      setForm({
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        birthDate: data.birthDate
+          ? String(data.birthDate).slice(0, 10)
+          : "",
+      });
+    })
+    .catch((err) => {
+      console.error("회원정보 조회 실패:", err);
     });
-  }, [user]);
+}, [user]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
