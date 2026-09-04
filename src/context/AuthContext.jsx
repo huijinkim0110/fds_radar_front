@@ -10,10 +10,22 @@ export function AuthProvider({ children }) {
   });
 
   async function login(credentials) {
-    const data = await api.login(credentials);   // 실제 API 호출
-    const userInfo = { name: data.name, email: data.email, role: data.role, userId: data.userId };
-    setUser(userInfo);
+    const data = await api.login(credentials);
+
+    const userInfo = {
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      birthDate: data.birthDate
+        ? String(data.birthDate).slice(0, 10)
+        : "",
+      role: data.role,
+      userId: data.userId,
+    };
+
     localStorage.setItem("user", JSON.stringify(userInfo));
+    setUser(userInfo);
+
     return data;
   }
 
