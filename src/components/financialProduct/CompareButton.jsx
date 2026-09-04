@@ -1,8 +1,11 @@
 import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { useComparison } from "../../context/ComparisonContext";
 import { useToast } from "../../context/ToastContext";
 
 export default function CompareButton({ productId }) {
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
   const { isInCompare, findItem, addProduct, removeProduct, canAdd } = useComparison();
   const { showToast } = useToast();
   const [pending, setPending] = useState(false);
@@ -10,8 +13,11 @@ export default function CompareButton({ productId }) {
   const inCompare = isInCompare(productId);
 
   async function handleClick(e) {
-    e.stopPropagation();
-
+    e.stopPropagation(); // 목록에서 카드 클릭(상세 이동)과 겹치지 않게
+    if (!isLoggedIn) {
+      alert('로그인이 필요한 기능이에요.');
+      return;
+    }
     if (pending) return;
     setPending(true);
 

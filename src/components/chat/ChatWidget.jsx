@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { getOrCreateSession, closeSession, sendFreeTextMessage, saveChatMessage } from "../../api/chat/chatAPI";
 import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "../../api/chat/chatSocket";
-import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE } from "../../constants/chat/chatMenuTree";
+import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE, REQUIRES_AUTH_MESSAGE } from "../../constants/chat/chatMenuTree";
 import { useChatActions } from "../../hooks/chat/useChatActions";
 
 const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
 
 function ChatWidget() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const [open, setOpen] = useState(false);
   const [session, setSession] = useState(null);
@@ -59,6 +62,12 @@ function ChatWidget() {
       addLocalMessage("BOT", NOT_IMPLEMENTED_MESSAGE);
       return;
     }
+
+    if (nextNode.requiresAuth && !isLoggedIn) {
+      addLocalMessage('BOT', REQUIRES_AUTH_MESSAGE, [{ path: '/login', label: '로그인하러 가기'}]);
+      return;
+    }
+    
     if (nextNode.implemented === true) {
       runAction(nextNode);
       return;
@@ -171,8 +180,8 @@ function ChatWidget() {
                 {msg.content}
                 {msg.navActions?.length > 0 && (
                   <div className="cw-navs">
-                    {msg.navActions.map((nav) => (
-                      <button key={nav.path} className="cw-nav-btn" onClick={() => handleNavigateClick(nav)}>
+                    {msg.navActions.map((nav, i) => (
+                      <button key={`${nav.path}-${i}`} className="cw-nav-btn" onClick={() => handleNavigateClick(nav)}>
                         {nav.label} →
                       </button>
                     ))}

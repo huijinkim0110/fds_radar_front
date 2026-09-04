@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
+import { useAuth } from "../../context/AuthContext";
 import { getProductDetail } from "../../api/financialProduct/productAPI";
 import { checkSuitability } from "../../api/recommendation/suitabilityCheckAPI";
 import { hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
@@ -17,6 +17,8 @@ const TEMP_USER_ID = 1;
 export default function ProductDetail() {
   const { productId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,6 +39,11 @@ export default function ProductDetail() {
   }, [productId]);
 
   async function handleStartSubscribe() {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
     setGateStep("checking");
     setRiskAcknowledged(false);
 
@@ -165,7 +172,7 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* 상품 정보 + 상품 설명 한 박스 */}
+      {/* 상품 정보 + 상품 설명 */}
       <div style={{ marginTop: 20 }}>
         <Panel
           title="상품 정보"
@@ -174,14 +181,17 @@ export default function ProductDetail() {
           <div style={styles.infoGrid}>
             <InfoRow label="상품 유형" value={productType} />
             <InfoRow label="가입 기간" value={period} />
+
             <InfoRow
               label="원금 보장"
               value={product.principalProtection ? "보장" : "비보장"}
             />
+
             <InfoRow
               label="가입 금액"
               value={`${minAmount} ~ ${maxAmount}`}
             />
+
             <InfoRow
               label="예상 수익률"
               value={
@@ -194,7 +204,6 @@ export default function ProductDetail() {
 
           <div style={styles.description}>
             <div style={styles.descriptionTitle}>상품 설명</div>
-
             <div style={styles.descriptionText}>
               {product.description || "등록된 상품 설명이 없습니다."}
             </div>
@@ -206,7 +215,6 @@ export default function ProductDetail() {
       {gateStep !== "idle" && (
         <div style={{ marginTop: 20 }}>
           <Panel title="상품 가입">
-
             {gateStep === "checking" && (
               <div style={styles.gateMessage}>
                 적합성 검사 중...
@@ -216,8 +224,7 @@ export default function ProductDetail() {
             {gateStep === "needsDiagnosis" && (
               <div>
                 <p style={styles.gateText}>
-                  투자성향 진단 이력이 없습니다.
-                  먼저 진단을 진행해주세요.
+                  투자성향 진단 이력이 없습니다. 먼저 진단을 진행해주세요.
                 </p>
 
                 <div style={styles.buttonRow}>
@@ -241,10 +248,16 @@ export default function ProductDetail() {
             )}
 
             {gateStep === "suitable" && (
-              <SubscribeForm
-                userId={TEMP_USER_ID}
-                product={product}
-              />
+              <>
+                {checkResult?.goalNote && (
+                  <p style={styles.gateText}>{checkResult.goalNote}</p>
+                )}
+
+                <SubscribeForm
+                  userId={TEMP_USER_ID}
+                  product={product}
+                />
+              </>
             )}
 
             {gateStep === "unsuitable" && (
@@ -257,6 +270,12 @@ export default function ProductDetail() {
                   <p style={styles.warningText}>
                     {checkResult?.checkReason}
                   </p>
+
+                  {checkResult?.goalNote && (
+                    <p style={styles.warningText}>
+                      {checkResult.goalNote}
+                    </p>
+                  )}
                 </div>
 
                 <label style={styles.checkboxRow}>
@@ -267,7 +286,6 @@ export default function ProductDetail() {
                       setRiskAcknowledged(e.target.checked)
                     }
                   />
-
                   위 내용을 확인했으며, 그럼에도 가입을 진행하겠습니다.
                 </label>
 
@@ -292,7 +310,6 @@ export default function ProductDetail() {
                 )}
               </div>
             )}
-
           </Panel>
         </div>
       )}

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { submitDiagnosis } from "../../api/finance/investmentProfileAPI";
+import { useAuth } from "../../context/AuthContext.jsx";
+import { submitDiagnosis, previewDiagnosis } from "../../api/finance/investmentProfileAPI";
 import { DIAGNOSIS_QUESTIONS, PRINCIPAL_PROTECTION_QUESTION } from "../../constants/finance/diagnosisQuestions";
 import {
   AGE_OPTIONS,
@@ -27,6 +28,8 @@ const RISK_TENDENCY_LABELS = {
 
 function InvestmentDiagnosis() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isLoggedIn = !!user;
 
   const [answers, setAnswers] = useState({
     ageScore: null,
@@ -64,15 +67,21 @@ function InvestmentDiagnosis() {
 
   function handleSubmit() {
     setSubmitting(true);
-    submitDiagnosis({
-      userId: TEMP_USER_ID,
+    
+    const payload = {
       ...answers,
       ...profileInfo,
       diseaseHistory: DISEASE_HISTORY_VALUE_MAP[profileInfo.diseaseHistory],
-    })
-      .then((data) => setResult(data))
-      .catch(() => alert("진단 제출에 실패했습니다."))
-      .finally(() => setSubmitting(false));
+    };
+
+    const request = isLoggedIn
+        ? submitDiagnosis({ userId: TEMP_USER_ID, ...payload })
+        : previewDiagnosis(payload);
+
+    request
+        .then((data) => setResult(data))
+        .catch(() => alert('진단 제출에 실패했습니다.'))
+        .finally(() => setSubmitting(false));
   }
 
   // ── 결과 화면 ──
@@ -86,9 +95,14 @@ function InvestmentDiagnosis() {
             <p className="diag-result-text">
               당신의 투자성향은 <strong>{RISK_TENDENCY_LABELS[result.riskTendency]}</strong>입니다.
             </p>
-            <button className="primary" style={{ maxWidth: 260 }} onClick={() => navigate("/mypage/recommendations")}>
-              추천 상품 보러가기 →
-            </button>
+            {isLoggedIn ? (
+              <button onClick={() => navigate('/mypage/recommendations')}>추천 상품 보러 가기</button>
+            ) : (
+              <div>
+                <p>결과는 저장되지 않았어요. 저장하고 맞춤 상품 추천까지 받으려면 로그인해주세요.</p>
+                <button onClick={() => navigate('/login')}>로그인하러 가기</button>
+              </div>
+            )}
           </div>
         </Panel>
       </>
