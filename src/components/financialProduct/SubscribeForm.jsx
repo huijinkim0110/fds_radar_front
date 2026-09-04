@@ -87,11 +87,7 @@ export default function SubscribeForm({ userId, product }) {
 
     if (result) {
         return (
-<<<<<<< HEAD
-            <div style={styles.resultWrap}>
-                <div style={styles.resultBadge}>✓</div>
-                <div style={styles.resultTitle}>모의가입이 완료되었습니다</div>
-=======
+
             <div>
                 <p>모의가입이 완료되었습니다.</p>
                 <dl>
@@ -100,7 +96,7 @@ export default function SubscribeForm({ userId, product }) {
 
                     <dt>가입금액</dt>
                     <dd>{result.subscriptionAmount?.toLocaleString()}원</dd>
->>>>>>> f0592a6ca627f373587affb25a899a71e8a80dba
+
 
                 <div style={styles.resultGrid}>
                     <InfoRow
@@ -121,26 +117,7 @@ export default function SubscribeForm({ userId, product }) {
                     />
                 </div>
 
-<<<<<<< HEAD
-                <div style={styles.resultActions}>
-                    <button
-                        type="button"
-                        className="minibtn"
-                        style={styles.primaryButton}
-                        onClick={() => navigate('/mypage/portfolio')}
-                    >
-                        내 모의가입 목록 보기
-                    </button>
-                    <button
-                        type="button"
-                        className="minibtn"
-                        style={styles.secondaryButton}
-                        onClick={() => setResult(null)}
-                    >
-                        다시 가입하기
-                    </button>
-                </div>
-=======
+
                     <dt>예상 만기금액</dt>
                     <dd>{result.expectedMaturityAmount?.toLocaleString()}원</dd>
 
@@ -154,24 +131,15 @@ export default function SubscribeForm({ userId, product }) {
                         </>
                     )}
                 </dl>
+
                 <button onClick={() => navigate('/mypage/portfolio')}>내 모의가입 목록 보기</button>
                 <button onClick={() => setResult(null)}>다시 가입하기</button>
->>>>>>> f0592a6ca627f373587affb25a899a71e8a80dba
-            </div>
+          </div>
         );
     }
 
     return (
-<<<<<<< HEAD
-        <form onSubmit={handleSubmit} style={styles.form}>
-            <div style={styles.formGrid}>
-                <label style={styles.field}>
-                    <span style={styles.fieldLabel}>
-                        {isInstallment ? '월 납입액' : '가입금액'} (원)
-                    </span>
-                    <input
-                        style={styles.input}
-=======
+
         <form onSubmit={handleSubmit}>
             <div>
                 <label>
@@ -196,7 +164,7 @@ export default function SubscribeForm({ userId, product }) {
                 <label>
                     {isInstallment ? '월 납입액' : '가입금액'} (원)
                     <input 
->>>>>>> f0592a6ca627f373587affb25a899a71e8a80dba
+
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
@@ -217,16 +185,7 @@ export default function SubscribeForm({ userId, product }) {
                 </label>
             </div>
 
-<<<<<<< HEAD
-            {error && <div style={styles.errorBox}>{error}</div>}
 
-            <button
-                type="submit"
-                className="minibtn"
-                disabled={submitting}
-                style={styles.submitButton}
-            >
-=======
             {goals.length > 0 && (
                 <div>
                     <label>
@@ -247,7 +206,7 @@ export default function SubscribeForm({ userId, product }) {
             {error && <p>{error}</p>}
 
             <button type="submit" disabled={submitting || accounts.length === 0}>
->>>>>>> f0592a6ca627f373587affb25a899a71e8a80dba
+
                 {submitting ? '가입 처리 중...' : '모의가입 신청'}
             </button>
         </form>
