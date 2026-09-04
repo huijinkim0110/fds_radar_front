@@ -7,7 +7,7 @@ export default function TopBar({ title, crumb, search = true, back = true }) {
     <div className="top">
       <div className="top-l">
         {back && (
-          <button className="topbar-back" onClick={() => navigate(-1)}>
+          <button className="topbar-back" onClick={() => navigate("/")}>
             ← 뒤로
           </button>
         )}
