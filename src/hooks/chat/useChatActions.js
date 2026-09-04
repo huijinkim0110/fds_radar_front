@@ -77,9 +77,9 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
         hasDiagnosisHistory(TEMP_USER_ID)
             .then((hasHistory) => {
                 if (!hasHistory) {
-                    addLocalMessage('BOT', '추천을 받으려면 먼저 투자성향 진단이 필요해요.', [{ path: '/mypage/diagnosis', label: '진단하러 가기' }]);
+                    addLocalMessage('BOT', '추천을 받으려면 먼저 투자성향 진단이 필요해요.', [{ path: '/investment-diagnosis', label: '진단하러 가기' }]);
                 } else {
-                    addLocalMessage('BOT', '투자성향에 맞는 상품을 추천해드릴게요.', [{ path: '/mypage/recommendations', label: '추천 상품 보기' }]);
+                    addLocalMessage('BOT', '진단·추천 결과 페이지에서 추천 상품을 확인할 수 있어요.', [{ path: '/mypage/diagnosis/results', label: '추천 상품 보러가기' }]);
                 }
             })
             .catch(() => addLocalMessage('BOT', '추천 처리 중 오류가 발생했어요.'))
@@ -87,7 +87,7 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
     }
 
     function handleDiagnosis() {
-        addLocalMessage('BOT', '투자성향 진단 페이지로 이동할게요.', [{ path: '/mypage/diagnosis', label: '진단하러 가기' }]);
+        addLocalMessage('BOT', '투자성향 진단 페이지로 이동할게요.', [{ path: '/investment-diagnosis', label: '진단하러 가기' }]);
         resetMenu();
     }
 

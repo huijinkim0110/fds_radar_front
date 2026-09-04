@@ -1,12 +1,16 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../../context/AuthContext";
 import { addFavorite, removeFavorite, checkFavorite } from "../../api/financialProduct/favoriteProductAPI";
 
 export default function FavoriteButton({ userId, productId, initialFavorited }) {
+    const { user } = useAuth();
+    const isLoggedIn = !!user;
     const [isFavorited, setIsFavorited] = useState(initialFavorited ?? false);
     const [loading, setLoading] = useState(initialFavorited === undefined);
     const [pending, setPending] = useState(false);
 
     useEffect(() => {
+        if (!isLoggedIn) { setLoading(false); return; } // 비로그인은 관심상품 여부 조회도 스킵
         if (initialFavorited !== undefined) return;
         let cancelled = false;
         checkFavorite(userId, productId)
@@ -14,9 +18,13 @@ export default function FavoriteButton({ userId, productId, initialFavorited }) 
             .catch(() => {})
             .finally(() => { if (!cancelled) setLoading(false);});
         return () => { cancelled = true; };
-    }, [userId, productId, initialFavorited]);
+    }, [userId, productId, initialFavorited, isLoggedIn]);
 
     const handleClick = async () => {
+        if (!isLoggedIn) {
+            alert('로그인이 필요한 기능이에요.');
+            return;
+        }
         if (pending) return;
         setPending(true);
         const prev = isFavorited;

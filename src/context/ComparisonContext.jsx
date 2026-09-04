@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useAuth } from "./AuthContext";
 import { 
     createComparison,
     addItem,
@@ -15,6 +16,8 @@ const DEFAULT_COMPARISON_NAME = '내 비교함';
 const ComparisonContext = createContext(null);
 
 export function ComparisonProvider({ children }) {
+    const { user } = useAuth();
+    const isLoggedIn = !!user;
     const [comparisonId, setComparisonId] = useState(null);
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -23,6 +26,8 @@ export function ComparisonProvider({ children }) {
     // 앱 진입 시 기존 비교함이 있으면 불러오고, 없으면 comparisonId=null로 둠(첫 담기 시점에 생성)
     useEffect(() => {
         let cancelled = false;
+        // 비로그인은 비교함 조회 자체를 스킵
+        if (!isLoggedIn) { setLoading(false); return; }
 
         getUserComparisons(TEMP_USER_ID)
             .then((list) => {

@@ -87,7 +87,11 @@ function App() {
                     {/* 상품 */}
                     <Route path="/products" element={<ProductList />} />
                     <Route path="/products/:productId" element={<ProductDetail />} />
+
                     <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
+
+                    <Route path="/investment-diagnosis" element={<InvestmentDiagnosis />} />
+
 
                     {/* 마이페이지 (유저+관리자 공용, 하나로 통일) */}
                     <Route path="/mypage" element={<MyPageLayout />}>
@@ -106,9 +110,8 @@ function App() {
                       <Route path="favorites" element={<FavoriteProductList />} />
                       <Route path="comparisons" element={<ProductComparison />} />
                       <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
-                      <Route path="diagnosis" element={<InvestmentDiagnosis />} />
                       <Route path="diagnosis/results" element={<DiagnosisResults />} />
-                      <Route path="recommendations" element={<RecommendedProducts />} />
+                      <Route path="portfolio" element={<SimulatedSubscriptionList />} />
                       <Route path="financial-goals" element={<FinancialGoalList />} />
                       <Route path="financial-profile" element={<FinancialProfile />} />
 
