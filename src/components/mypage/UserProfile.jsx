@@ -12,28 +12,36 @@ export default function UserProfile() {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    phone: "",
+    phoneNumber: "",
     birthDate: "",
   });
 
-useEffect(() => {
+  useEffect(() => {
   if (!user?.userId) return;
+
+  console.log("회원정보 조회 userId:", user.userId);
 
   getUserProfile(user.userId)
     .then((data) => {
+      console.log("회원정보 조회 성공:", data);
+
       setForm({
         name: data.name || "",
         email: data.email || "",
-        phone: data.phone || "",
+        phoneNumber: data.phoneNumber || data.phone || "",
         birthDate: data.birthDate
           ? String(data.birthDate).slice(0, 10)
           : "",
       });
     })
-    .catch((err) => {
-      console.error("회원정보 조회 실패:", err);
-    });
-}, [user]);
+   .catch((err) => {
+  console.error("회원정보 조회 실패:", err);
+
+  console.log("백엔드 에러 데이터:", err.response?.data);
+  console.log("백엔드 에러 메시지:", err.response?.data?.message);
+  console.log("백엔드 에러 코드:", err.response?.data?.errorCode);
+});
+}, [user?.userId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -48,7 +56,7 @@ useEffect(() => {
     setForm({
       name: user?.name || "",
       email: user?.email || "",
-      phone: user?.phone || "",
+      phoneNumber: user?.phone || "",
       birthDate: user?.birthDate || "",
     });
 
@@ -158,8 +166,8 @@ useEffect(() => {
           <InfoRow
             label="전화번호"
             editing={isEditing}
-            name="phone"
-            value={form.phone}
+            name="phoneNumber"
+            value={form.phoneNumber}
             onChange={handleChange}
           />
 
