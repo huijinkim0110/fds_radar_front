@@ -87,3 +87,20 @@ export const closeAccount = async (userId, accountId) => {
   return true;
 };
 
+// 계좌 이체
+export const transfer = async (userId, receiverAccountNumber, amount) => {
+  const response = await fetch(`/api/transactions/transfer?userId=${userId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ receiverAccountNumber, amount }),
+  });
+  if (!response.ok) throw new Error("송금에 실패했습니다.");
+  return response.json();
+};
+
+// 내 수취인(최근 보낸 계좌) 목록
+export const getMyRecipients = async (userId) => {
+  const response = await fetch(`/api/recipients?userId=${userId}`, { method: "GET" });
+  if (!response.ok) throw new Error("수취인 목록 조회에 실패했습니다.");
+  return response.json();
+};

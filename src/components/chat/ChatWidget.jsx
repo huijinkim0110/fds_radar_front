@@ -5,7 +5,6 @@ import { getOrCreateSession, closeSession, sendFreeTextMessage, saveChatMessage 
 import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "../../api/chat/chatSocket";
 import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE, REQUIRES_AUTH_MESSAGE } from "../../constants/chat/chatMenuTree";
 import { useChatActions } from "../../hooks/chat/useChatActions";
-import { useChatWidget } from "../../context/ChatWidgetContext";
 
 const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
 
@@ -14,7 +13,7 @@ function ChatWidget() {
   const { user } = useAuth();
   const isLoggedIn = !!user;
 
-  const { open, setOpen, pendingAdminConnect, clearPendingAdminConnect } = useChatWidget();
+  const [open, setOpen] = useState(false);
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [menuPath, setMenuPath] = useState([]);
@@ -42,14 +41,6 @@ function ChatWidget() {
   useEffect(() => {
     return () => disconnectChatSocket(socketRef.current);
   }, []);
-
-  // 고객센터 등 다른 페이지에서 "상담원 연결" 요청이 예약되어 있으면, 세션이 준비되는 대로 자동 연결
-  useEffect(() => {
-    if (pendingAdminConnect && session && !adminMode) {
-      enterAdminMode();
-      clearPendingAdminConnect();
-    }
-  }, [pendingAdminConnect, session, adminMode]);
 
   // 메시지 늘어나면 맨 아래로 스크롤
   useEffect(() => {
@@ -142,7 +133,6 @@ function ChatWidget() {
         : []);
       setMenuPath([]);
       setAdminMode(false);
-      clearPendingAdminConnect();
     });
   }
 
