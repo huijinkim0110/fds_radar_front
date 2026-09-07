@@ -13,11 +13,13 @@ export default function CompareButton({ productId }) {
   const inCompare = isInCompare(productId);
 
   async function handleClick(e) {
+
     e.stopPropagation(); // 목록에서 카드 클릭(상세 이동)과 겹치지 않게
     if (!isLoggedIn) {
       alert('로그인이 필요한 기능이에요.');
       return;
     }
+
     if (pending) return;
     setPending(true);
 

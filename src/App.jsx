@@ -88,7 +88,13 @@ function App() {
                     {/* 상품 */}
                     <Route path="/products" element={<ProductList />} />
                     <Route path="/products/:productId" element={<ProductDetail />} />
+
+
+                    <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
+
                     <Route path="/investment-diagnosis" element={<InvestmentDiagnosis />} />
+
+
 
                     {/* 마이페이지 (유저+관리자 공용, 하나로 통일) */}
                     <Route path="/mypage" element={<MyPageLayout />}>
