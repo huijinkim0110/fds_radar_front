@@ -11,27 +11,7 @@ export default function LockRequestsPage() {
 
   const [activeTab, setActiveTab] = useState("history");
 
-  // --- 1. 잠금 요청 내역 상태 ---
-  const [requests, setRequests] = useState([
-    {
-      id: "LOCK-2026-001",
-      targetType: "카드",
-      targetName: "KB국민 로맨틱카드 (•••• 4821)",
-      reason: "분실 우려 및 보안 잠금 요청",
-      requestedAt: "2026-08-27 16:40",
-      status: "승인 완료",
-      adminComment: "관리자에 의해 카드 일시 잠금이 정상 처리되었습니다.",
-    },
-    {
-      id: "LOCK-2026-002",
-      targetType: "계좌",
-      targetName: "주거래 입출금 계좌 (•••• 8420)",
-      reason: "보안 강화 및 거래 일시 제한",
-      requestedAt: "2026-08-25 11:15",
-      status: "심사 중",
-      adminComment: "관리자 검토 대기 중입니다.",
-    },
-  ]);
+ const [requests, setRequests] = useState([]);
 
   // --- 2. DB 연결용 자산 목록 상태 ---
   const [accounts, setAccounts] = useState([]);

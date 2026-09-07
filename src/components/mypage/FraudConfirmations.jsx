@@ -5,7 +5,7 @@ import TopBar from "../TopBar";
 import Panel from "../Panel";
 import { getMyFraudCases, confirmFraudCase } from "../../api/fraud/fraudUserAPI";
 
-const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
+const TEMP_USER_ID = 2; // 인증 붙기 전까지 임시 고정값
 
 // API 응답(FraudCaseListResponse) -> 화면에서 쓰는 필드명으로 매핑.
 function mapCase(raw) {
