@@ -5,11 +5,9 @@ import Panel from "../Panel.jsx";
 import {
     getFraudCaseDetail,
     updateFraudCaseStatus,
-    assignFraudCaseAdmin,
     getFraudCaseHistories,
     finalizeFraudDecision,
     requestFraudCaseLock,
-    getAssignableAdmins,
 } from "../../api/fraud/fraudCaseAPI";
 import {
     getCaseStatusLabel,
@@ -100,15 +98,17 @@ function FraudCaseDetail() {
     const [error, setError] = useState(null);
     const [lockReasonPreset, setLockReasonPreset] = useState("");
     const [customLockReason, setCustomLockReason] = useState("");
-    const [admins, setAdmins] = useState([]);
-    const [selectedAdminId, setSelectedAdminId] = useState("");
-    const [assigning, setAssigning] = useState(false);
     const [histories, setHistories] = useState([]);
 
     const [toast, setToast] = useState(null); // { text, type: "success" | "error" }
     function notify(text, type = "success") {
         setToast({ text, type });
         setTimeout(() => setToast(null), 2000);
+    }
+
+    const [confirmState, setConfirmState] = useState(null); // { message, onConfirm }
+    function askConfirm(message, onConfirm) {
+        setConfirmState({ message, onConfirm });
     }
 
     async function fetchDetail() {
@@ -131,22 +131,12 @@ function FraudCaseDetail() {
         }
     }
 
-    async function fetchAdmins() {
-        try {
-            const data = await getAssignableAdmins();
-            setAdmins(data);
-        } catch (err) {
-            console.error("담당자 목록 조회 실패", err);
-        }
-    }
-
     useEffect(() => {
         fetchDetail();
         fetchHistories();
-        fetchAdmins();
     }, [fraudCaseId]);
 
-    async function handleStatusChange(newStatus) {
+    async function doStatusChange(newStatus) {
         try {
             await updateFraudCaseStatus(fraudCaseId, newStatus);
             await fetchDetail();
@@ -156,29 +146,12 @@ function FraudCaseDetail() {
             notify("상태 변경에 실패했습니다: " + cleanErrorMessage(err), "error");
         }
     }
-
-    async function handleAssign() {
-        if (!selectedAdminId) {
-            notify("담당자를 선택해주세요.", "error");
-            return;
-        }
-        if (assigning) return;
-
-        setAssigning(true);
-        try {
-            await assignFraudCaseAdmin(fraudCaseId, Number(selectedAdminId));
-            await fetchDetail();
-            await fetchHistories();
-            setSelectedAdminId("");
-            notify("담당자가 배정되었습니다.");
-        } catch (err) {
-            notify("담당자 배정에 실패했습니다: " + cleanErrorMessage(err), "error");
-        } finally {
-            setAssigning(false);
-        }
+    function handleStatusChange(newStatus) {
+        const msg = newStatus === "INVESTIGATING" ? "조사를 시작하시겠습니까?" : "상태를 변경하시겠습니까?";
+        askConfirm(msg, () => doStatusChange(newStatus));
     }
 
-    async function handleFinalize(decision) {
+    async function doFinalize(decision) {
         try {
             await finalizeFraudDecision(fraudCaseId, decision);
             await fetchDetail();
@@ -192,17 +165,14 @@ function FraudCaseDetail() {
             notify("최종 판정에 실패했습니다: " + cleanErrorMessage(err), "error");
         }
     }
+    function handleFinalize(decision) {
+        const msg = decision === "FRAUD"
+            ? "사기 거래로 최종 판정하시겠습니까?"
+            : "정상 거래로 최종 판정하시겠습니까?";
+        askConfirm(msg, () => doFinalize(decision));
+    }
 
-    async function handleLock(targetType) {
-        if (!lockReasonPreset) {
-            notify("잠금 사유를 선택해주세요.", "error");
-            return;
-        }
-        const reason = lockReasonPreset === "기타" ? customLockReason.trim() : lockReasonPreset;
-        if (!reason) {
-            notify("기타 사유를 입력해주세요.", "error");
-            return;
-        }
+    async function doLock(targetType, reason) {
         try {
             await requestFraudCaseLock(fraudCaseId, targetType, reason);
             await fetchHistories();
@@ -212,6 +182,18 @@ function FraudCaseDetail() {
         } catch (err) {
             notify("잠금 요청에 실패했습니다: " + cleanErrorMessage(err), "error");
         }
+    }
+    function handleLock(targetType) {
+        if (!lockReasonPreset) {
+            notify("잠금 사유를 선택해주세요.", "error");
+            return;
+        }
+        const reason = lockReasonPreset === "기타" ? customLockReason.trim() : lockReasonPreset;
+        if (!reason) {
+            notify("기타 사유를 입력해주세요.", "error");
+            return;
+        }
+        askConfirm(`"${reason}" 사유로 잠금을 요청하시겠습니까?`, () => doLock(targetType, reason));
     }
 
     if (loading) return <div>불러오는 중...</div>;
@@ -234,6 +216,33 @@ function FraudCaseDetail() {
                 background: toast.type === "error" ? "#dc2626" : "#059669",
             }}>
                 {toast.text}
+            </div>
+        )}
+
+        {confirmState && (
+            <div style={{
+                position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)",
+                zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+                <div style={{
+                    background: "#fff", borderRadius: 10, padding: "24px 28px",
+                    minWidth: 300, maxWidth: 380, boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
+                }}>
+                    <div style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}>{confirmState.message}</div>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                        <button className="minibtn" onClick={() => setConfirmState(null)}>취소</button>
+                        <button
+                            className="minibtn warn"
+                            onClick={() => {
+                                const action = confirmState.onConfirm;
+                                setConfirmState(null);
+                                action();
+                            }}
+                        >
+                            확인
+                        </button>
+                    </div>
+                </div>
             </div>
         )}
             <button className="minibtn" style={{ marginBottom: 12 }} onClick={() => navigate("/mypage/admin-fraud-cases")}>
@@ -297,29 +306,6 @@ function FraudCaseDetail() {
                 )}
                 {isClosed && <div style={{ fontSize: 13, color: "var(--muted)" }}>이미 종결된 사건입니다.</div>}
             </Panel>
-
-            {!isClosed && (
-                <Panel title="담당자 배정" style={{ marginTop: 16 }}>
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <select
-                            style={selectStyle}
-                            value={selectedAdminId}
-                            onChange={(e) => setSelectedAdminId(e.target.value)}
-                            disabled={assigning}
-                        >
-                            <option value="">담당자 선택</option>
-                            {admins.map((admin) => (
-                                <option key={admin.userId} value={admin.userId}>
-                                    {admin.name} (ID: {admin.userId})
-                                </option>
-                            ))}
-                        </select>
-                        <button className="minibtn" onClick={handleAssign} disabled={assigning}>
-                            {assigning ? "배정 중..." : "배정"}
-                        </button>
-                    </div>
-                </Panel>
-            )}
 
             {!isClosed && (
                 <Panel title="카드·계좌 잠금 요청" style={{ marginTop: 16 }}>

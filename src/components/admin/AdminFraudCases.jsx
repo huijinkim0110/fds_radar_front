@@ -37,6 +37,11 @@ export default function AdminFraudCases() {
       setTimeout(() => setToast(null), 2000);
   }
 
+  const [confirmState, setConfirmState] = useState(null); // { message, onConfirm }
+  function askConfirm(message, onConfirm) {
+      setConfirmState({ message, onConfirm });
+  }
+
   async function fetchCases() {
     try {
       setLoading(true);
@@ -56,7 +61,7 @@ export default function AdminFraudCases() {
 
   const filtered = filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter);
 
-  async function startInvestigation(fraudCaseId) {
+  async function doStartInvestigation(fraudCaseId) {
       try {
           setBusyId(fraudCaseId);
           await updateFraudCaseStatus(fraudCaseId, "INVESTIGATING");
@@ -68,8 +73,11 @@ export default function AdminFraudCases() {
           setBusyId(null);
       }
   }
+  function startInvestigation(fraudCaseId) {
+      askConfirm("조사를 시작하시겠습니까?", () => doStartInvestigation(fraudCaseId));
+  }
 
-  async function judge(fraudCaseId, decision) {
+  async function doJudge(fraudCaseId, decision) {
       try {
           setBusyId(fraudCaseId);
           await finalizeFraudDecision(fraudCaseId, decision);
@@ -84,6 +92,12 @@ export default function AdminFraudCases() {
       } finally {
           setBusyId(null);
       }
+  }
+  function judge(fraudCaseId, decision) {
+      const msg = decision === "FRAUD"
+          ? "사기 거래로 최종 판정하시겠습니까?"
+          : "정상 거래로 최종 판정하시겠습니까?";
+      askConfirm(msg, () => doJudge(fraudCaseId, decision));
   }
 
   if (loading) return <div>불러오는 중...</div>;
@@ -101,6 +115,33 @@ export default function AdminFraudCases() {
                     {toast.text}
                 </div>
             )}
+
+      {confirmState && (
+          <div style={{
+              position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)",
+              zIndex: 3000, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+              <div style={{
+                  background: "#fff", borderRadius: 10, padding: "24px 28px",
+                  minWidth: 300, maxWidth: 380, boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
+              }}>
+                  <div style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}>{confirmState.message}</div>
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                      <button className="minibtn" onClick={() => setConfirmState(null)}>취소</button>
+                      <button
+                          className="minibtn warn"
+                          onClick={() => {
+                              const action = confirmState.onConfirm;
+                              setConfirmState(null);
+                              action();
+                          }}
+                      >
+                          확인
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
 
       <TopBar title="이상거래 사건" crumb="관리자 / 이상거래 관리" search={false} />
 
