@@ -10,6 +10,6 @@ export async function getMyTransactions(userId) {
     const response = await axios.get(`${BASE_URL}/api/transactions`, {
         params: { userId, page: 0, size: 1000 },
     });
-    return response.data; // Page<TransactionResponse> — .content가 실제 배열
+    return response.data; // Page<TransactionResponse> — .con이상거래tent가 실제 배열
 }
  

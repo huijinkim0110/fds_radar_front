@@ -576,8 +576,8 @@ body.dark input[type="date"] {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
-  align-items: start;
-  width: 100%;          /* 전체 너비 강제 */
+  align-items: stretch;  /* start → stretch */
+  width: 100%;
 }
 .ac-row > .panel + .panel { margin-top: 0; }
 

@@ -38,6 +38,7 @@ function SimulatedSubscriptionList() {
     if (error) return <div>{error}</div>;
 
     const totalMaturity = subscriptions.reduce((sum, s) => sum + (s.expectedMaturityAmount ?? 0), 0);
+    const totalPaid = subscriptions.reduce((sum, s) => sum + (s.paidAmount ?? 0), 0);
 
     return (
         <div>
@@ -48,16 +49,27 @@ function SimulatedSubscriptionList() {
             ) : (
                 <>
                     <p>예상 만기금액 합계 : {totalMaturity.toLocaleString()}원</p>
+                    <p>실제 누적 납입액 합계 : {totalPaid.toLocaleString()}원</p>
                     <div>
                         {subscriptions.map((s) => (
                             <div key={s.simulatedSubscriptionId}>
                                 <h3>{s.productName}</h3>
+                                <p>출금 계좌 : {s.accountNumber}</p>
+                                {s.goalName && <p>연결된 목표: {s.goalName}</p>}
                                 <p>가입금액: {s.subscriptionAmount?.toLocaleString()}원</p>
                                 {s.monthlyPayment != null && (
                                     <p>월 납입액: {s.monthlyPayment.toLocaleString()}원</p>
                                 )}
                                 <p>가입기간: {s.subscriptionPeriod}개월</p>
                                 <p>예상 만기금액: {s.expectedMaturityAmount?.toLocaleString()}원</p>
+                                <p>실제 누적 납입액: {s.paidAmount?.toLocaleString()}원</p>
+                                <p>달성률: {s.achievementRate}%</p>
+                                {s.monthlyPayment != null && (
+                                    <p>납입 회차: {s.paidInstallments}/{s.subscriptionPeriod}회</p>
+                                )}
+                                {s.nextPaymentDate && (
+                                    <p>다음 납입 예정일: {s.nextPaymentDate.slice(0, 10)}</p>
+                                )}
                                 <p>가입일: {s.subscribedAt?.slice(0, 10)}</p>
                                 <button
                                     onClick={() => handleCancel(s.simulatedSubscriptionId)}
