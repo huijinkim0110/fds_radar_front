@@ -2,96 +2,220 @@ import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
+import { getMyFraudCases } from "../../api/fraud/fraudUserAPI";
 
 export default function FraudReportsPage() {
   const location = useLocation();
-  // 탭 상태: "history" (신고 내역 목록) 또는 "new" (새 신고 작성)
+
+  // 탭 상태
   const [activeTab, setActiveTab] = useState("history");
 
-  // --- 1. 신고 내역 목록용 상태 ---
-  const [reports, setReports] = useState([
-    {
-      id: "R-2026-001",
-      category: "거래 신고",
-      target: "APPLE.COM/BILL (₩ 129,000)",
-      reason: "본인이 하지 않은 거래",
-      requestedAt: "2026-08-28 10:15",
-      status: "처리 중",
-      adminComment: "담당 부서에서 부정 결제 여부를 조사 중입니다.",
-    },
-    {
-      id: "R-2026-002",
-      category: "카드 일시 잠금",
-      target: "KB국민 로맨틱카드 (•••• 4821)",
-      reason: "분실 우려 및 보안 잠금 요청",
-      requestedAt: "2026-08-27 16:40",
-      status: "승인 완료",
-      adminComment: "관리자에 의해 카드 일시 잠금이 정상 처리되었습니다.",
-    },
-  ]);
+  // 신고 내역
+  const [reports, setReports] = useState([]);
 
-  // --- 2. 새 신고 작성용 상태 ---
+  // 신고 작성
   const [selectedTransaction, setSelectedTransaction] = useState("");
   const [reason, setReason] = useState("");
   const [detail, setDetail] = useState("");
 
-  const transactions = [
-    { id: 1, merchant: "APPLE.COM/BILL", amount: 129000, occurredAt: "2026-08-28 09:42" },
-    { id: 2, merchant: "쿠팡", amount: 78000, occurredAt: "2026-08-27 21:15" },
-    { id: 3, merchant: "GOOGLE PAYMENT", amount: 45000, occurredAt: "2026-08-26 18:10" },
-  ];
+  // 거래 목록
+  const [transactions, setTransactions] = useState([]);
 
-  // 이상거래 확인 페이지에서 "모르는 거래"를 눌러 넘어온 경우 자동으로 'new' 탭으로 열고 데이터 세팅
+  const TEMP_USER_ID = 2;
+
+  // =========================================================
+  // 이상거래 목록 조회
+  // =========================================================
   useEffect(() => {
-    if (location.state?.targetTransaction) {
-      const target = location.state.targetTransaction;
-      setActiveTab("new");
-      setSelectedTransaction(target.id.toString());
-      setReason("본인이 하지 않은 거래");
-      setDetail(`[자동 연동] 이상거래 탐지 시스템에서 모르는 거래로 신고 접수된 항목입니다. (위험도: ${target.riskScore}%)`);
-    }
-  }, [location]);
+    getMyFraudCases(TEMP_USER_ID)
+      .then((data) => {
+        setTransactions(
+          data.map((raw) => ({
+            // 이상거래 확인 페이지에서 사용하는 ID
+            id: raw.fraudCaseId,
 
-  // 신고 접수 제출 핸들러
-  const handleSubmitReport = (e) => {
+            // 신고 API에서 실제로 필요한 거래 ID
+            transactionId: raw.transactionId,
+
+            merchant: raw.merchantName,
+            amount: raw.amount,
+            occurredAt: raw.transactionOccurredAt,
+            riskScore: Math.round(
+              (raw.fraudProbability ?? 0) * 100
+            ),
+          }))
+        );
+      })
+      .catch((error) => {
+        console.error("이상거래 내역 조회 실패:", error);
+      });
+  }, []);
+
+  // =========================================================
+  // 신고 내역 조회
+  // =========================================================
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:9090/api/fraud-reports/user/${TEMP_USER_ID}`
+        );
+
+        if (!response.ok) {
+          throw new Error("신고 내역 조회 실패");
+        }
+
+        const data = await response.json();
+
+        console.log("신고 내역 응답:", data);
+
+        setReports(data);
+      } catch (error) {
+        console.error("신고 내역 조회 실패:", error);
+      }
+    };
+
+    fetchReports();
+  }, []);
+
+  // =========================================================
+  // 이상거래 확인 페이지에서 "모르는 거래"를 눌러 넘어온 경우
+  // =========================================================
+  useEffect(() => {
+    if (
+      location.state?.targetTransaction &&
+      transactions.length > 0
+    ) {
+      const target = location.state.targetTransaction;
+
+      // target.id = fraudCaseId
+      const matchedTransaction = transactions.find(
+        (transaction) => transaction.id === target.id
+      );
+
+      setActiveTab("new");
+
+      if (matchedTransaction) {
+        setSelectedTransaction(
+          matchedTransaction.transactionId.toString()
+        );
+      } else if (target.transactionId) {
+        setSelectedTransaction(
+          target.transactionId.toString()
+        );
+      }
+
+      setReason("본인이 하지 않은 거래");
+
+      setDetail(
+        `[자동 연동] 이상거래 탐지 시스템에서 모르는 거래로 신고 접수된 항목입니다. (위험도: ${target.riskScore}%)`
+      );
+    }
+  }, [location, transactions]);
+
+  // =========================================================
+  // 신고 접수
+  // =========================================================
+  const handleSubmitReport = async (e) => {
     e.preventDefault();
+
     if (!selectedTransaction || !reason) {
       alert("신고할 거래와 신고 사유를 선택해주세요.");
       return;
     }
 
-    const targetTx = transactions.find((t) => t.id.toString() === selectedTransaction);
-    
-    // 새 신고 항목을 목록에 추가
-    const newReportItem = {
-      id: `R-2026-00${reports.length + 1}`,
-      category: "거래 신고",
-      target: `${targetTx ? targetTx.merchant : "선택된 가맹점"} (₩ ${targetTx ? targetTx.amount.toLocaleString() : 0})`,
-      reason: reason,
-      requestedAt: "2026-08-28 12:00", // 현재 시간 가정
-      status: "처리 중",
-      adminComment: "관리자 검토 대기 중입니다.",
-    };
+    try {
+      const response = await fetch(
+        `http://localhost:9090/api/fraud-reports/users/${TEMP_USER_ID}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            transactionId: Number(selectedTransaction),
+            reason: reason,
+          }),
+        }
+      );
 
-    setReports([newReportItem, ...reports]);
-    alert("거래 신고가 성공적으로 접수되었습니다.");
+      if (!response.ok) {
+        const errorText = await response.text();
 
-    // 초기화 후 내역 탭으로 이동
-    setSelectedTransaction("");
-    setReason("");
-    setDetail("");
-    setActiveTab("history");
+        console.error(
+          "신고 접수 서버 응답:",
+          response.status,
+          errorText
+        );
+
+        throw new Error(
+          `신고 접수 실패 (${response.status}): ${errorText}`
+        );
+      }
+
+      const newReport = await response.json();
+
+      console.log("신고 접수 완료:", newReport);
+
+      // 새 신고를 목록 맨 위에 추가
+      setReports((prev) => [newReport, ...prev]);
+
+      alert("거래 신고가 성공적으로 접수되었습니다.");
+
+      // 초기화
+      setSelectedTransaction("");
+      setReason("");
+      setDetail("");
+
+      // 신고 내역 탭으로 이동
+      setActiveTab("history");
+    } catch (error) {
+      console.error("신고 접수 실패:", error);
+      alert("신고 접수 중 오류가 발생했습니다.");
+    }
   };
 
-  // 신고 취소 핸들러
-  const handleCancelReport = (id, status) => {
-    if (status !== "처리 중") {
-      alert("이미 처리 완료되었거나 반려된 건은 취소할 수 없습니다.");
-      return;
+  // =========================================================
+  // 신고 취소
+  // =========================================================
+  // 현재 백엔드 FraudReportController에는 DELETE API가 없으므로
+  // 실제 취소 기능은 일단 제거하지 않고 버튼만 표시하지 않음.
+  // 나중에 DELETE API를 백엔드에 추가하면 다시 연결하면 됨.
+
+  // =========================================================
+  // 신고 상태 한글 변환
+  // =========================================================
+  const getStatusText = (status) => {
+    switch (status) {
+      case "RECEIVED":
+        return "처리 중";
+
+      case "PROCESSED":
+        return "처리 완료";
+
+      case "REJECTED":
+        return "반려";
+
+      default:
+        return status;
     }
-    if (!window.confirm("정말 해당 신고를 취소하시겠습니까?")) return;
-    setReports((prev) => prev.filter((item) => item.id !== id));
-    alert("신고가 취소되었습니다.");
+  };
+
+  // =========================================================
+  // 신고 상태 색상
+  // =========================================================
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "PROCESSED":
+        return "#22c55e";
+
+      case "REJECTED":
+        return "#ef4444";
+
+      case "RECEIVED":
+      default:
+        return "#f59e0b";
+    }
   };
 
   return (
@@ -102,8 +226,16 @@ export default function FraudReportsPage() {
         search={false}
       />
 
-      {/* 상단 탭 전환 버튼 영역 */}
-      <div style={{ display: "flex", gap: "12px", marginBottom: "20px" }}>
+      {/* =====================================================
+          상단 탭
+      ====================================================== */}
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          marginBottom: "20px",
+        }}
+      >
         <button
           type="button"
           onClick={() => setActiveTab("history")}
@@ -113,13 +245,20 @@ export default function FraudReportsPage() {
             fontSize: "13px",
             fontWeight: "700",
             cursor: "pointer",
-            background: activeTab === "history" ? "var(--blue)" : "var(--panel)",
-            color: activeTab === "history" ? "#fff" : "var(--ink)",
+            background:
+              activeTab === "history"
+                ? "var(--blue)"
+                : "var(--panel)",
+            color:
+              activeTab === "history"
+                ? "#fff"
+                : "var(--ink)",
             border: "1px solid var(--line)",
           }}
         >
           📋 신고 및 신청 내역
         </button>
+
         <button
           type="button"
           onClick={() => setActiveTab("new")}
@@ -129,8 +268,14 @@ export default function FraudReportsPage() {
             fontSize: "13px",
             fontWeight: "700",
             cursor: "pointer",
-            background: activeTab === "new" ? "var(--blue)" : "var(--panel)",
-            color: activeTab === "new" ? "#fff" : "var(--ink)",
+            background:
+              activeTab === "new"
+                ? "var(--blue)"
+                : "var(--panel)",
+            color:
+              activeTab === "new"
+                ? "#fff"
+                : "var(--ink)",
             border: "1px solid var(--line)",
           }}
         >
@@ -138,17 +283,52 @@ export default function FraudReportsPage() {
         </button>
       </div>
 
-      {/* 탭 1: 신고 및 신청 내역 목록 */}
+      {/* =====================================================
+          탭 1 : 신고 내역
+      ====================================================== */}
       {activeTab === "history" && (
-        <Panel title="신청/신고 현황" sub="접수된 거래 신고 및 보안 신청 내역 목록입니다.">
+        <Panel
+          title="신청/신고 현황"
+          sub="접수된 거래 신고 및 보안 신청 내역 목록입니다."
+        >
           {reports.length === 0 ? (
-            <div style={{ padding: "50px 0", textAlign: "center", color: "var(--muted)", fontSize: "13px" }}>
+            <div
+              style={{
+                padding: "50px 0",
+                textAlign: "center",
+                color: "var(--muted)",
+                fontSize: "13px",
+              }}
+            >
               조회된 내역이 없습니다.
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "16px",
+              }}
+            >
               {reports.map((report) => {
-                const statusColor = report.status === "승인 완료" ? "#22c55e" : report.status === "반려" ? "#ef4444" : "#f59e0b";
+                // -------------------------------------------------
+                // 백엔드 report.transactionId와
+                // fraudCases의 transactionId를 연결
+                // -------------------------------------------------
+                const transaction = transactions.find(
+                  (item) =>
+                    item.transactionId ===
+                    report.transactionId
+                );
+
+                const statusText = getStatusText(
+                  report.status
+                );
+
+                const statusColor = getStatusColor(
+                  report.status
+                );
+
                 return (
                   <div
                     key={report.id}
@@ -162,41 +342,140 @@ export default function FraudReportsPage() {
                       gap: "10px",
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                        <span style={{ fontSize: "11px", fontWeight: "700", padding: "3px 8px", borderRadius: "4px", background: "var(--panel)", border: "1px solid var(--line)", color: "var(--ink)" }}>
-                          {report.category}
+                    {/* ---------------------------------------------
+                        상단
+                    ---------------------------------------------- */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: "8px",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: "11px",
+                            fontWeight: "700",
+                            padding: "3px 8px",
+                            borderRadius: "4px",
+                            background: "var(--panel)",
+                            border:
+                              "1px solid var(--line)",
+                            color: "var(--ink)",
+                          }}
+                        >
+                          거래 신고
                         </span>
-                        <span style={{ fontSize: "12px", color: "var(--muted)" }}>{report.id}</span>
+
+                        <span
+                          style={{
+                            fontSize: "12px",
+                            color: "var(--muted)",
+                          }}
+                        >
+                          신고 #{report.id}
+                        </span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: "700", color: statusColor }}>● {report.status}</span>
-                        {report.status === "처리 중" && (
-                          <button
-                            type="button"
-                            className="minibtn"
-                            onClick={() => handleCancelReport(report.id, report.status)}
-                            style={{ borderColor: "#ef4444", color: "#ef4444", padding: "4px 8px", fontSize: "11px" }}
-                          >
-                            접수 취소
-                          </button>
-                        )}
-                      </div>
+
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          color: statusColor,
+                        }}
+                      >
+                        ● {statusText}
+                      </span>
                     </div>
+
+                    {/* ---------------------------------------------
+                        신고한 거래 정보
+                    ---------------------------------------------- */}
                     <div>
-                      <div style={{ fontSize: "14px", fontWeight: "700", color: "var(--ink)", marginBottom: "4px" }}>
-                        {report.target}
+                      <div
+                        style={{
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          color: "var(--ink)",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        {transaction &&
+                        `${transaction.merchant} / ₩${Number(
+                          transaction.amount
+                        ).toLocaleString()}`}
                       </div>
-                      <div style={{ fontSize: "12px", color: "var(--muted)" }}>
-                        신고 사유: <strong>{report.reason}</strong>
+
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--muted)",
+                          marginBottom: "4px",
+                        }}
+                      >
+                        거래일시:{" "}
+                        {transaction
+                          ? transaction.occurredAt
+                          : "거래 정보를 불러올 수 없습니다."}
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--muted)",
+                        }}
+                      >
+                        신고 사유:{" "}
+                        <strong>
+                          {report.reason}
+                        </strong>
                       </div>
                     </div>
-                    <div style={{ marginTop: "4px", paddingTop: "10px", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
-                      <div style={{ color: "var(--ink)" }}>
-                        <span style={{ color: "var(--muted)", marginRight: "6px" }}>관리자 코멘트:</span>
-                        {report.adminComment}
+
+                    {/* ---------------------------------------------
+                        하단
+                    ---------------------------------------------- */}
+                    <div
+                      style={{
+                        marginTop: "4px",
+                        paddingTop: "10px",
+                        borderTop:
+                          "1px solid var(--line)",
+                        display: "flex",
+                        justifyContent:
+                          "space-between",
+                        alignItems: "center",
+                        fontSize: "12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: "var(--muted)",
+                        }}
+                      >
+                        신고 접수일
                       </div>
-                      <div style={{ color: "var(--muted)", whiteSpace: "nowrap" }}>{report.requestedAt} 접수</div>
+
+                      <div
+                        style={{
+                          color: "var(--ink)",
+                          fontWeight: "600",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {report.createdAt
+                          ? report.createdAt
+                              .replace("T", " ")
+                              .slice(0, 16)
+                          : "-"}
+                      </div>
                     </div>
                   </div>
                 );
@@ -206,44 +485,118 @@ export default function FraudReportsPage() {
         </Panel>
       )}
 
-      {/* 탭 2: 새로운 거래 신고 작성 폼 */}
+      {/* =====================================================
+          탭 2 : 새로운 거래 신고
+      ====================================================== */}
       {activeTab === "new" && (
-        <Panel title="거래 신고 접수" sub="본인이 이용하지 않은 의심 거래와 사유를 입력해주세요.">
+        <Panel
+          title="거래 신고 접수"
+          sub="본인이 이용하지 않은 의심 거래와 사유를 입력해주세요."
+        >
           <form onSubmit={handleSubmitReport}>
+            {/* ---------------------------------------------
+                신고할 거래
+            ---------------------------------------------- */}
             <div style={{ marginBottom: "22px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--ink)", marginBottom: "8px" }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  color: "var(--ink)",
+                  marginBottom: "8px",
+                }}
+              >
                 신고할 거래
               </label>
+
               <select
                 value={selectedTransaction}
-                onChange={(e) => setSelectedTransaction(e.target.value)}
-                style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--panel2)", color: "var(--ink)", fontSize: "13px", outline: "none" }}
+                onChange={(e) =>
+                  setSelectedTransaction(e.target.value)
+                }
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  borderRadius: "8px",
+                  border:
+                    "1px solid var(--line)",
+                  background: "var(--panel2)",
+                  color: "var(--ink)",
+                  fontSize: "13px",
+                  outline: "none",
+                }}
               >
-                <option value="">거래를 선택해주세요</option>
+                <option value="">
+                  거래를 선택해주세요
+                </option>
+
                 {transactions.map((transaction) => (
-                  <option key={transaction.id} value={transaction.id}>
-                    {transaction.occurredAt} / {transaction.merchant} / ₩ {transaction.amount.toLocaleString()}
+                  <option
+                    key={transaction.id}
+                    value={transaction.transactionId}
+                  >
+                    {transaction.occurredAt} /{" "}
+                    {transaction.merchant} / ₩{" "}
+                    {Number(
+                      transaction.amount
+                    ).toLocaleString()}
                   </option>
                 ))}
               </select>
             </div>
 
+            {/* ---------------------------------------------
+                신고 사유
+            ---------------------------------------------- */}
             <div style={{ marginBottom: "22px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--ink)", marginBottom: "8px" }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  color: "var(--ink)",
+                  marginBottom: "8px",
+                }}
+              >
                 신고 사유
               </label>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "10px" }}>
-                {["본인이 하지 않은 거래", "결제 금액이 다름", "중복 결제", "알 수 없는 가맹점"].map((item) => (
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "repeat(2, 1fr)",
+                  gap: "10px",
+                }}
+              >
+                {[
+                  "본인이 하지 않은 거래",
+                  "결제 금액이 다름",
+                  "중복 결제",
+                  "알 수 없는 가맹점",
+                ].map((item) => (
                   <button
                     key={item}
                     type="button"
                     className="minibtn"
-                    onClick={() => setReason(item)}
+                    onClick={() =>
+                      setReason(item)
+                    }
                     style={{
                       padding: "12px",
-                      background: reason === item ? "var(--blue)" : "var(--panel2)",
-                      color: reason === item ? "#fff" : "var(--ink)",
-                      borderColor: reason === item ? "var(--blue)" : "var(--line)",
+                      background:
+                        reason === item
+                          ? "var(--blue)"
+                          : "var(--panel2)",
+                      color:
+                        reason === item
+                          ? "#fff"
+                          : "var(--ink)",
+                      borderColor:
+                        reason === item
+                          ? "var(--blue)"
+                          : "var(--line)",
                     }}
                   >
                     {item}
@@ -252,20 +605,57 @@ export default function FraudReportsPage() {
               </div>
             </div>
 
+            {/* ---------------------------------------------
+                상세 내용
+            ---------------------------------------------- */}
             <div style={{ marginBottom: "22px" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "700", color: "var(--ink)", marginBottom: "8px" }}>
+              <label
+                style={{
+                  display: "block",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  color: "var(--ink)",
+                  marginBottom: "8px",
+                }}
+              >
                 상세 내용
               </label>
+
               <textarea
                 value={detail}
-                onChange={(e) => setDetail(e.target.value)}
+                onChange={(e) =>
+                  setDetail(e.target.value)
+                }
                 placeholder="거래와 관련된 내용을 입력해주세요."
                 rows={6}
-                style={{ width: "100%", resize: "vertical", padding: "12px", boxSizing: "border-box", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--panel2)", color: "var(--ink)", fontSize: "13px", fontFamily: "inherit", outline: "none" }}
+                style={{
+                  width: "100%",
+                  resize: "vertical",
+                  padding: "12px",
+                  boxSizing: "border-box",
+                  border:
+                    "1px solid var(--line)",
+                  borderRadius: "8px",
+                  background: "var(--panel2)",
+                  color: "var(--ink)",
+                  fontSize: "13px",
+                  fontFamily: "inherit",
+                  outline: "none",
+                }}
               />
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            {/* ---------------------------------------------
+                버튼
+            ---------------------------------------------- */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent:
+                  "flex-end",
+                gap: "8px",
+              }}
+            >
               <button
                 type="button"
                 className="minibtn"
@@ -277,10 +667,16 @@ export default function FraudReportsPage() {
               >
                 초기화
               </button>
+
               <button
                 type="submit"
                 className="minibtn"
-                style={{ background: "var(--blue)", color: "#fff", borderColor: "var(--blue)" }}
+                style={{
+                  background: "var(--blue)",
+                  color: "#fff",
+                  borderColor:
+                    "var(--blue)",
+                }}
               >
                 거래 신고하기
               </button>
