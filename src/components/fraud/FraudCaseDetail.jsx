@@ -239,7 +239,7 @@ function FraudCaseDetail() {
             <button className="minibtn" style={{ marginBottom: 12 }} onClick={() => navigate("/mypage/admin-fraud-cases")}>
                 ← 목록으로
             </button>
-            <TopBar title={`사건 상세 #${detail.fraudCaseId}`} crumb="관리자 / 이상거래 관리" search={false} back={false} />
+            <TopBar title={`사건 상세 #${detail.fraudCaseId}`} crumb="관리자 / 이상거래 관리" search={false} />
 
             <Panel title="사건 정보" sub={`거래ID ${detail.transactionId}`}>
                 <div className="acc-detail">
