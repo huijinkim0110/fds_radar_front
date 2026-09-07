@@ -4,16 +4,13 @@ import { getFavorites } from "../../api/financialProduct/favoriteProductAPI";
 import { getPortfolio } from "../../api/financialProduct/simulatedSubscriptionAPI";
 import { getLatestProfile, hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
 import { getFinancialProfile, hasFinancialProfile } from "../../api/finance/financialProfileAPI";
-
 import { getGoals } from "../../api/finance/financialGoalsAPI";
-
 import { getMyAccounts } from "../../account/accountAPI";
 import { getMyCards } from "../../account/cardAPI";
 import { isStale, formatElapsed } from "../../utils/staleness";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext.jsx";
 import AdminDashboard from "../admin/AdminMyPage.jsx";
-
 import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
 import Panel from "../Panel.jsx";
@@ -27,17 +24,138 @@ const RISK_TENDENCY_LABELS = {
   AGGRESSIVE: "공격형",
 };
 
+const ACCOUNT_COLORS = [
+  "#BFDBFE",
+  "#A7F3D0",
+  "#FDE68A",
+  "#DDD6FE",
+  "#BAE6FD",
+];
+
+const CARD_COLORS = [
+  "#E0E7FF",
+  "#FCE7F3",
+  "#D1FAE5",
+  "#FEF3C7",
+  "#FFE4E6",
+];
+
+function AccountCarousel({ accounts, onNavigate, onAdd }) {
+  const [current, setCurrent] = useState(0);
+  const acc = accounts[current];
+
+  return (
+    <div>
+      {acc ? (
+        <div onClick={onNavigate} style={{
+          padding: "20px", borderRadius: 16,
+          background: ACCOUNT_COLORS[current % ACCOUNT_COLORS.length],
+          cursor: "pointer", marginBottom: 12, minHeight: 140
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
+            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.6)" }}>계좌</span>
+            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.6)" }}>{acc.accountNumber}</span>
+          </div>
+          <div style={{ fontSize: 14, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{acc.accountName || "계좌"}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#1E1E3C" }}>₩ {Number(acc.balance).toLocaleString()}</div>
+        </div>
+      ) : (
+        <div style={{
+          minHeight: 140, borderRadius: 16, border: "2px dashed var(--line)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 14
+        }} onClick={onAdd}>
+          + 계좌 추가
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+        {accounts.map((a, i) => (
+          <div key={a.id} onClick={() => setCurrent(i)} style={{
+            minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+            background: i === current ? ACCOUNT_COLORS[i % ACCOUNT_COLORS.length] : "var(--panel2)",
+            border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
+            transition: "all 0.2s", flexShrink: 0
+          }}>
+            <div style={{ fontSize: 10, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2 }}>{a.accountNumber}</div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountName || "계좌"}</div>
+          </div>
+        ))}
+        {/* 추가 버튼 */}
+        <div onClick={onAdd} style={{
+          minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+          background: "var(--panel2)", border: "1.5px dashed var(--line)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0, color: "var(--muted)", fontSize: 18, fontWeight: 300
+        }}>+</div>
+      </div>
+    </div>
+  );
+}
+
+function CardCarousel({ cards, onNavigate, onAdd }) {
+  const [current, setCurrent] = useState(0);
+  const card = cards[current];
+
+  return (
+    <div>
+      {card ? (
+        <div onClick={onNavigate} style={{
+          padding: "20px", borderRadius: 16,
+          background: CARD_COLORS[current % CARD_COLORS.length],
+          cursor: "pointer", marginBottom: 12, minHeight: 140
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
+            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.6)" }}>{card.cardType === "CREDIT" ? "신용" : "체크"}</span>
+            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.7)" }}>{card.cardNumber}</span>
+          </div>
+          <div style={{ fontSize: 14, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{card.cardName || "카드"}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: "#1E1E3C" }}>한도 ₩ {Number(card.availableLimit).toLocaleString()}</div>
+        </div>
+      ) : (
+        <div style={{
+          minHeight: 140, borderRadius: 16, border: "2px dashed var(--line)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 14
+        }} onClick={onAdd}>
+          + 카드 추가
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+        {cards.map((c, i) => (
+          <div key={c.id} onClick={() => setCurrent(i)} style={{
+            minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+            background: i === current ? CARD_COLORS[i % CARD_COLORS.length] : "var(--panel2)",
+            border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
+            transition: "all 0.2s", flexShrink: 0
+          }}>
+            <div style={{ fontSize: 10, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2 }}>
+              {c.cardType === "CREDIT" ? "신용" : "체크"}
+            </div>
+            <div style={{ fontSize: 11, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {c.cardName || "카드"}
+            </div>
+          </div>
+        ))}
+        {/* 추가 버튼 */}
+        <div onClick={onAdd} style={{
+          minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+          background: "var(--panel2)", border: "1.5px dashed var(--line)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexShrink: 0, color: "var(--muted)", fontSize: 18, fontWeight: 300
+        }}>+</div>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { isDark, toggleDarkMode } = useTheme();
   const userId = user?.userId;
 
-  // ── 진짜 계좌·카드 (DB) ──
   const [accounts, setAccounts] = useState([]);
   const [cards, setCards] = useState([]);
-
-  // 투자·재무 API 데이터
   const [favoriteCount, setFavoriteCount] = useState(null);
   const [subscriptions, setSubscriptions] = useState(null);
   const [goals, setGoals] = useState(null);
@@ -46,26 +164,16 @@ export default function Dashboard() {
   const [financialProfile, setFinancialProfile] = useState(null);
   const [hasFinProfile, setHasFinProfile] = useState(null);
 
-  // 계좌·카드 로드 (로그인 유저 기준)
   useEffect(() => {
     if (!userId) return;
     getMyAccounts(userId).then(setAccounts).catch(() => {});
     getMyCards(userId).then(setCards).catch(() => {});
   }, [userId]);
 
-  // 투자·재무 로드
   useEffect(() => {
     getFavorites(TEMP_USER_ID).then((list) => setFavoriteCount(list.length)).catch(() => {});
-    getPortfolio(TEMP_USER_ID)
-
-      .then((list) => setSubscriptions(list))
-      .catch(() => {});
-
-    getGoals(TEMP_USER_ID)
-
-      .then((list) => setActiveSubscriptionCount(list.filter((s) => s.subscriptionStatus === "ACTIVE").length))
-
-      .catch(() => {});
+    getPortfolio(TEMP_USER_ID).then((list) => setSubscriptions(list)).catch(() => {});
+    getGoals(TEMP_USER_ID).then(setGoals).catch(() => {});
     hasDiagnosisHistory(TEMP_USER_ID).then(setHasDiagnosis).catch(() => {});
     hasFinancialProfile(TEMP_USER_ID).then(setHasFinProfile).catch(() => {});
   }, []);
@@ -78,10 +186,8 @@ export default function Dashboard() {
     if (hasFinProfile) getFinancialProfile(TEMP_USER_ID).then(setFinancialProfile).catch(() => {});
   }, [hasFinProfile]);
 
-  // 총 잔액 (진짜 계좌 합)
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
 
-  // 오래된 데이터 안내
   const staleNotices = [];
   if (latestProfile && isStale(latestProfile.diagnosedAt)) {
     staleNotices.push(`투자성향 진단이 ${formatElapsed(latestProfile.diagnosedAt)}이에요. 재진단을 권장해요.`);
@@ -90,8 +196,6 @@ export default function Dashboard() {
     staleNotices.push(`재무 프로필을 ${formatElapsed(financialProfile.updatedAt ?? financialProfile.createdAt)} 수정 안했어요. 업데이트를 권장해요.`);
   }
 
-
-  // 모의가입 전체 달성률 (실제 누적 납입액 / 목표 납입액)
   const totalPaid = (subscriptions ?? []).reduce((sum, s) => sum + (s.paidAmount ?? 0), 0);
   const totalTarget = (subscriptions ?? []).reduce((sum, s) => {
     const target = s.monthlyPayment != null ? s.monthlyPayment * s.subscriptionPeriod : s.subscriptionAmount;
@@ -99,42 +203,6 @@ export default function Dashboard() {
   }, 0);
   const subscriptionAchievementRate = totalTarget === 0 ? 0 : Math.round((totalPaid / totalTarget) * 1000) / 10;
 
-  // 재무목표 전체 평균 달성률
-  const avgGoalAchievement = !goals || goals.length === 0
-    ? 0
-    : Math.round((goals.reduce((sum, g) => sum + (g.achievementRate ?? 0), 0) / goals.length) * 10) / 10;
-
-  // 송금 처리 함수
-  async function handleTransfer(e) {
-    e.preventDefault();
-    const amt = Number(form.amount);
-    if (!amt || amt <= 0) return setTransferMsg("금액을 입력해주세요.");
-    if (amt > balance) return setTransferMsg("잔액이 부족합니다.");
-
-    try {
-      setBalance((prev) => prev - amt);  // 화면 잔액 즉시 차감
-      setTxns((prev) => [
-        {
-          time: new Date().toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }),
-          name: `이체 · ${form.recipient}`,
-          kind: "이체",
-          amt: `₩ ${amt.toLocaleString()}`,
-          status: "정상",
-        },
-        ...prev.slice(0, 3),
-      ]);
-      setTransferMsg("송금이 완료되었습니다.");
-      setForm({ recipient: "", amount: "" });
-      setTimeout(() => {
-        setShowTransfer(false);
-        setTransferMsg("");
-      }, 1500);
-    } catch (err) {
-      setTransferMsg("송금에 실패했습니다.");
-    }
-  }
-
-  // KPI 카드 구성 (두 번째 API 데이터 + 첫 번째 스타일 적용)
   const kpis = [
     {
       k: "가입한 상품",
@@ -168,18 +236,14 @@ export default function Dashboard() {
       pct: hasFinProfile ? 100 : 20,
       color: "var(--blue)",
     },
-
-
   ];
 
-  // 관리자면 관리자 대시보드로
   if (user?.role === "ADMIN") return <AdminDashboard />;
 
   return (
     <>
       <TopBar title="내 대시보드" crumb="홈 / 내 계좌 및 자산 요약" />
 
-      {/* 잔액 (송금하기 삭제, 잔액만) */}
       <div className="balance">
         <div>
           <div className="lbl">내 총 자산</div>
@@ -193,42 +257,24 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* 계좌(왼쪽) / 카드(오른쪽) — 나란히 */}
-<div className="ac-row" style={{ marginTop: 16 }}>
-  {/* 계좌 슬라이드 */}
-  <Panel title="내 계좌" sub={`${accounts.length}개`}>
-    <div className="slide-row">
-      {accounts.map((a) => (
-        <div key={a.id} className="slide-card acc" onClick={() => navigate("/mypage/accounts")}>
-          <div className="slide-top">
-            <span className="slide-tag">계좌</span>
-            <span className="slide-num">{a.accountNumber}</span>
-          </div>
-          <div className="slide-name">{a.accountName}</div>
-          <div className="slide-value">₩ {Number(a.balance).toLocaleString()}</div>
-        </div>
-      ))}
-    </div>
-  </Panel>
+      {/* 계좌/카드 좌우 배치 */}
+      <div className="ac-row" style={{ marginTop: 16 }}>
+        <Panel title="내 계좌" sub={`${accounts.length}개`}>
+          <AccountCarousel
+            accounts={accounts}
+            onNavigate={() => navigate("/mypage/accounts")}
+            onAdd={() => navigate("/mypage/accounts")}
+          />
+        </Panel>
+        <Panel title="내 카드" sub={`${cards.length}장`}>
+          <CardCarousel
+            cards={cards}
+            onNavigate={() => navigate("/mypage/cards")}
+            onAdd={() => navigate("/mypage/cards")}
+          />
+        </Panel>
+      </div>
 
-  {/* 카드 슬라이드 */}
-  <Panel title="내 카드" sub={`${cards.length}장`}>
-    <div className="slide-row">
-      {cards.map((c) => (
-        <div key={c.id} className="slide-card card" onClick={() => navigate("/mypage/cards")}>
-          <div className="slide-top">
-            <span className="slide-tag">{c.cardType === "CREDIT" ? "신용" : "체크"}</span>
-            <span className="slide-num">{c.cardNumber}</span>
-          </div>
-          <div className="slide-name">{c.cardName}</div>
-          <div className="slide-value">한도 ₩ {Number(c.availableLimit).toLocaleString()}</div>
-        </div>
-      ))}
-    </div>
-  </Panel>
-</div>
-
-      {/* 오래된 데이터 안내 */}
       {staleNotices.length > 0 && (
         <div className="cols" style={{ gridTemplateColumns: "1fr", marginBottom: 16, marginTop: 16 }}>
           <Panel title="확인이 필요해요" sub="오래된 정보">
@@ -244,12 +290,10 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* KPI */}
       <div className="kpis" style={{ marginTop: 16 }}>
         {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
       </div>
 
-      {/* 최근 거래 / 투자·재무 — 높이 맞춤 */}
       <div className="cols cols-eq">
         <Panel title="내 최근 거래" sub="의심 거래는 자동 표시" right={<div className="filterpill">전체</div>}>
           <div className="dash-empty">
@@ -283,7 +327,6 @@ export default function Dashboard() {
         </Panel>
       </div>
 
-      {/* 다크모드 설정 */}
       <div className="panel" style={{ marginTop: 20 }}>
         <div className="setrow" style={{ padding: "4px 0", borderBottom: "none" }}>
           <div>
