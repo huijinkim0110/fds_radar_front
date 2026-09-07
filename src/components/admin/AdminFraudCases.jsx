@@ -120,15 +120,15 @@ export default function AdminFraudCases() {
 
       <Panel title="탐지된 이상거래" sub={`총 ${filtered.length}건`}>
         <table>
-          <thead>
-            <tr>
-              <th>사건번호</th><th>거래ID</th><th>거래유형</th><th>우선순위</th>
-              <th>AI 이상확률</th><th>접수일시</th><th>담당자</th><th>상태</th><th>처리</th>
-            </tr>
+         <thead>
+              <tr>
+                <th>사건번호</th><th>거래ID</th><th>거래유형</th><th>우선순위</th>
+                <th>AI 이상확률</th><th>접수일시</th><th>상태</th><th>처리</th>
+              </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 사건이 없습니다.</td></tr>
+              <tr><td colSpan={8} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 사건이 없습니다.</td></tr>
             )}
             {filtered.map((c) => {
               const r = RISK[c.priority] ?? { label: getCasePriorityLabel(c.priority), color: "var(--muted)", bg: "transparent" };
@@ -146,7 +146,6 @@ export default function AdminFraudCases() {
                   <td><span className="chip" style={{ color: r.color, background: r.bg }}>{r.label}</span></td>
                   <td className="tx">{formatProbabilityPercent(c.fraudProbability)}</td>
                   <td style={{ fontSize: 11.5, color: "var(--muted)" }}>{formatDateTime(c.openedAt)}</td>
-                  <td className="tx">{c.assignedAdminId}</td>
                   <td><span className="chip" style={{ color: s.color, background: s.bg }}>{s.label}</span></td>
                   <td onClick={(e) => e.stopPropagation()}>
                     {c.caseStatus === "RECEIVED" && (

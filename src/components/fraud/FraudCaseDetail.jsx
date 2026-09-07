@@ -272,10 +272,6 @@ function FraudCaseDetail() {
                         </div>
                     </div>
                     <div className="acc-detail-item">
-                        <div className="acc-detail-label">담당자</div>
-                        <div className="acc-detail-value">{detail.assignedAdminId}</div>
-                    </div>
-                    <div className="acc-detail-item">
                         <div className="acc-detail-label">접수일시</div>
                         <div className="acc-detail-value">{formatDateTime(detail.openedAt)}</div>
                     </div>
