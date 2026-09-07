@@ -1,80 +1,205 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
+import { getMyFraudCases } from "../../api/fraud/fraudUserAPI";
+import { getMyTransactions } from "../../api/transaction/transactionAPI";
 
 export default function DisputesPage() {
+  const location = useLocation();
+
+  // 탭 상태
   const [activeTab, setActiveTab] = useState("history");
 
-  // --- 1. 이의 제기 신청 내역 상태 ---
-  const [disputes, setDisputes] = useState([
-    {
-      id: "DISP-2026-001",
-      target: "스타벅스 강남점 (₩ 6,500)",
-      reason: "중복 결제 승인",
-      requestedAt: "2026-08-27 14:10",
-      status: "심사 중",
-      adminComment: "가맹점 매출 전표 확인을 요청하였습니다.",
-    },
-    {
-      id: "DISP-2026-002",
-      target: "해외 가맹점 승인 (₩ 45,000)",
-      reason: "미승인 거래 (본인 미사용)",
-      requestedAt: "2026-08-20 09:30",
-      status: "승인 완료",
-      adminComment: "오인 승인 확인되어 청구 취소(환급) 처리되었습니다.",
-    },
-  ]);
+  // 이의 제기 내역
+  const [disputes, setDisputes] = useState([]);
 
-  // --- 2. 새로운 이의 제기 작성 폼 상태 ---
+  // 이의 제기 작성
   const [selectedTransaction, setSelectedTransaction] = useState("");
   const [reasonCategory, setReasonCategory] = useState("");
   const [detail, setDetail] = useState("");
 
-  // 이의 제기 대상이 될 수 있는 최근 거래 목록 예시
-  const transactions = [
-    { id: 1, merchant: "APPLE.COM/BILL", amount: 129000, occurredAt: "2026-08-28 09:42" },
-    { id: 2, merchant: "쿠팡", amount: 78000, occurredAt: "2026-08-27 21:15" },
-    { id: 3, merchant: "스타벅스 강남점", amount: 6500, occurredAt: "2026-08-26 14:20" },
-  ];
+  // 거래 목록
+  const [transactions, setTransactions] = useState([]);
 
-  // 이의 제기 접수 핸들러
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!selectedTransaction || !reasonCategory) {
-      alert("이의 제기할 거래와 사유를 선택해주세요.");
-      return;
+  const TEMP_USER_ID = 2;
+
+  // =========================================================
+// 1. [GET] 대상 거래 목록 조회 (Transactions DB 연동)
+// =========================================================
+useEffect(() => {
+  getMyTransactions(TEMP_USER_ID)
+    .then((data) => {
+      const list = data.content ? data.content : data;
+
+      setTransactions(
+        list.map((raw) => ({
+          id: raw.transactionId, // PK
+          merchant:
+            raw.transactionType === "ACCOUNT_TRANSFER"
+              ? raw.recipientName ?? "계좌이체"
+              : raw.merchantName ?? "카드결제",
+          amount: raw.amount,
+          occurredAt: raw.occurredAt
+            ? raw.occurredAt.replace("T", " ").slice(0, 16)
+            : "-",
+        }))
+      );
+    })
+    .catch((error) => {
+      console.error("대상 거래 내역 조회 실패:", error);
+    });
+}, []);
+
+  // =========================================================
+  // 2. [GET] 이의 제기 내역 조회 (DB 연동)
+  // =========================================================
+  const fetchDisputes = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:9090/api/dispute-requests/user/${TEMP_USER_ID}`
+      );
+
+      if (!response.ok) {
+        throw new Error("이의 제기 내역 조회 실패");
+      }
+
+      const data = await response.json();
+      console.log("이의 제기 내역 응답:", data);
+      setDisputes(data);
+    } catch (error) {
+      console.error("이의 제기 내역 조회 실패:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDisputes();
+  }, []);
+
+  // =========================================================
+  // 3. 외부/타 페이지에서 네비게이션으로 전달받은 경우 자동 선택
+  // =========================================================
+  useEffect(() => {
+    if (location.state?.targetTransaction && transactions.length > 0) {
+      const target = location.state.targetTransaction;
+
+      const matchedTransaction = transactions.find(
+        (transaction) => transaction.id === target.id
+      );
+
+      setActiveTab("new");
+
+      if (matchedTransaction) {
+        setSelectedTransaction(matchedTransaction.transactionId.toString());
+      } else if (target.transactionId) {
+        setSelectedTransaction(target.transactionId.toString());
+      }
+
+      setReasonCategory("중복 결제 승인");
+      setDetail(
+        `[자동 연동] 이의 제기 신청 대상 거래입니다. (위험도: ${target.riskScore}%)`
+      );
+    }
+  }, [location, transactions]);
+
+  // =========================================================
+  // 4. [POST] 이의 제기 접수 및 DB 저장
+  // =========================================================
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!selectedTransaction || !reasonCategory) {
+    alert("이의 제기할 거래와 사유를 선택해주세요.");
+    return;
+  }
+
+  const parsedTransactionId = Number(selectedTransaction);
+
+  // NaN 혹은 값이 비어있는지 2차 검증
+  if (isNaN(parsedTransactionId) || !parsedTransactionId) {
+    alert("올바른 거래를 선택해 주세요.");
+    return;
+  }
+
+  const payload = {
+    transactionId: parsedTransactionId,
+    reason: reasonCategory,
+    detail: detail,
+  };
+
+  // 💡 백엔드로 나가는 실제 데이터를 콘솔로 확인해보세요
+  console.log("보내는 Payload 데이터:", payload);
+  console.log("전송될 userId:", TEMP_USER_ID);
+
+  try {
+    const response = await fetch(
+      `http://localhost:9090/api/dispute-requests/users/${TEMP_USER_ID}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("이의 제기 접수 서버 응답:", response.status, errorText);
+      throw new Error(`이의 제기 접수 실패 (${response.status}): ${errorText}`);
     }
 
-    const targetTx = transactions.find((t) => t.id.toString() === selectedTransaction);
+    const newDispute = await response.json();
+    console.log("이의 제기 접수 완료:", newDispute);
 
-    const newDispute = {
-      id: `DISP-2026-00${disputes.length + 1}`,
-      target: `${targetTx ? targetTx.merchant : "가맹점"} (₩ ${targetTx ? targetTx.amount.toLocaleString() : 0})`,
-      reason: reasonCategory,
-      requestedAt: "2026-08-28 17:00", // 현재 시간 가정
-      status: "심사 중",
-      adminComment: "접수가 완료되어 담당자가 검토 중입니다.",
-    };
-
-    setDisputes([newDispute, ...disputes]);
     alert("이의 제기가 성공적으로 접수되었습니다.");
+    await fetchDisputes();
 
-    // 폼 초기화 및 내역 탭으로 이동
     setSelectedTransaction("");
     setReasonCategory("");
     setDetail("");
     setActiveTab("history");
+  } catch (error) {
+    console.error("이의 제기 접수 실패:", error);
+    alert("이의 제기 접수 중 오류가 발생했습니다.");
+  }
+};
+
+  // =========================================================
+  // 5. 상태 표시 유틸리티
+  // =========================================================
+  const getStatusText = (status) => {
+    switch (status) {
+      case "RECEIVED":
+      case "IN_REVIEW":
+      case "심사 중":
+        return "심사 중";
+      case "APPROVED":
+      case "PROCESSED":
+      case "승인 완료":
+        return "승인 완료";
+      case "REJECTED":
+      case "반려":
+        return "반려";
+      default:
+        return status || "심사 중";
+    }
   };
 
-  // 접수 취소 핸들러
-  const handleCancel = (id, status) => {
-    if (status !== "심사 중") {
-      alert("이미 심사가 완료되었거나 처리된 건은 취소할 수 없습니다.");
-      return;
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "APPROVED":
+      case "PROCESSED":
+      case "승인 완료":
+        return "#22c55e";
+      case "REJECTED":
+      case "반려":
+        return "#ef4444";
+      case "RECEIVED":
+      case "IN_REVIEW":
+      default:
+        return "#f59e0b";
     }
-    if (!window.confirm("정말 이의 제기를 취소하시겠습니까?")) return;
-    setDisputes((prev) => prev.filter((item) => item.id !== id));
-    alert("이의 제기가 취소되었습니다.");
   };
 
   return (
@@ -121,7 +246,7 @@ export default function DisputesPage() {
         </button>
       </div>
 
-      {/* 탭 1: 이의 제기 신청 내역 목록 */}
+      {/* 탭 1: 이의 제기 신청 내역 목록 (GET) */}
       {activeTab === "history" && (
         <Panel title="이의 제기 현황" sub="접수된 결제 건에 대한 이의 제기 및 환급 심사 내역입니다.">
           {disputes.length === 0 ? (
@@ -131,7 +256,13 @@ export default function DisputesPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {disputes.map((item) => {
-                const statusColor = item.status === "승인 완료" ? "#22c55e" : item.status === "반려" ? "#ef4444" : "#f59e0b";
+                const transaction = transactions.find(
+                  (tx) => tx.transactionId === item.transactionId
+                );
+
+                const statusText = getStatusText(item.status);
+                const statusColor = getStatusColor(item.status);
+
                 return (
                   <div
                     key={item.id}
@@ -147,26 +278,20 @@ export default function DisputesPage() {
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--blue)" }}>{item.id}</span>
+                        <span style={{ fontSize: "12px", fontWeight: "700", color: "var(--blue)" }}>
+                          이의제기 #{item.id}
+                        </span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: "700", color: statusColor }}>● {item.status}</span>
-                        {item.status === "심사 중" && (
-                          <button
-                            type="button"
-                            className="minibtn"
-                            onClick={() => handleCancel(item.id, item.status)}
-                            style={{ borderColor: "#ef4444", color: "#ef4444", padding: "4px 8px", fontSize: "11px" }}
-                          >
-                            접수 취소
-                          </button>
-                        )}
-                      </div>
+                      <span style={{ fontSize: "12px", fontWeight: "700", color: statusColor }}>
+                        ● {statusText}
+                      </span>
                     </div>
 
                     <div>
                       <div style={{ fontSize: "15px", fontWeight: "700", color: "var(--ink)", marginBottom: "4px" }}>
-                        {item.target}
+                        {transaction
+                          ? `${transaction.merchant} (₩ ${Number(transaction.amount).toLocaleString()})`
+                          : item.target || "거래 정보를 불러올 수 없습니다."}
                       </div>
                       <div style={{ fontSize: "13px", color: "var(--muted)" }}>
                         제기 사유: <strong style={{ color: "var(--ink)" }}>{item.reason}</strong>
@@ -176,9 +301,11 @@ export default function DisputesPage() {
                     <div style={{ paddingTop: "12px", borderTop: "1px solid var(--line)", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
                       <div style={{ color: "var(--ink)" }}>
                         <span style={{ color: "var(--muted)", marginRight: "6px" }}>처리 코멘트:</span>
-                        {item.adminComment}
+                        {item.adminComment || "접수가 완료되어 담당자가 검토 중입니다."}
                       </div>
-                      <div style={{ color: "var(--muted)", whiteSpace: "nowrap" }}>{item.requestedAt} 접수</div>
+                      <div style={{ color: "var(--muted)", whiteSpace: "nowrap" }}>
+                        {item.createdAt ? item.createdAt.replace("T", " ").slice(0, 16) : item.requestedAt || "-"} 접수
+                      </div>
                     </div>
                   </div>
                 );
@@ -188,7 +315,7 @@ export default function DisputesPage() {
         </Panel>
       )}
 
-      {/* 탭 2: 새로운 이의 제기 작성 폼 */}
+      {/* 탭 2: 새로운 이의 제기 작성 폼 (POST) */}
       {activeTab === "new" && (
         <Panel title="이의 제기 신청" sub="부당한 청구, 중복 결제 등 결제 건에 대해 이의를 제기할 수 있습니다.">
           <form onSubmit={handleSubmit}>
@@ -204,7 +331,7 @@ export default function DisputesPage() {
                 <option value="">이의 제기할 거래를 선택해주세요</option>
                 {transactions.map((tx) => (
                   <option key={tx.id} value={tx.id}>
-                    {tx.occurredAt} / {tx.merchant} / ₩ {tx.amount.toLocaleString()}
+                    {tx.occurredAt} / {tx.merchant} / ₩ {Number(tx.amount).toLocaleString()}
                   </option>
                 ))}
               </select>

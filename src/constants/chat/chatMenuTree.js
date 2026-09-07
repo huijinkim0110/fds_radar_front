@@ -14,6 +14,7 @@ export const CHAT_MENU_TREE = {
         '추천받기': { implemented: true, action: 'RECOMMENDATION', requiresAuth: true },
     },
     '내 정보': {
+
         '재무목표': { implemented: true, action: 'GOAL', requiresAuth: true },
         '투자성향 진단': { implemented: true, action: 'DIAGNOSIS', requiresAuth: false },
         '진단 결과': { implemented: true, action: 'DIAGNOSIS_RESULT', requiresAuth: true },
@@ -44,6 +45,7 @@ export const CHAT_MENU_TREE = {
         '1:1 상담문의': { implemented: true, action: 'CUSTOMER_SERVICE', requiresAuth: false },
         '고객센터 페이지 보기': { implemented: true, action: 'CUSTOMER_CENTER_PAGE', requiresAuth: false },
      },
+
 };
 
 export const NOT_IMPLEMENTED_MESSAGE = '아직 준비 중인 기능이에요.';
