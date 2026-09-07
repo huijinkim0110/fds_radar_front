@@ -31,6 +31,12 @@ export default function AdminFraudCases() {
   const [filter, setFilter] = useState("ALL");
   const [busyId, setBusyId] = useState(null);
 
+  const [toast, setToast] = useState(null); // { text, type: "success" | "error" }
+  function notify(text, type = "success") {
+      setToast({ text, type });
+      setTimeout(() => setToast(null), 2000);
+  }
+
   async function fetchCases() {
     try {
       setLoading(true);
@@ -50,30 +56,34 @@ export default function AdminFraudCases() {
 
   const filtered = filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter);
 
-  // 조사 시작: 접수(RECEIVED) -> 조사중(INVESTIGATING)
   async function startInvestigation(fraudCaseId) {
-    try {
-      setBusyId(fraudCaseId);
-      await updateFraudCaseStatus(fraudCaseId, "INVESTIGATING");
-      await fetchCases();
-    } catch (err) {
-      alert("상태 변경에 실패했습니다: " + (err.response?.data?.message ?? err.message));
-    } finally {
-      setBusyId(null);
-    }
+      try {
+          setBusyId(fraudCaseId);
+          await updateFraudCaseStatus(fraudCaseId, "INVESTIGATING");
+          await fetchCases();
+          notify("조사가 시작되었습니다.");
+      } catch (err) {
+          notify("상태 변경에 실패했습니다: " + (err.response?.data?.message ?? err.message), "error");
+      } finally {
+          setBusyId(null);
+      }
   }
 
-  // 최종 판정: 조사중(INVESTIGATING) -> 종결(CLOSED), 정상(NORMAL) 또는 사기(FRAUD)
   async function judge(fraudCaseId, decision) {
-    try {
-      setBusyId(fraudCaseId);
-      await finalizeFraudDecision(fraudCaseId, decision);
-      await fetchCases();
-    } catch (err) {
-      alert("최종 판정에 실패했습니다: " + (err.response?.data?.message ?? err.message));
-    } finally {
-      setBusyId(null);
-    }
+      try {
+          setBusyId(fraudCaseId);
+          await finalizeFraudDecision(fraudCaseId, decision);
+          await fetchCases();
+          notify(
+              decision === "FRAUD"
+                  ? "사기 거래로 판정되어 사건이 종결되었습니다."
+                  : "정상 거래로 판정되어 사건이 종결되었습니다."
+          );
+      } catch (err) {
+          notify("최종 판정에 실패했습니다: " + (err.response?.data?.message ?? err.message), "error");
+      } finally {
+          setBusyId(null);
+      }
   }
 
   if (loading) return <div>불러오는 중...</div>;
@@ -81,6 +91,17 @@ export default function AdminFraudCases() {
 
   return (
     <>
+      {toast && (
+                <div style={{
+                    position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)",
+                    zIndex: 2000, padding: "12px 22px", borderRadius: 8, fontSize: 14, fontWeight: 500,
+                    color: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                    background: toast.type === "error" ? "#dc2626" : "#059669",
+                }}>
+                    {toast.text}
+                </div>
+            )}
+
       <TopBar title="이상거래 사건" crumb="관리자 / 이상거래 관리" search={false} />
 
       {/* 상태 필터 — 백엔드 CaseStatus(RECEIVED/INVESTIGATING/CLOSED) 기준 */}

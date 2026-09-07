@@ -25,6 +25,12 @@ export default function AdminLockRequests() {
   const [error, setError] = useState(null);
   const [busyId, setBusyId] = useState(null);
 
+  const [toast, setToast] = useState(null); // { text, type: "success" | "error" }
+  function notify(text, type = "success") {
+      setToast({ text, type });
+      setTimeout(() => setToast(null), 2000);
+  }
+
   async function fetchRequests() {
     try {
       setLoading(true);
@@ -48,16 +54,17 @@ export default function AdminLockRequests() {
   const pendingCount = requests.filter((r) => r.requestStatus === "RECEIVED").length;
   
   async function handle(lockRequestId, decision) {
-    try {
-      setBusyId(lockRequestId);
-      const requestStatus = decision === "approve" ? "COMPLETED" : "REJECTED";
-      await processLockRequest(lockRequestId, requestStatus);
-      await fetchRequests();
-    } catch (err) {
-      alert("처리에 실패했습니다: " + (err.response?.data?.message ?? err.message));
-    } finally {
-      setBusyId(null);
-    }
+      try {
+          setBusyId(lockRequestId);
+          const requestStatus = decision === "approve" ? "COMPLETED" : "REJECTED";
+          await processLockRequest(lockRequestId, requestStatus);
+          await fetchRequests();
+          notify(decision === "approve" ? "잠금 요청이 승인되었습니다." : "잠금 요청이 거부되었습니다.");
+      } catch (err) {
+          notify("처리에 실패했습니다: " + (err.response?.data?.message ?? err.message), "error");
+      } finally {
+          setBusyId(null);
+      }
   }
 
   if (loading) return <div>불러오는 중...</div>;
@@ -65,6 +72,17 @@ export default function AdminLockRequests() {
 
   return (
     <>
+      {toast && (
+                  <div style={{
+                      position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)",
+                      zIndex: 2000, padding: "12px 22px", borderRadius: 8, fontSize: 14, fontWeight: 500,
+                      color: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                      background: toast.type === "error" ? "#dc2626" : "#059669",
+                  }}>
+                      {toast.text}
+                  </div>
+              )}
+    
       <TopBar title="잠금 요청 처리" crumb="관리자 / 요청 처리" search={false} />
 
       {/* [D파트 담당자 추가] 상태별 필터 탭 */}

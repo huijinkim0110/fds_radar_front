@@ -68,20 +68,19 @@ function cleanErrorMessage(err) {
     return raw.replace(/\s*id=\d+\s*$/, "").trim();
 }
 
-// 잠금 대상(카드/계좌)별 잠금 사유 프리셋 — 필요하면 이 목록만 수정하면 됨
 const LOCK_REASON_PRESETS = {
     CARD: [
-        "카드 도난/분실 신고",
-        "카드 정보 유출 의심",
-        "해외 이상거래 탐지",
-        "사용자 본인확인 거부",
+        "카드 도난/분실 신고 접수 — 즉시 사용 정지 필요",
+        "카드번호·CVC 등 카드정보 유출 의심",
+        "평소 이용 이력이 없는 해외 국가에서 결제 탐지",
+        "사용자 본인확인 절차 거부",
         "기타",
     ],
     ACCOUNT: [
-        "보이스피싱 피해 의심",
-        "계좌 도용/명의도용 의심",
-        "비정상 대량 이체 탐지",
-        "사용자 본인확인 거부",
+        "보이스피싱 피해 의심 — 긴급 송금 정지 필요",
+        "계좌 도용 의심",
+        "비정상적 대량 송금 탐지",
+        "사용자 본인확인 절차 거부",
         "기타",
     ],
 };
@@ -105,6 +104,12 @@ function FraudCaseDetail() {
     const [selectedAdminId, setSelectedAdminId] = useState("");
     const [assigning, setAssigning] = useState(false);
     const [histories, setHistories] = useState([]);
+
+    const [toast, setToast] = useState(null); // { text, type: "success" | "error" }
+    function notify(text, type = "success") {
+        setToast({ text, type });
+        setTimeout(() => setToast(null), 2000);
+    }
 
     async function fetchDetail() {
         try {
@@ -146,14 +151,15 @@ function FraudCaseDetail() {
             await updateFraudCaseStatus(fraudCaseId, newStatus);
             await fetchDetail();
             await fetchHistories();
+            notify(newStatus === "INVESTIGATING" ? "조사가 시작되었습니다." : "상태가 변경되었습니다.");
         } catch (err) {
-            alert("상태 변경에 실패했습니다: " + cleanErrorMessage(err));
+            notify("상태 변경에 실패했습니다: " + cleanErrorMessage(err), "error");
         }
     }
 
     async function handleAssign() {
         if (!selectedAdminId) {
-            alert("담당자를 선택해주세요.");
+            notify("담당자를 선택해주세요.", "error");
             return;
         }
         if (assigning) return;
@@ -164,8 +170,9 @@ function FraudCaseDetail() {
             await fetchDetail();
             await fetchHistories();
             setSelectedAdminId("");
+            notify("담당자가 배정되었습니다.");
         } catch (err) {
-            alert("담당자 배정에 실패했습니다: " + cleanErrorMessage(err));
+            notify("담당자 배정에 실패했습니다: " + cleanErrorMessage(err), "error");
         } finally {
             setAssigning(false);
         }
@@ -176,19 +183,24 @@ function FraudCaseDetail() {
             await finalizeFraudDecision(fraudCaseId, decision);
             await fetchDetail();
             await fetchHistories();
+            notify(
+                decision === "FRAUD"
+                    ? "사기 거래로 판정되어 사건이 종결되었습니다."
+                    : "정상 거래로 판정되어 사건이 종결되었습니다."
+            );
         } catch (err) {
-            alert("최종 판정에 실패했습니다: " + cleanErrorMessage(err));
+            notify("최종 판정에 실패했습니다: " + cleanErrorMessage(err), "error");
         }
     }
 
     async function handleLock(targetType) {
         if (!lockReasonPreset) {
-            alert("잠금 사유를 선택해주세요.");
+            notify("잠금 사유를 선택해주세요.", "error");
             return;
         }
         const reason = lockReasonPreset === "기타" ? customLockReason.trim() : lockReasonPreset;
         if (!reason) {
-            alert("기타 사유를 입력해주세요.");
+            notify("기타 사유를 입력해주세요.", "error");
             return;
         }
         try {
@@ -196,9 +208,9 @@ function FraudCaseDetail() {
             await fetchHistories();
             setLockReasonPreset("");
             setCustomLockReason("");
-            alert("잠금 요청이 처리되었습니다.");
+            notify("잠금 요청이 접수되었습니다.");
         } catch (err) {
-            alert("잠금 요청에 실패했습니다: " + cleanErrorMessage(err));
+            notify("잠금 요청에 실패했습니다: " + cleanErrorMessage(err), "error");
         }
     }
 
@@ -213,11 +225,21 @@ function FraudCaseDetail() {
     const decision = detail.fraudDecision ? DECISION[detail.fraudDecision] : null;
 
     return (
-        <>
+    <>
+        {toast && (
+            <div style={{
+                position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)",
+                zIndex: 2000, padding: "12px 22px", borderRadius: 8, fontSize: 14, fontWeight: 500,
+                color: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
+                background: toast.type === "error" ? "#dc2626" : "#059669",
+            }}>
+                {toast.text}
+            </div>
+        )}
             <button className="minibtn" style={{ marginBottom: 12 }} onClick={() => navigate("/mypage/admin-fraud-cases")}>
                 ← 목록으로
             </button>
-            <TopBar title={`사건 상세 #${detail.fraudCaseId}`} crumb="관리자 / 이상거래 관리" search={false} />
+            <TopBar title={`사건 상세 #${detail.fraudCaseId}`} crumb="관리자 / 이상거래 관리" search={false} back={false} />
 
             <Panel title="사건 정보" sub={`거래ID ${detail.transactionId}`}>
                 <div className="acc-detail">
