@@ -1,8 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { getMyAccounts } from "../../account/accountAPI";
+import { getMyCards } from "../../account/cardAPI";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
 
 export default function LockRequestsPage() {
+  const { user } = useAuth();
+  const userId = user?.userId;
+
   const [activeTab, setActiveTab] = useState("history");
 
   // --- 1. 잠금 요청 내역 상태 ---
@@ -27,22 +33,46 @@ export default function LockRequestsPage() {
     },
   ]);
 
-  // --- 2. 새로운 잠금 신청 폼 상태 ---
+  // --- 2. DB 연결용 자산 목록 상태 ---
+  const [accounts, setAccounts] = useState([]);
+  const [cards, setCards] = useState([]);
+  const [loadingAssets, setLoadingAssets] = useState(true);
+
+  // --- 3. 새로운 잠금 신청 폼 상태 ---
   const [targetType, setTargetType] = useState("카드");
   const [selectedTargetId, setSelectedTargetId] = useState("");
   const [reason, setReason] = useState("");
   const [detail, setDetail] = useState("");
 
-  // 잠금 대상 선택지 예시 (카드 및 계좌)
+  // 계좌 및 카드 API 데이터 조회
+  useEffect(() => {
+    if (!userId) {
+      setLoadingAssets(false);
+      return;
+    }
+
+    setLoadingAssets(true);
+    Promise.all([
+      getMyAccounts(userId).catch(() => []),
+      getMyCards(userId).catch(() => []),
+    ])
+      .then(([accountsData, cardsData]) => {
+        setAccounts(accountsData);
+        setCards(cardsData);
+      })
+      .finally(() => setLoadingAssets(false));
+  }, [userId]);
+
+  // 드롭다운에 표시할 데이터 옵션 구성
   const targetOptions = {
-    카드: [
-      { id: "c1", name: "KB국민 로맨틱카드 (•••• 4821)" },
-      { id: "c2", name: "체크카드 (•••• 3312)" },
-    ],
-    계좌: [
-      { id: "a1", name: "주거래 입출금 계좌 (•••• 8420)" },
-      { id: "a2", name: "모임통장 (•••• 9011)" },
-    ],
+    카드: cards.map((c) => ({
+      id: String(c.id || c.cardId),
+      name: `${c.cardName} (${c.cardNumber})`,
+    })),
+    계좌: accounts.map((a) => ({
+      id: String(a.id || a.accountId),
+      name: `${a.accountName} (${a.accountNumber})`,
+    })),
   };
 
   // 잠금 신청 제출 핸들러
@@ -59,9 +89,9 @@ export default function LockRequestsPage() {
     const newRequest = {
       id: `LOCK-2026-00${requests.length + 1}`,
       targetType: targetType,
-      targetName: targetObj ? targetObj.name : "기타 자산",
+      targetName: targetObj ? targetObj.name : "선택된 자산",
       reason: reason,
-      requestedAt: "2026-08-28 17:30", // 현재 시간 가정
+      requestedAt: new Date().toISOString().slice(0, 16).replace("T", " "),
       status: "심사 중",
       adminComment: "관리자 검토 대기 중입니다.",
     };
@@ -218,7 +248,7 @@ export default function LockRequestsPage() {
                     className="minibtn"
                     onClick={() => {
                       setTargetType(type);
-                      setSelectedTargetId(""); // 대상 변경 시 초기화
+                      setSelectedTargetId(""); // 대상 변경 시 선택 초기화
                     }}
                     style={{
                       flex: 1,
@@ -243,9 +273,16 @@ export default function LockRequestsPage() {
               <select
                 value={selectedTargetId}
                 onChange={(e) => setSelectedTargetId(e.target.value)}
+                disabled={loadingAssets}
                 style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid var(--line)", background: "var(--panel2)", color: "var(--ink)", fontSize: "13px", outline: "none" }}
               >
-                <option value="">잠금할 {targetType}을 선택해주세요</option>
+                <option value="">
+                  {loadingAssets
+                    ? "목록을 불러오는 중..."
+                    : targetOptions[targetType].length === 0
+                    ? `보유 중인 ${targetType}가 없습니다.`
+                    : `잠금할 ${targetType}을 선택해주세요`}
+                </option>
                 {targetOptions[targetType].map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name}
