@@ -6,10 +6,9 @@ import {
 } from "../../api/finance/financialProfileAPI";
 import { INCOME_SOURCE_LABELS } from "../../constants/finance/financialProfileLabels";
 import { isStale, formatElapsed } from "../../utils/staleness";
-import { useAuth } from "../../context/AuthContext.jsx";
+import TopBar from "../Topbar.jsx"
 
-
-
+const TEMP_USER_ID = 1;
 const INCOME_SOURCE_OPTIONS = Object.keys(INCOME_SOURCE_LABELS);
 
 const EMPTY_FORM = {
@@ -21,10 +20,6 @@ const EMPTY_FORM = {
 };
 
 function FinancialProfile() {
-
-    const { user } = useAuth();
-    const userId = user?.userId ?? 1;
-
     const [profile, setProfile] = useState(null);
     const [hasProfile, setHasProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -42,12 +37,12 @@ function FinancialProfile() {
         setLoading(true);
         setError(null);
 
-        hasFinancialProfile(userId)
+        hasFinancialProfile(TEMP_USER_ID)
             .then((has) => {
                 setHasProfile(has);
 
                 if (has) {
-                    return getFinancialProfile(userId).then(setProfile);
+                    return getFinancialProfile(TEMP_USER_ID).then(setProfile);
                 }
             })
             .catch(() => setError("재무 프로필을 불러오지 못했습니다."))
@@ -114,7 +109,7 @@ function FinancialProfile() {
         setSubmitting(true);
 
         upsertFinancialProfile({
-            userId: userId,
+            userId: TEMP_USER_ID,
             occupation: form.occupation,
             incomeSource: form.incomeSource,
             monthlyIncome: Number(form.monthlyIncome),
@@ -132,227 +127,93 @@ function FinancialProfile() {
 
     if (loading) {
         return (
-            <div className="loading">
-                재무 프로필을 불러오는 중...
-            </div>
+            <>
+                <TopBar title="재무 프로필" crumb="홈 / 마이페이지 / 재무 프로필" />
+                <div className="loading">
+                    재무 프로필을 불러오는 중...
+                </div>
+            </>
         );
     }
 
     if (error) {
         return (
-            <div className="panel">
-                <div
-                    className="acard"
-                    style={{ borderColor: "rgba(248,113,113,0.3)" }}
-                >
+            <>
+                <TopBar title="재무 프로필" crumb="홈 / 마이페이지 / 재무 프로필" />
+                <div className="panel">
                     <div
-                        className="sev"
-                        style={{ background: "var(--red)" }}
-                    />
-
-                    <div>
+                        className="acard"
+                        style={{ borderColor: "rgba(248,113,113,0.3)" }}
+                    >
                         <div
-                            className="at"
-                            style={{ color: "var(--red)" }}
-                        >
-                            재무 프로필 조회 실패
+                            className="sev"
+                            style={{ background: "var(--red)" }}
+                        />
+
+                        <div>
+                            <div
+                                className="at"
+                                style={{ color: "var(--red)" }}
+                            >
+                                재무 프로필 조회 실패
+                            </div>
+
+                            <div className="am">
+                                {error}
+                            </div>
                         </div>
 
-                        <div className="am">
-                            {error}
+                        <div className="aright">
+                            <button
+                                type="button"
+                                className="minibtn"
+                                onClick={loadProfile}
+                            >
+                                다시 시도
+                            </button>
                         </div>
-                    </div>
-
-                    <div className="aright">
-                        <button
-                            type="button"
-                            className="minibtn"
-                            onClick={loadProfile}
-                        >
-                            다시 시도
-                        </button>
                     </div>
                 </div>
-            </div>
+            </>
         );
     }
 
     if (editing) {
         return (
-            <div className="panel">
-                <div className="ph-head">
-                    <div>
-                        <h3>
-                            재무 프로필 {hasProfile ? "수정" : "등록"}
-                        </h3>
+            <>
+                <TopBar title="재무 프로필" crumb="홈 / 마이페이지 / 재무 프로필" />
+                <div className="panel">
+                    <div className="ph-head">
+                        <div>
+                            <h3>
+                                재무 프로필 {hasProfile ? "수정" : "등록"}
+                            </h3>
 
-                        <div className="ph-sub">
-                            현재 재무 상태에 맞게 정보를 입력해주세요.
+                            <div className="ph-sub">
+                                현재 재무 상태에 맞게 정보를 입력해주세요.
+                            </div>
                         </div>
-                    </div>
 
-                    <span className="filterpill">
-                        {hasProfile ? "정보 수정" : "신규 등록"}
-                    </span>
-                </div>
-
-                <div className="field">
-                    <label>직업</label>
-
-                    <input
-                        type="text"
-                        value={form.occupation}
-                        placeholder="직업을 입력해주세요."
-                        onChange={(e) =>
-                            handleFormChange("occupation", e.target.value)
-                        }
-                        style={{
-                            width: "100%",
-                            border: "1px solid var(--line)",
-                            borderRadius: "10px",
-                            padding: "12px 14px",
-                            fontSize: "13.5px",
-                            background: "var(--panel2)",
-                            color: "var(--ink)",
-                            fontFamily: "inherit",
-                            outline: "none"
-                        }}
-                    />
-                </div>
-
-                <div className="field">
-                    <label>소득원</label>
-
-                    <select
-                        value={form.incomeSource}
-                        onChange={(e) =>
-                            handleFormChange(
-                                "incomeSource",
-                                e.target.value
-                            )
-                        }
-                    >
-                        {INCOME_SOURCE_OPTIONS.map((source) => (
-                            <option
-                                key={source}
-                                value={source}
-                            >
-                                {INCOME_SOURCE_LABELS[source]}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="row2">
-                    <div className="field">
-                        <label>월 소득</label>
-
-                        <div style={{ position: "relative" }}>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={formatNumber(form.monthlyIncome)}
-                                placeholder="0"
-                                onChange={(e) =>
-                                    handleNumberChange(
-                                        "monthlyIncome",
-                                        e.target.value
-                                    )
-                                }
-                                style={{
-                                    width: "100%",
-                                    border: "1px solid var(--line)",
-                                    borderRadius: "10px",
-                                    padding: "12px 42px 12px 14px",
-                                    fontSize: "13.5px",
-                                    background: "var(--panel2)",
-                                    color: "var(--ink)",
-                                    fontFamily: "inherit",
-                                    outline: "none"
-                                }}
-                            />
-
-                            <span
-                                style={{
-                                    position: "absolute",
-                                    right: "14px",
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    fontSize: "12px",
-                                    color: "var(--muted)",
-                                    pointerEvents: "none"
-                                }}
-                            >
-                                원
-                            </span>
-                        </div>
+                        <span className="filterpill">
+                            {hasProfile ? "정보 수정" : "신규 등록"}
+                        </span>
                     </div>
 
                     <div className="field">
-                        <label>월 지출</label>
+                        <label>직업</label>
 
-                        <div style={{ position: "relative" }}>
-                            <input
-                                type="text"
-                                inputMode="numeric"
-                                value={formatNumber(form.monthlyExpenses)}
-                                placeholder="0"
-                                onChange={(e) =>
-                                    handleNumberChange(
-                                        "monthlyExpenses",
-                                        e.target.value
-                                    )
-                                }
-                                style={{
-                                    width: "100%",
-                                    border: "1px solid var(--line)",
-                                    borderRadius: "10px",
-                                    padding: "12px 42px 12px 14px",
-                                    fontSize: "13.5px",
-                                    background: "var(--panel2)",
-                                    color: "var(--ink)",
-                                    fontFamily: "inherit",
-                                    outline: "none"
-                                }}
-                            />
-
-                            <span
-                                style={{
-                                    position: "absolute",
-                                    right: "14px",
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    fontSize: "12px",
-                                    color: "var(--muted)",
-                                    pointerEvents: "none"
-                                }}
-                            >
-                                원
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="field">
-                    <label>비상자금 보유액</label>
-
-                    <div style={{ position: "relative" }}>
                         <input
                             type="text"
-                            inputMode="numeric"
-                            value={formatNumber(form.emergencyFundAmount)}
-                            placeholder="0"
+                            value={form.occupation}
+                            placeholder="직업을 입력해주세요."
                             onChange={(e) =>
-                                handleNumberChange(
-                                    "emergencyFundAmount",
-                                    e.target.value
-                                )
+                                handleFormChange("occupation", e.target.value)
                             }
                             style={{
                                 width: "100%",
                                 border: "1px solid var(--line)",
                                 borderRadius: "10px",
-                                padding: "12px 42px 12px 14px",
+                                padding: "12px 14px",
                                 fontSize: "13.5px",
                                 background: "var(--panel2)",
                                 color: "var(--ink)",
@@ -360,140 +221,286 @@ function FinancialProfile() {
                                 outline: "none"
                             }}
                         />
+                    </div>
 
-                        <span
-                            style={{
-                                position: "absolute",
-                                right: "14px",
-                                top: "50%",
-                                transform: "translateY(-50%)",
-                                fontSize: "12px",
-                                color: "var(--muted)",
-                                pointerEvents: "none"
-                            }}
+                    <div className="field">
+                        <label>소득원</label>
+
+                        <select
+                            value={form.incomeSource}
+                            onChange={(e) =>
+                                handleFormChange(
+                                    "incomeSource",
+                                    e.target.value
+                                )
+                            }
                         >
-                            원
-                        </span>
+                            {INCOME_SOURCE_OPTIONS.map((source) => (
+                                <option
+                                    key={source}
+                                    value={source}
+                                >
+                                    {INCOME_SOURCE_LABELS[source]}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                </div>
 
-                <div
-                    className="acard"
-                    style={{ marginBottom: "16px" }}
-                >
+                    <div className="row2">
+                        <div className="field">
+                            <label>월 소득</label>
+
+                            <div style={{ position: "relative" }}>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={formatNumber(form.monthlyIncome)}
+                                    placeholder="0"
+                                    onChange={(e) =>
+                                        handleNumberChange(
+                                            "monthlyIncome",
+                                            e.target.value
+                                        )
+                                    }
+                                    style={{
+                                        width: "100%",
+                                        border: "1px solid var(--line)",
+                                        borderRadius: "10px",
+                                        padding: "12px 42px 12px 14px",
+                                        fontSize: "13.5px",
+                                        background: "var(--panel2)",
+                                        color: "var(--ink)",
+                                        fontFamily: "inherit",
+                                        outline: "none"
+                                    }}
+                                />
+
+                                <span
+                                    style={{
+                                        position: "absolute",
+                                        right: "14px",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        fontSize: "12px",
+                                        color: "var(--muted)",
+                                        pointerEvents: "none"
+                                    }}
+                                >
+                                    원
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="field">
+                            <label>월 지출</label>
+
+                            <div style={{ position: "relative" }}>
+                                <input
+                                    type="text"
+                                    inputMode="numeric"
+                                    value={formatNumber(form.monthlyExpenses)}
+                                    placeholder="0"
+                                    onChange={(e) =>
+                                        handleNumberChange(
+                                            "monthlyExpenses",
+                                            e.target.value
+                                        )
+                                    }
+                                    style={{
+                                        width: "100%",
+                                        border: "1px solid var(--line)",
+                                        borderRadius: "10px",
+                                        padding: "12px 42px 12px 14px",
+                                        fontSize: "13.5px",
+                                        background: "var(--panel2)",
+                                        color: "var(--ink)",
+                                        fontFamily: "inherit",
+                                        outline: "none"
+                                    }}
+                                />
+
+                                <span
+                                    style={{
+                                        position: "absolute",
+                                        right: "14px",
+                                        top: "50%",
+                                        transform: "translateY(-50%)",
+                                        fontSize: "12px",
+                                        color: "var(--muted)",
+                                        pointerEvents: "none"
+                                    }}
+                                >
+                                    원
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="field">
+                        <label>비상자금 보유액</label>
+
+                        <div style={{ position: "relative" }}>
+                            <input
+                                type="text"
+                                inputMode="numeric"
+                                value={formatNumber(form.emergencyFundAmount)}
+                                placeholder="0"
+                                onChange={(e) =>
+                                    handleNumberChange(
+                                        "emergencyFundAmount",
+                                        e.target.value
+                                    )
+                                }
+                                style={{
+                                    width: "100%",
+                                    border: "1px solid var(--line)",
+                                    borderRadius: "10px",
+                                    padding: "12px 42px 12px 14px",
+                                    fontSize: "13.5px",
+                                    background: "var(--panel2)",
+                                    color: "var(--ink)",
+                                    fontFamily: "inherit",
+                                    outline: "none"
+                                }}
+                            />
+
+                            <span
+                                style={{
+                                    position: "absolute",
+                                    right: "14px",
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    fontSize: "12px",
+                                    color: "var(--muted)",
+                                    pointerEvents: "none"
+                                }}
+                            >
+                                원
+                            </span>
+                        </div>
+                    </div>
+
                     <div
-                        className="sev"
-                        style={{ background: "var(--blue)" }}
-                    />
+                        className="acard"
+                        style={{ marginBottom: "16px" }}
+                    >
+                        <div
+                            className="sev"
+                            style={{ background: "var(--blue)" }}
+                        />
 
-                    <div>
-                        <div className="at">
-                            신용등급
-                        </div>
+                        <div>
+                            <div className="at">
+                                신용등급
+                            </div>
 
-                        <div className="am">
-                            신용등급은 직접 입력하지 않으며,
-                            금융기관에서 확인된 정보를 기준으로 표시됩니다.
+                            <div className="am">
+                                신용등급은 직접 입력하지 않으며,
+                                금융기관에서 확인된 정보를 기준으로 표시됩니다.
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div
-                    style={{
-                        display: "flex",
-                        gap: "8px",
-                        justifyContent: "flex-end",
-                        marginTop: "8px"
-                    }}
-                >
-                    <button
-                        type="button"
-                        className="minibtn"
-                        onClick={() => setEditing(false)}
-                        disabled={submitting}
-                    >
-                        취소
-                    </button>
-
-                    <button
-                        type="button"
-                        className="minibtn"
-                        onClick={handleSubmit}
-                        disabled={submitting}
+                    <div
                         style={{
-                            background: "var(--blue)",
-                            borderColor: "var(--blue)",
-                            color: "#fff",
-                            padding: "8px 18px"
+                            display: "flex",
+                            gap: "8px",
+                            justifyContent: "flex-end",
+                            marginTop: "8px"
                         }}
                     >
-                        {submitting ? "저장 중..." : "저장"}
-                    </button>
+                        <button
+                            type="button"
+                            className="minibtn"
+                            onClick={() => setEditing(false)}
+                            disabled={submitting}
+                        >
+                            취소
+                        </button>
+
+                        <button
+                            type="button"
+                            className="minibtn"
+                            onClick={handleSubmit}
+                            disabled={submitting}
+                            style={{
+                                background: "var(--blue)",
+                                borderColor: "var(--blue)",
+                                color: "#fff",
+                                padding: "8px 18px"
+                            }}
+                        >
+                            {submitting ? "저장 중..." : "저장"}
+                        </button>
+                    </div>
                 </div>
-            </div>
+            </>
         );
     }
 
     if (!hasProfile) {
         return (
-            <div className="panel">
-                <div
-                    style={{
-                        textAlign: "center",
-                        padding: "50px 20px"
-                    }}
-                >
+            <>
+                <TopBar title="재무 프로필" crumb="홈 / 마이페이지 / 재무 프로필" />
+                <div className="panel">
                     <div
                         style={{
-                            width: "52px",
-                            height: "52px",
-                            margin: "0 auto 16px",
-                            borderRadius: "14px",
-                            background: "var(--blue-soft)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#93C5FD",
-                            fontSize: "22px",
-                            fontWeight: "700"
+                            textAlign: "center",
+                            padding: "50px 20px"
                         }}
                     >
-                        ₩
+                        <div
+                            style={{
+                                width: "52px",
+                                height: "52px",
+                                margin: "0 auto 16px",
+                                borderRadius: "14px",
+                                background: "var(--blue-soft)",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#93C5FD",
+                                fontSize: "22px",
+                                fontWeight: "700"
+                            }}
+                        >
+                            ₩
+                        </div>
+
+                        <p
+                            style={{
+                                fontSize: "12.5px",
+                                color: "var(--muted)",
+                                marginTop: "8px",
+                                marginBottom: "20px"
+                            }}
+                        >
+                            등록된 재무 프로필이 없어요.
+                        </p>
+
+                        <button
+                            type="button"
+                            className="minibtn"
+                            onClick={handleStartEdit}
+                            style={{
+                                background: "var(--blue)",
+                                borderColor: "var(--blue)",
+                                color: "#fff",
+                                padding: "9px 16px"
+                            }}
+                        >
+                            재무 프로필 등록
+                        </button>
                     </div>
-
-                    <h3>재무 프로필</h3>
-
-                    <p
-                        style={{
-                            fontSize: "12.5px",
-                            color: "var(--muted)",
-                            marginTop: "8px",
-                            marginBottom: "20px"
-                        }}
-                    >
-                        등록된 재무 프로필이 없어요.
-                    </p>
-
-                    <button
-                        type="button"
-                        className="minibtn"
-                        onClick={handleStartEdit}
-                        style={{
-                            background: "var(--blue)",
-                            borderColor: "var(--blue)",
-                            color: "#fff",
-                            padding: "9px 16px"
-                        }}
-                    >
-                        재무 프로필 등록
-                    </button>
                 </div>
-            </div>
+            </>
         );
     }
 
     return (
         <div>
+            <TopBar title="재무 프로필" crumb="홈 / 마이페이지 / 재무 프로필" />
+
             <div className="panel">
                 <div className="ph-head">
                     <div>

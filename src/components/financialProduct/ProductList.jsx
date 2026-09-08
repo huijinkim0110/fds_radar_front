@@ -52,15 +52,20 @@ const userId = user?.userId ?? 1;
   }
 
   return (
-  <div
-  style={{
-    width: "100%",
-    maxWidth: "1180px",
-    margin: "0 auto",
-    padding: "32px 24px 60px",
-    boxSizing: "border-box",
-  }}
->
+    <div
+    style={{
+      width: "100%",
+      maxWidth: "1180px",
+      margin: "0 auto",
+      padding: "32px 24px 60px",
+      boxSizing: "border-box",
+    }}
+    >
+
+    <button type="button" className="minibtn" onClick={() => navigate('/')} style={{ marginBottom: '12px' }}>
+      ← 홈으로
+    </button>
+
     <TopBar title="금융 상품" crumb="홈 / 금융 상품" search={false} />
 
       {/* 필터 */}

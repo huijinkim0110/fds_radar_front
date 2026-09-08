@@ -14,15 +14,12 @@ import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 
 
+const TEMP_USER_ID = 1;
 
 export default function ProductDetail() {
-
-
-  const { user } = useAuth();
-  const userId = user?.userId ?? 1; 
-
   const { productId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const isLoggedIn = !!user;
 
   const [product, setProduct] = useState(null);
@@ -55,14 +52,14 @@ export default function ProductDetail() {
     setRiskAcknowledged(false);
 
     try {
-      const hasHistory = await hasDiagnosisHistory(userId);
+      const hasHistory = await hasDiagnosisHistory(TEMP_USER_ID);
 
       if (!hasHistory) {
         setGateStep('needsDiagnosis');
         return;
       }
 
-      const result = await checkSuitability(userId, productId);
+      const result = await checkSuitability(TEMP_USER_ID, productId);
 
       setCheckResult(result);
       setGateStep(
@@ -109,6 +106,9 @@ export default function ProductDetail() {
 
   return (
     <div style={styles.page}>
+      <button type="button" className="minibtn" onClick={() => navigate('/')} style={{ marginBottom: '12px' }}>
+        ← 홈으로
+      </button>
       <TopBar
         title="금융 상품 상세"
         crumb={`홈 / 금융 상품 / ${product.productName}`}
@@ -130,7 +130,7 @@ export default function ProductDetail() {
 
           <div style={styles.titleRow}>
             <h1 style={styles.title}>{product.productName}</h1>
-            <FavoriteButton userId={userId} productId={productId} />
+            <FavoriteButton userId={TEMP_USER_ID} productId={productId} />
           </div>
 
           <div style={styles.institution}>{product.institutionName}</div>
@@ -211,8 +211,14 @@ export default function ProductDetail() {
 
       {/* 가입 과정 */}
       {gateStep !== 'idle' && (
-        <div style={{ marginTop: 20 }}>
-          <Panel title="상품 가입">
+        <div className="modal-bg">
+            <div className="modal-box">
+            <div className="ph-head" style={{ marginBottom: '20px' }}>
+              <h3 className="modal-title" style={{ marginBottom: 0 }}>상품 가입</h3>
+              {gateStep !== 'checking' && (
+                <button type="button" className="minibtn" onClick={() => setGateStep('idle')}>✕</button>
+              )}
+            </div>
 
             {gateStep === 'checking' && (
               <div style={styles.gateMessage}>적합성 검사 중...</div>
@@ -253,8 +259,9 @@ export default function ProductDetail() {
                 )}
 
                 <SubscribeForm
-                  userId={userId}
+                  userId={user?.userId}
                   product={product}
+                  onCancel={() => setGateStep('idle')}
                 />
 
               </>
@@ -302,12 +309,12 @@ export default function ProductDetail() {
 
                 {riskAcknowledged && (
                   <div style={{ marginTop: 20 }}>
-                    <SubscribeForm userId={userId} product={product} />
+                    <SubscribeForm userId={user?.userId} product={product} />
                   </div>
                 )}
               </div>
             )}
-          </Panel>
+          </div>
         </div>
       )}
     </div>
