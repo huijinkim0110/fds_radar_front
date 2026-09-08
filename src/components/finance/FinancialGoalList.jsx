@@ -271,6 +271,8 @@ export default function FinancialGoalList() {
                                                     >
                                                         진행금액 수정
                                                     </button>
+
+                                                    
                                                     <button
                                                         type="button"
                                                         className="minibtn"
