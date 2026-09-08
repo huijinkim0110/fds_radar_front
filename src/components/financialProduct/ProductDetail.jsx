@@ -208,8 +208,14 @@ export default function ProductDetail() {
 
       {/* 가입 과정 */}
       {gateStep !== 'idle' && (
-        <div style={{ marginTop: 20 }}>
-          <Panel title="상품 가입">
+        <div className="modal-bg">
+            <div className="modal-box">
+            <div className="ph-head" style={{ marginBottom: '20px' }}>
+              <h3 className="modal-title" style={{ marginBottom: 0 }}>상품 가입</h3>
+              {gateStep !== 'checking' && (
+                <button type="button" className="minibtn" onClick={() => setGateStep('idle')}>✕</button>
+              )}
+            </div>
 
             {gateStep === 'checking' && (
               <div style={styles.gateMessage}>적합성 검사 중...</div>
@@ -250,8 +256,9 @@ export default function ProductDetail() {
                 )}
 
                 <SubscribeForm
-                  userId={TEMP_USER_ID}
+                  userId={user?.userId}
                   product={product}
+                  onCancel={() => setGateStep('idle')}
                 />
 
               </>
@@ -299,12 +306,12 @@ export default function ProductDetail() {
 
                 {riskAcknowledged && (
                   <div style={{ marginTop: 20 }}>
-                    <SubscribeForm userId={TEMP_USER_ID} product={product} />
+                    <SubscribeForm userId={user?.userId} product={product} />
                   </div>
                 )}
               </div>
             )}
-          </Panel>
+          </div>
         </div>
       )}
     </div>
