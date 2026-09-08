@@ -34,6 +34,12 @@ export const PREDICTED_RESULT_LABELS = {
     FRAUD: "이상",
 };
 
+// 거래 유형 (TransactionType)
+export const TRANSACTION_TYPE_LABELS = {
+    CARD_PAYMENT: "카드",
+    ACCOUNT_TRANSFER: "계좌",
+};
+
 // 이상거래 유형 (PredictedFraudType)
 export const PREDICTED_FRAUD_TYPE_LABELS = {
     ACCOUNT_TAKEOVER: "계정/카드 도용",
@@ -80,6 +86,10 @@ export function getPredictedResultLabel(value) {
 
 export function getPredictedFraudTypeLabel(value) {
     return getLabel(PREDICTED_FRAUD_TYPE_LABELS, value);
+}
+
+export function getTransactionTypeLabel(value) {
+    return getLabel(TRANSACTION_TYPE_LABELS, value);
 }
 
 export function getFraudActionTypeLabel(value) {
