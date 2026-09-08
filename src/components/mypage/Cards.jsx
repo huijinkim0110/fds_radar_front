@@ -76,7 +76,7 @@ export default function Cards() {
     }
   }
 
-  async function handleCancelCard() {
+ async function handleCancelCard() {
   if (!window.confirm("정말 이 카드를 해지하시겠습니까?")) return;
   try {
     const res = await fetch(`http://localhost:9090/api/cards/${selected.id}?userId=${userId}`, {
