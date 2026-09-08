@@ -4,8 +4,16 @@ import TopBar from "../TopBar";
 import Panel from "../Panel";
 import { getMyFraudCases } from "../../api/fraud/fraudUserAPI";
 import { getMyTransactions } from "../../api/transaction/transactionAPI";
+import { useAuth } from "../../context/AuthContext.jsx";
+
+
 
 export default function DisputesPage() {
+
+  const { user } = useAuth();
+  const userId = user?.userId ?? 1;
+
+  
   const location = useLocation();
 
   // 탭 상태
@@ -22,13 +30,12 @@ export default function DisputesPage() {
   // 거래 목록
   const [transactions, setTransactions] = useState([]);
 
-  const TEMP_USER_ID = 2;
 
   // =========================================================
 // 1. [GET] 대상 거래 목록 조회 (Transactions DB 연동)
 // =========================================================
 useEffect(() => {
-  getMyTransactions(TEMP_USER_ID)
+  getMyTransactions(userId)
     .then((data) => {
       const list = data.content ? data.content : data;
 
@@ -57,7 +64,7 @@ useEffect(() => {
   const fetchDisputes = async () => {
     try {
       const response = await fetch(
-        `http://localhost:9090/api/dispute-requests/user/${TEMP_USER_ID}`
+        `http://localhost:9090/api/dispute-requests/user/${userId}`
       );
 
       if (!response.ok) {
@@ -129,11 +136,11 @@ useEffect(() => {
 
   // 💡 백엔드로 나가는 실제 데이터를 콘솔로 확인해보세요
   console.log("보내는 Payload 데이터:", payload);
-  console.log("전송될 userId:", TEMP_USER_ID);
+  console.log("전송될 userId:", userId);
 
   try {
     const response = await fetch(
-      `http://localhost:9090/api/dispute-requests/users/${TEMP_USER_ID}`,
+      `http://localhost:9090/api/dispute-requests/users/${userId}`,
       {
         method: "POST",
         headers: {

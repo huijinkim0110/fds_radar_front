@@ -15,7 +15,7 @@ import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
 import Panel from "../Panel.jsx";
 
-const TEMP_USER_ID = 1;
+const userId = 1;
 
 const RISK_TENDENCY_LABELS = {
   STABLE: "안정형",
@@ -157,19 +157,19 @@ export default function Dashboard() {
   }, [userId]);
 
   useEffect(() => {
-    getFavorites(TEMP_USER_ID).then((list) => setFavoriteCount(list.length)).catch(() => {});
-    getPortfolio(TEMP_USER_ID).then((list) => setSubscriptions(list)).catch(() => {});
-    getGoals(TEMP_USER_ID).then(setGoals).catch(() => {});
-    hasDiagnosisHistory(TEMP_USER_ID).then(setHasDiagnosis).catch(() => {});
-    hasFinancialProfile(TEMP_USER_ID).then(setHasFinProfile).catch(() => {});
+    getFavorites(userId).then((list) => setFavoriteCount(list.length)).catch(() => {});
+    getPortfolio(userId).then((list) => setSubscriptions(list)).catch(() => {});
+    getGoals(userId).then(setGoals).catch(() => {});
+    hasDiagnosisHistory(userId).then(setHasDiagnosis).catch(() => {});
+    hasFinancialProfile(userId).then(setHasFinProfile).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (hasDiagnosis) getLatestProfile(TEMP_USER_ID).then(setLatestProfile).catch(() => {});
+    if (hasDiagnosis) getLatestProfile(userId).then(setLatestProfile).catch(() => {});
   }, [hasDiagnosis]);
 
   useEffect(() => {
-    if (hasFinProfile) getFinancialProfile(TEMP_USER_ID).then(setFinancialProfile).catch(() => {});
+    if (hasFinProfile) getFinancialProfile(userId).then(setFinancialProfile).catch(() => {});
   }, [hasFinProfile]);
 
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);

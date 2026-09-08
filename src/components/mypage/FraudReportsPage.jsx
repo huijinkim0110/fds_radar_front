@@ -3,8 +3,13 @@ import { useLocation } from "react-router-dom";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
 import { getMyFraudCases } from "../../api/fraud/fraudUserAPI";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 export default function FraudReportsPage() {
+
+  const { user } = useAuth();
+  const userId = user?.userId ?? 1;
+
   const location = useLocation();
 
   // 탭 상태
@@ -21,13 +26,12 @@ export default function FraudReportsPage() {
   // 거래 목록
   const [transactions, setTransactions] = useState([]);
 
-  const TEMP_USER_ID = 2;
 
   // =========================================================
   // 이상거래 목록 조회
   // =========================================================
   useEffect(() => {
-    getMyFraudCases(TEMP_USER_ID)
+    getMyFraudCases(userId)
       .then((data) => {
         setTransactions(
           data.map((raw) => ({
@@ -58,7 +62,7 @@ export default function FraudReportsPage() {
     const fetchReports = async () => {
       try {
         const response = await fetch(
-          `http://localhost:9090/api/fraud-reports/user/${TEMP_USER_ID}`
+          `http://localhost:9090/api/fraud-reports/user/${userId}`
         );
 
         if (!response.ok) {
@@ -126,7 +130,7 @@ export default function FraudReportsPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:9090/api/fraud-reports/users/${TEMP_USER_ID}`,
+        `http://localhost:9090/api/fraud-reports/users/${userId}`,
         {
           method: "POST",
           headers: {

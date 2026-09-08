@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
 import { getMyFraudCases, confirmFraudCase } from "../../api/fraud/fraudUserAPI";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const TEMP_USER_ID = 2; // 인증 붙기 전까지 임시 고정값
 
 // API 응답(FraudCaseListResponse) -> 화면에서 쓰는 필드명으로 매핑.
 function mapCase(raw) {
@@ -30,6 +30,11 @@ function mapStatus(confirmation) {
 }
 
 export default function FraudConfirmations() {
+
+
+const { user } = useAuth();
+const userId = user?.userId ?? 1;
+
     const navigate = useNavigate();
     const [filter, setFilter] = useState("all");
 
@@ -44,7 +49,7 @@ export default function FraudConfirmations() {
     function loadCases() {
         setLoading(true);
         setError(null);
-        getMyFraudCases(TEMP_USER_ID)
+        getMyFraudCases(userId)
             .then((data) => setFraudCases(data.map(mapCase)))
             .catch(() => setError('이상거래 내역을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));

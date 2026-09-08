@@ -3,12 +3,16 @@ import { getGoals, createGoal, updateCurrentAmount, cancelGoal } from "../../api
 import { GOAL_TYPE_LABELS, GOAL_STATUS_LABELS } from "../../constants/finance/goalLabels";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
+
 
 const GOAL_TYPE_OPTIONS = Object.keys(GOAL_TYPE_LABELS);
 
 export default function FinancialGoalList() {
+    const { user } = useAuth();
+    const userId = user?.userId ?? 1; 
+
     const [goals, setGoals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -28,7 +32,7 @@ export default function FinancialGoalList() {
     function loadGoals() {
         setLoading(true);
         setError(null);
-        getGoals(TEMP_USER_ID)
+        getGoals(userId)
             .then(setGoals)
             .catch(() => setError('재무목표를 불러오지 못했습니다.'))
             .finally(() => setLoading(false));
@@ -50,7 +54,7 @@ export default function FinancialGoalList() {
 
         setSubmitting(true);
         createGoal({
-            userId: TEMP_USER_ID,
+            userId: userId,
             goalType: form.goalType,
             goalName: form.goalName,
             targetAmount: Number(form.targetAmount),
