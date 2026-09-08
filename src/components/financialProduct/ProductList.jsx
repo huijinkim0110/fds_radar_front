@@ -6,8 +6,10 @@ import FavoriteButton from "./FavoriteButton";
 import CompareButton from "./CompareButton";
 import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const TEMP_USER_ID = 1;
+
+
 
 const RISK_COLOR = {
   VERY_LOW: "var(--green)",
@@ -18,6 +20,10 @@ const RISK_COLOR = {
 };
 
 function ProductList() {
+
+const { user } = useAuth();
+const userId = user?.userId ?? 1;
+
   const navigate = useNavigate();
 
   const [products, setProducts] = useState([]);
@@ -122,7 +128,7 @@ function ProductList() {
 
   <div onClick={(e) => e.stopPropagation()}>
     <FavoriteButton
-      userId={TEMP_USER_ID}
+      userId={userId}
       productId={p.productId}
     />
   </div>

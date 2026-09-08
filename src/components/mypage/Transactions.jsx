@@ -3,8 +3,8 @@ import TopBar from "../TopBar.jsx";
 import TxTable from "../TxTable.jsx";
 import Panel from "../Panel.jsx";
 import { getMyTransactions } from "../../api/transaction/transactionAPI";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const TEMP_USER_ID = 2; // 인증 붙기 전까지 임시 고정값
 
 const TABS = ["전체", "정상", "검토중", "차단됨"];
 const ITEMS_PER_PAGE = 5; // 한 페이지에 보여줄 거래 내역 개수
@@ -50,6 +50,11 @@ function mapRow(raw) {
 }
 
 export default function Transactions() {
+
+
+    const { user } = useAuth();
+    const userId = user?.userId ?? 1;   
+
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -59,7 +64,7 @@ export default function Transactions() {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        getMyTransactions(TEMP_USER_ID)
+        getMyTransactions(userId)
             .then((data) => setRows(data.content.map(mapRow)))
             .catch(() => setError('거래내역을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));

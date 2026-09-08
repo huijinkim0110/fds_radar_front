@@ -7,14 +7,17 @@ import {
 import {
   PRODUCT_TYPE_LABELS,
 } from "../../constants/financialProduct/productLabels";
+import { useAuth } from "../../context/AuthContext.jsx";
 
 import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 
-const TEMP_USER_ID = 1;
 
 export default function FavoriteProductList() {
   const navigate = useNavigate();
+
+  const { user } = useAuth();
+  const userId = user?.userId ?? 1;
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +27,7 @@ export default function FavoriteProductList() {
     setLoading(true);
     setError(null);
 
-    getFavorites(TEMP_USER_ID)
+    getFavorites(userId)
       .then(setProducts)
       .catch((err) =>
         setError(err.response?.data?.message ?? err.message)
@@ -44,7 +47,7 @@ export default function FavoriteProductList() {
     );
 
     try {
-      await removeFavorite(TEMP_USER_ID, productId);
+      await removeFavorite(userId, productId);
     } catch (err) {
       setProducts(prevProducts);
 

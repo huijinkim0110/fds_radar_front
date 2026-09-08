@@ -2,12 +2,17 @@ import { useNavigate } from "react-router-dom";
 import { getProducts } from '../../api/financialProduct/productAPI';
 import { hasDiagnosisHistory } from '../../api/finance/investmentProfileAPI';
 import { getGoals } from '../../api/finance/financialGoalsAPI';
+import { useAuth } from "../../context/AuthContext";
 
-const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
+
 
 // 트리 메뉴에서 implemented: true인 리프 노드 클릭 시 실행할 액션들
 // connectAdmin: 상담원 연결(소켓 연결 + adminMode 전환) 콜백, ChatWidget의 enterAdminMode 주입
 export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
+    
+    const { user } = useAuth();
+    const userId = user?.userId ?? 1;
+    
     const navigate = useNavigate();
 
     function runAction(node) {
@@ -52,7 +57,7 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
     }
 
     function handleRecommendation() {
-        hasDiagnosisHistory(TEMP_USER_ID)
+        hasDiagnosisHistory(userId)
             .then((hasHistory) => {
                 if (!hasHistory) {
                     addLocalMessage('BOT', '추천을 받으려면 먼저 투자성향 진단이 필요해요.', [{ path: '/investment-diagnosis', label: '진단하러 가기' }]);
@@ -75,7 +80,7 @@ export function useChatActions(addLocalMessage, resetMenu, connectAdmin) {
     }
 
     function handleGoal() {
-        getGoals(TEMP_USER_ID)
+        getGoals(userId)
             .then((goals) => {
                 if (!goals || goals.length === 0) {
                     addLocalMessage('BOT', '설정된 재무목표가 없어요. 새로 등록해보시겠어요?', [{ path: '/mypage/financial-goals', label: '재무목표 보기' }]);

@@ -23,7 +23,7 @@ export const CHAT_MENU_TREE = {
     '내 거래': {
         '계좌 조회/관리': {
             '내 계좌 보기': { implemented: true, action: 'ACCOUNT_LIST', requiresAuth: true },
-            '새 계좌 개설하기': { implemented: true, action: 'ACCOUNT_NEW', requiresAuth: true },
+            '새 계좌 추가하기': { implemented: true, action: 'ACCOUNT_NEW', requiresAuth: true },
         },
         '카드 조회/관리': { 
             '내 카드 보기': { implemented: true, action: 'CARD_LIST', requiresAuth: true },

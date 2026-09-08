@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { getPortfolio, cancelSubscription } from "../../api/financialProduct/simulatedSubscriptionAPI";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
 
 function SimulatedSubscriptionList() {
+
+    const { user } = useAuth();
+    const userId = user?.userId ?? 1;
+    
     const [subscriptions, setSubscriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,7 +16,7 @@ function SimulatedSubscriptionList() {
     function loadPortfolio() {
         setLoading(true);
         setError(null);
-        getPortfolio(TEMP_USER_ID)
+        getPortfolio(userId)
             .then((data) => setSubscriptions(data))
             .catch(() => setError('가입 내역을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));

@@ -15,7 +15,7 @@ import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
 import Panel from "../Panel.jsx";
 
-const TEMP_USER_ID = 1;
+const userId = 1;
 
 const RISK_TENDENCY_LABELS = {
   STABLE: "안정형",
@@ -25,19 +25,11 @@ const RISK_TENDENCY_LABELS = {
 };
 
 const ACCOUNT_COLORS = [
-  "#BFDBFE",
-  "#A7F3D0",
-  "#FDE68A",
-  "#DDD6FE",
-  "#BAE6FD",
+  "#BFDBFE", "#A7F3D0", "#FDE68A", "#DDD6FE", "#BAE6FD",
 ];
 
 const CARD_COLORS = [
-  "#E0E7FF",
-  "#FCE7F3",
-  "#D1FAE5",
-  "#FEF3C7",
-  "#FFE4E6",
+  "#E0E7FF", "#FCE7F3", "#D1FAE5", "#FEF3C7", "#FFE4E6",
 ];
 
 function AccountCarousel({ accounts, onNavigate, onAdd }) {
@@ -64,9 +56,7 @@ function AccountCarousel({ accounts, onNavigate, onAdd }) {
           minHeight: 140, borderRadius: 16, border: "2px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
           marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 14
-        }} onClick={onAdd}>
-          + 계좌 추가
-        </div>
+        }} onClick={onAdd}>+ 계좌 추가</div>
       )}
       <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
         {accounts.map((a, i) => (
@@ -80,7 +70,6 @@ function AccountCarousel({ accounts, onNavigate, onAdd }) {
             <div style={{ fontSize: 11, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountName || "계좌"}</div>
           </div>
         ))}
-        {/* 추가 버튼 */}
         <div onClick={onAdd} style={{
           minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
           background: "var(--panel2)", border: "1.5px dashed var(--line)",
@@ -116,9 +105,7 @@ function CardCarousel({ cards, onNavigate, onAdd }) {
           minHeight: 140, borderRadius: 16, border: "2px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
           marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 14
-        }} onClick={onAdd}>
-          + 카드 추가
-        </div>
+        }} onClick={onAdd}>+ 카드 추가</div>
       )}
       <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
         {cards.map((c, i) => (
@@ -136,7 +123,6 @@ function CardCarousel({ cards, onNavigate, onAdd }) {
             </div>
           </div>
         ))}
-        {/* 추가 버튼 */}
         <div onClick={onAdd} style={{
           minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
           background: "var(--panel2)", border: "1.5px dashed var(--line)",
@@ -171,19 +157,19 @@ export default function Dashboard() {
   }, [userId]);
 
   useEffect(() => {
-    getFavorites(TEMP_USER_ID).then((list) => setFavoriteCount(list.length)).catch(() => {});
-    getPortfolio(TEMP_USER_ID).then((list) => setSubscriptions(list)).catch(() => {});
-    getGoals(TEMP_USER_ID).then(setGoals).catch(() => {});
-    hasDiagnosisHistory(TEMP_USER_ID).then(setHasDiagnosis).catch(() => {});
-    hasFinancialProfile(TEMP_USER_ID).then(setHasFinProfile).catch(() => {});
+    getFavorites(userId).then((list) => setFavoriteCount(list.length)).catch(() => {});
+    getPortfolio(userId).then((list) => setSubscriptions(list)).catch(() => {});
+    getGoals(userId).then(setGoals).catch(() => {});
+    hasDiagnosisHistory(userId).then(setHasDiagnosis).catch(() => {});
+    hasFinancialProfile(userId).then(setHasFinProfile).catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (hasDiagnosis) getLatestProfile(TEMP_USER_ID).then(setLatestProfile).catch(() => {});
+    if (hasDiagnosis) getLatestProfile(userId).then(setLatestProfile).catch(() => {});
   }, [hasDiagnosis]);
 
   useEffect(() => {
-    if (hasFinProfile) getFinancialProfile(TEMP_USER_ID).then(setFinancialProfile).catch(() => {});
+    if (hasFinProfile) getFinancialProfile(userId).then(setFinancialProfile).catch(() => {});
   }, [hasFinProfile]);
 
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
@@ -240,6 +226,8 @@ export default function Dashboard() {
 
   if (user?.role === "ADMIN") return <AdminDashboard />;
 
+  const inProgressGoals = (goals ?? []).filter(g => g.goalStatus === "IN_PROGRESS").slice(0, 3);
+
   return (
     <>
       <TopBar title="내 대시보드" crumb="홈 / 내 계좌 및 자산 요약" />
@@ -257,7 +245,6 @@ export default function Dashboard() {
         </button>
       </div>
 
-      {/* 계좌/카드 좌우 배치 */}
       <div className="ac-row" style={{ marginTop: 16 }}>
         <Panel title="내 계좌" sub={`${accounts.length}개`}>
           <AccountCarousel
@@ -294,14 +281,50 @@ export default function Dashboard() {
         {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
       </div>
 
-      <div className="cols cols-eq">
-        <Panel title="내 최근 거래" sub="의심 거래는 자동 표시" right={<div className="filterpill">전체</div>}>
-          <div className="dash-empty">
-            거래 내역은 <span onClick={() => navigate("/mypage/transactions")} style={{ color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}>거래내역 페이지</span>에서 확인하세요.
+      {/* 재무목표 + 투자재무 — 높이 맞춤 */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1.6fr 1fr",
+        gap: 16,
+        marginTop: 16,
+        alignItems: "stretch"
+      }}>
+        <div style={{ background: "var(--panel)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 3px rgba(16,24,40,0.04)" }}>
+          <div className="ph-head" style={{ marginBottom: 16 }}>
+            <div>
+              <h3>재무목표</h3>
+              <div className="ph-sub">진행 중인 목표</div>
+            </div>
+            <span onClick={() => navigate("/mypage/financial-goal")} style={{ fontSize: 12, color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}>전체 보기 →</span>
           </div>
-        </Panel>
+          {inProgressGoals.length === 0 ? (
+            <div className="dash-empty">진행 중인 재무목표가 없습니다.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {inProgressGoals.map((g) => (
+                <div key={g.goalId} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>
+                    <span>{g.goalName}</span>
+                    <span style={{ color: "var(--blue)" }}>{Math.min(g.achievementRate ?? 0, 100)}%</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 999, background: "var(--line)", overflow: "hidden" }}>
+                    <div style={{ height: "100%", borderRadius: 999, background: "var(--blue)", width: `${Math.min(g.achievementRate ?? 0, 100)}%` }} />
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)" }}>
+                    <span>₩{g.currentAmount?.toLocaleString()}</span>
+                    <span>₩{g.targetAmount?.toLocaleString()}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-        <Panel title="내 투자·재무" sub="진단 및 프로필">
+        <div style={{ background: "var(--panel)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 3px rgba(16,24,40,0.04)" }}>
+          <div style={{ marginBottom: 16 }}>
+            <h3>내 투자·재무</h3>
+            <div className="ph-sub">진단 및 프로필</div>
+          </div>
           <div className="feed">
             <div className="fitem">
               <span className="fdot" style={{ background: latestProfile ? "var(--green)" : "var(--muted)" }} />
@@ -324,7 +347,7 @@ export default function Dashboard() {
               <div><div className="ft">내 정보 및 목표</div><div className="fm">상태 정상</div></div>
             </div>
           </div>
-        </Panel>
+        </div>
       </div>
 
       <div className="panel" style={{ marginTop: 20 }}>

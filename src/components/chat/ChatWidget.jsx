@@ -6,11 +6,14 @@ import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "
 import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE, REQUIRES_AUTH_MESSAGE } from "../../constants/chat/chatMenuTree";
 import { useChatActions } from "../../hooks/chat/useChatActions";
 
-const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
+
 
 function ChatWidget() {
+
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  const userId = user?.userId ?? 1;
   const isLoggedIn = !!user;
 
   const [open, setOpen] = useState(false);
@@ -32,7 +35,7 @@ function ChatWidget() {
 
   useEffect(() => {
     if (!open || session) return;
-    getOrCreateSession(TEMP_USER_ID).then((data) => {
+    getOrCreateSession(userId).then((data) => {
       setSession(data);
       setMessages(data.messages || []);
     });
@@ -90,9 +93,9 @@ function ChatWidget() {
     addLocalMessage("USER", text);
     setInputText("");
     setSending(true);
-    saveChatMessage(session.sessionId, "USER", TEMP_USER_ID, text);
+    saveChatMessage(session.sessionId, "USER", userId, text);
 
-    sendFreeTextMessage(TEMP_USER_ID, session.sessionId, text)
+    sendFreeTextMessage(userId, session.sessionId, text)
       .then((result) => {
         addLocalMessage("BOT", result.reply, result.navActions);
         saveChatMessage(session.sessionId, "BOT", null, result.reply);
@@ -111,7 +114,7 @@ function ChatWidget() {
 
   function handleSendAdminMessage() {
     if (!inputText.trim() || !socketRef.current) return;
-    sendChatSocketMessage(socketRef.current, session.sessionId, "USER", TEMP_USER_ID, inputText);
+    sendChatSocketMessage(socketRef.current, session.sessionId, "USER", userId, inputText);
     setInputText("");
   }
 

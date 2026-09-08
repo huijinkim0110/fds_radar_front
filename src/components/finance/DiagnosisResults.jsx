@@ -12,10 +12,15 @@ import { isStale, formatElapsed } from "../../utils/staleness";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
 import RecommendedProducts from "../mypage/RecommendedProducts";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const TEMP_USER_ID = 1; // 인증 붙기 전까지 임시 고정값
+
 
 export default function DiagnosisResults() {
+    
+    const { user } = useAuth();
+    const userId = user?.userId ?? 1;
+
     const navigate = useNavigate();
 
     const [profiles, setProfiles] = useState([]);
@@ -31,7 +36,7 @@ export default function DiagnosisResults() {
     const [recHistory, setRecHistory] = useState(null);
 
     useEffect(() => {
-        getRecentProfiles(TEMP_USER_ID)
+        getRecentProfiles(userId)
             .then(setProfiles)
             .catch(() => setError('진단 이력을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));
@@ -40,7 +45,7 @@ export default function DiagnosisResults() {
     // 전체 추천 이력을 한 번만 불러옴(모든 진단 시점 것 포함)
     function ensureRecHistoryLoaded() {
         if (recHistory !== null) return; // 이미 불러왔으면 재요청 안함
-        getRecommendationHistory(TEMP_USER_ID)
+        getRecommendationHistory(userId)
             .then(setRecHistory)
             .catch(() => setRecHistory([]));
     }
@@ -88,7 +93,7 @@ export default function DiagnosisResults() {
         setRecLoading(true);
         setRecResults(null);
 
-        getUnifiedRecommendations({ userId: TEMP_USER_ID })
+        getUnifiedRecommendations({ userId: userId })
             .then((data) => {
                 setRecResults(data.results);
                 setGoalMissing(data.goalMissing);
