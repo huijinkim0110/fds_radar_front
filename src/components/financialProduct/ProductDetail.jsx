@@ -106,6 +106,9 @@ export default function ProductDetail() {
 
   return (
     <div style={styles.page}>
+      <button type="button" className="minibtn" onClick={() => navigate('/')} style={{ marginBottom: '12px' }}>
+        ← 홈으로
+      </button>
       <TopBar
         title="금융 상품 상세"
         crumb={`홈 / 금융 상품 / ${product.productName}`}
