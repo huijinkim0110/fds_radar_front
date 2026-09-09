@@ -28,6 +28,7 @@ body{font-family:'Pretendard','Inter',system-ui,sans-serif;background:var(--bg);
 .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#60A5FA,#3B82F6);}
 
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.kpis-5{grid-template-columns:repeat(5,1fr);}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 1px 3px rgba(16,24,40,0.04);}
 .kpi .k{font-size:12px;color:var(--muted);font-weight:500;}
 .kpi .v{font-size:25px;font-weight:700;margin-top:8px;letter-spacing:-0.5px;}
@@ -612,3 +613,46 @@ body.dark input[type="date"] {
 }
 .recip-chip span { color: var(--muted); margin-left: 4px; }
 .recip-chip:hover { border-color: var(--blue); }
+
+/* ── 모의가입 포트폴리오 ── */
+.sub-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.sub-summary {
+  display: flex;
+  flex-direction: column;
+}
+.sub-summary > .panel {
+  flex: 1;
+  margin-top: 0;
+}
+.sub-sum-item { padding: 14px 0; border-bottom: 1px solid #F0F3F8; }
+.sub-sum-item:last-child { border-bottom: none; }
+.sub-sum-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.sub-sum-value { font-size: 18px; font-weight: 800; }
+
+.sub-list { display: flex; flex-direction: column; gap: 16px; }
+.sub-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.sub-name { font-size: 16px; font-weight: 700; }
+.sub-acc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.sub-progress { margin-bottom: 18px; }
+.sub-progress-top { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; }
+.sub-progress-top b { color: var(--blue); }
+.sub-bar { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+.sub-bar span { display: block; height: 100%; background: linear-gradient(90deg, #60A5FA, #2563EB); border-radius: 6px; transition: 0.3s; }
+
+.sub-info { display: flex; flex-direction: column; gap: 0; }
+.sub-info > div {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid #F0F3F8; font-size: 13px;
+}
+.sub-info > div:last-child { border-bottom: none; }
+.sub-info > div span { color: var(--muted); }
+.sub-info > div b { font-weight: 600; }
+
+/* 오른쪽 상품 항목 간격 넓힘 (왼쪽 요약 높이에 맞추려고) */
+.sub-info-wide > div { padding: 13px 0 !important; }

@@ -34,6 +34,7 @@ const USER_MENU = [
   {
     type: "group", label: "내 투자성향",
     children: [
+      {path: "investment-diagnosis", label: "투자성향 진단"},
       { path: "diagnosis/results", label: "진단·추천 결과" },
     ],
   },

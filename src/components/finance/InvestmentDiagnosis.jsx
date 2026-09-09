@@ -17,7 +17,7 @@ import {
 import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 
-const TEMP_USER_ID = 1;
+
 
 const RISK_TENDENCY_LABELS = {
   STABLE: "안정형",
@@ -27,8 +27,13 @@ const RISK_TENDENCY_LABELS = {
 };
 
 function InvestmentDiagnosis() {
-  const navigate = useNavigate();
+
+
   const { user } = useAuth();
+  const userId = user?.userId ?? 1;
+
+  const navigate = useNavigate();
+
   const isLoggedIn = !!user;
 
   const STEPS = [
@@ -85,7 +90,7 @@ function InvestmentDiagnosis() {
     };
 
     const request = isLoggedIn
-        ? submitDiagnosis({ userId: TEMP_USER_ID, ...payload })
+        ? submitDiagnosis({ userId: userId, ...payload })
         : previewDiagnosis(payload);
 
     request

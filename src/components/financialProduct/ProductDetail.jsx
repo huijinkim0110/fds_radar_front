@@ -14,12 +14,15 @@ import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 
 
-const TEMP_USER_ID = 1;
 
 export default function ProductDetail() {
+
+
+  const { user } = useAuth();
+  const userId = user?.userId ?? 1; 
+
   const { productId } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const isLoggedIn = !!user;
 
   const [product, setProduct] = useState(null);
@@ -52,14 +55,14 @@ export default function ProductDetail() {
     setRiskAcknowledged(false);
 
     try {
-      const hasHistory = await hasDiagnosisHistory(TEMP_USER_ID);
+      const hasHistory = await hasDiagnosisHistory(userId);
 
       if (!hasHistory) {
         setGateStep('needsDiagnosis');
         return;
       }
 
-      const result = await checkSuitability(TEMP_USER_ID, productId);
+      const result = await checkSuitability(userId, productId);
 
       setCheckResult(result);
       setGateStep(
@@ -130,7 +133,7 @@ export default function ProductDetail() {
 
           <div style={styles.titleRow}>
             <h1 style={styles.title}>{product.productName}</h1>
-            <FavoriteButton userId={TEMP_USER_ID} productId={productId} />
+            <FavoriteButton userId={userId} productId={productId} />
           </div>
 
           <div style={styles.institution}>{product.institutionName}</div>
@@ -259,7 +262,7 @@ export default function ProductDetail() {
                 )}
 
                 <SubscribeForm
-                  userId={user?.userId}
+                  userId={userId}
                   product={product}
                   onCancel={() => setGateStep('idle')}
                 />
@@ -309,7 +312,7 @@ export default function ProductDetail() {
 
                 {riskAcknowledged && (
                   <div style={{ marginTop: 20 }}>
-                    <SubscribeForm userId={user?.userId} product={product} />
+                    <SubscribeForm userId={userId} product={product} />
                   </div>
                 )}
               </div>

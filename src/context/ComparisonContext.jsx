@@ -9,14 +9,20 @@ import {
     renameComparison
 } from "../api/financialProduct/productComparisonAPI";
 
-const TEMP_USER_ID = 1;
+
+
+
 const MAX_COMPARE_ITEMS = 3;
 const DEFAULT_COMPARISON_NAME = '내 비교함';
 
 const ComparisonContext = createContext(null);
 
 export function ComparisonProvider({ children }) {
+
     const { user } = useAuth();
+    const userId = user?.userId ?? 1; 
+
+
     const isLoggedIn = !!user;
     const [comparisonId, setComparisonId] = useState(null);
     const [items, setItems] = useState([]);
@@ -29,7 +35,7 @@ export function ComparisonProvider({ children }) {
         // 비로그인은 비교함 조회 자체를 스킵
         if (!isLoggedIn) { setLoading(false); return; }
 
-        getUserComparisons(TEMP_USER_ID)
+        getUserComparisons(userId)
             .then((list) => {
                 if (!cancelled && list.length > 0) {
                     setComparisonId(list[0].comparisonId);
@@ -67,7 +73,7 @@ export function ComparisonProvider({ children }) {
 
         // 비교함이 아직 없으면 처음 담는 시점에 자동 생성
         if (!targetId) {
-            const created = await createComparison(TEMP_USER_ID, DEFAULT_COMPARISON_NAME);
+            const created = await createComparison(userId, DEFAULT_COMPARISON_NAME);
             targetId = created.comparisonId;
             setComparisonId(targetId);
             setIsSaved(false); // 새로 만든 비교함은 아직 저장 전 상태
