@@ -21,9 +21,11 @@ export default function Home() {
         <div className="home-logo"><span className="mark">W</span>Wonly</div>
         <div className="home-menu">
           <a onClick={() => navigate("/products")}>금융 상품</a>
-          <a onClick={() => navigate("/mypage/dashboard")}>
-            {user?.role === "ADMIN" ? "관리자 대시보드" : "내 대시보드"}
-          </a>
+          {user && (
+            <a onClick={() => navigate("/mypage/dashboard")}>
+              {user?.role === "ADMIN" ? "관리자 대시보드" : "내 대시보드"}
+            </a>
+          )}
           <a onClick={() => navigate("/support")}>고객센터</a>
         </div>
         <div className="home-nav-right">
@@ -71,16 +73,16 @@ export default function Home() {
           <h2>필요한 건 다 있어요</h2>
         </div>
         <div className="prod-grid">
-  {PRODUCTS.map((p) => (
-    <div className="pcard" key={p.id} onClick={() => navigate(p.path)}>
-      <div className="ic" style={{ background: p.bg }}>{p.ic}</div>
-      <h3>{p.name}</h3>
-      <div className="rate">{p.rate}</div>
-      <p>{p.desc}</p>
-      <span className="go">보러가기 →</span>
-    </div>
-  ))}
-</div>
+          {PRODUCTS.map((p) => (
+            <div className="pcard" key={p.id} onClick={() => navigate(p.path)}>
+              <div className="ic" style={{ background: p.bg }}>{p.ic}</div>
+              <h3>{p.name}</h3>
+              <div className="rate">{p.rate}</div>
+              <p>{p.desc}</p>
+              <span className="go">보러가기 →</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       <footer className="home-foot">© 2026 Wonly · 팀 프로젝트</footer>
