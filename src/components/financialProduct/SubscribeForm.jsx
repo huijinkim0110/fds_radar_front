@@ -62,13 +62,8 @@ export default function SubscribeForm({ userId, product, onCancel }) {
         e.preventDefault();
         setError(null);
 
-        const amountValue = Number(amount);
         const periodValue = Number(period);
 
-        if (!amountValue || amountValue <= 0) {
-            setError('가입금액을 입력해주세요.');
-            return;
-        }
         if (!periodValue || periodValue <= 0) {
             setError('가입기간을 입력해주세요.');
             return;
@@ -200,7 +195,7 @@ export default function SubscribeForm({ userId, product, onCancel }) {
                             onChange={(e) => setPaymentMethod(e.target.value)}
                         >
                             {allowedMethods.map((m) => (
-                                <option key={m} value={m}>{METHODS_LABELS[m]}</option>
+                                <option key={m} value={m}>{METHOD_LABELS[m]}</option>
                             ))}
                         </select>
                     </label>

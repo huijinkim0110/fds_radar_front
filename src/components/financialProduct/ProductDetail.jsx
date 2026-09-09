@@ -42,6 +42,7 @@ export default function ProductDetail() {
   const [checkResult, setCheckResult] = useState(null);
   const [riskAcknowledged, setRiskAcknowledged] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [entryIntent, setEntryIntent] = useState(null);
 
   useEffect(() => {
     setLoading(true);
@@ -60,6 +61,7 @@ export default function ProductDetail() {
       return;
     }
 
+    setEntryIntent('check');
     setGateStep("checking");
 
     setRiskAcknowledged(false);
@@ -94,6 +96,7 @@ export default function ProductDetail() {
       return;
     }
 
+    setEntryIntent('subscribe');
     setGateStep("checking");
     setShowForm(false);
 
@@ -410,22 +413,19 @@ export default function ProductDetail() {
                   위 내용을 확인했으며, 그럼에도 가입을 진행하겠습니다.
                 </label>
 
-                <button
-                  type="button"
-                  style={styles.secondaryButton}
-                  onClick={() => {
-                    setGateStep('idle');
-                    setRiskAcknowledged(false);
-                  }}
-                >
-                  가입 취소
-                </button>
-
                 {riskAcknowledged && (
                   <div style={{ marginTop: 20 }}>
-                    <SubscribeForm userId={userId} product={product} />
+                    <SubscribeForm 
+                      userId={userId}
+                      product={product}
+                      onCancel={() => {
+                        setGateStep('idle');
+                        setRiskAcknowledged(false);
+                      }}
+                    />
                   </div>
                 )}
+
               </div>
             )}
           </div>
