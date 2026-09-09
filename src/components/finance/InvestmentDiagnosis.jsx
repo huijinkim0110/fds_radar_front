@@ -29,11 +29,11 @@ const RISK_TENDENCY_LABELS = {
 function InvestmentDiagnosis() {
 
 
-
+  const { user } = useAuth();
   const userId = user?.userId ?? 1;
 
   const navigate = useNavigate();
-  const { user } = useAuth();
+
   const isLoggedIn = !!user;
 
   const [answers, setAnswers] = useState({
@@ -90,29 +90,34 @@ function InvestmentDiagnosis() {
   }
 
   // ── 결과 화면 ──
-  if (result) {
-    return (
-      <>
-        <TopBar title="투자성향 진단 결과" crumb="마이페이지 / 투자성향" search={false} />
-        <Panel>
-          <div className="diag-result">
-            <div className="diag-result-badge">{RISK_TENDENCY_LABELS[result.riskTendency]}</div>
-            <p className="diag-result-text">
-              당신의 투자성향은 <strong>{RISK_TENDENCY_LABELS[result.riskTendency]}</strong>입니다.
-            </p>
-            {isLoggedIn ? (
-              <button onClick={() => navigate('/mypage/recommendations')}>추천 상품 보러 가기</button>
-            ) : (
-              <div>
-                <p>결과는 저장되지 않았어요. 저장하고 맞춤 상품 추천까지 받으려면 로그인해주세요.</p>
-                <button onClick={() => navigate('/login')}>로그인하러 가기</button>
-              </div>
-            )}
-          </div>
-        </Panel>
-      </>
-    );
-  }
+if (result) {
+  return (
+    <>
+      <TopBar title="투자성향 진단 결과" crumb="마이페이지 / 투자성향" search={false} />
+      <Panel>
+        <div className="diag-result">
+          <div className="diag-result-badge">{RISK_TENDENCY_LABELS[result.riskTendency]}</div>
+          <p className="diag-result-text">
+            당신의 투자성향은 <strong>{RISK_TENDENCY_LABELS[result.riskTendency]}</strong>입니다.
+          </p>
+
+          {isLoggedIn ? (
+            <button className="primary" style={{ maxWidth: 280 }} onClick={() => navigate("/mypage/recommended-products")}>
+              추천 상품 보러 가기 →
+            </button>
+          ) : (
+            <div className="diag-login-notice">
+              <p>결과는 저장되지 않았어요.<br />저장하고 맞춤 상품 추천까지 받으려면 로그인해주세요.</p>
+              <button className="primary" style={{ maxWidth: 280, marginTop: 14 }} onClick={() => navigate("/login")}>
+                로그인하러 가기 →
+              </button>
+            </div>
+          )}
+        </div>
+      </Panel>
+    </>
+  );
+}
 
   // ── 설문 화면 ──
   return (
