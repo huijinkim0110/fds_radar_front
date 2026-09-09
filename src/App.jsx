@@ -59,6 +59,8 @@ import Toast from "./components/common/Toast";
 
 import { ConfirmProvider } from "./context/ConfirmContext";
 
+import FraudPrevention from "./components/fraud/FraudPrevention";
+
 function AppChatWidget() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
@@ -85,6 +87,7 @@ function App() {
                     <Route path="/products/:productId" element={<ProductDetail />} />
                     <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
                     <Route path="/investment-diagnosis" element={<InvestmentDiagnosis />} />
+                    <Route path="/fraud-prevention" element={<FraudPrevention />} />
 
                     <Route path="/mypage" element={<MyPageLayout />}>
                       <Route path="dashboard" element={<Dashboard />} />

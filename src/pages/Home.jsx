@@ -7,7 +7,7 @@ const PRODUCTS = [
   { id: "loan", ic: "💸", bg: "#FFF7ED", name: "비상금 대출", rate: "연 4.9%~", desc: "최대 300만원, 30초 심사.", path: "/home-products/loan" },
   { id: "card", ic: "🪙", bg: "#F5F3FF", name: "체크카드", rate: "최대 5% 캐시백", desc: "쓸수록 쌓이는 혜택.", path: "/home-products/card" },
   { id: "invest", ic: "📈", bg: "#FEF2F2", name: "투자성향 진단", rate: "1분이면 끝", desc: "내게 맞는 투자 스타일을 알아보세요.", path: "/investment-diagnosis" },
-  { id: "care", ic: "🛡️", bg: "#EFF6FF", name: "안심 케어", rate: "무료 제공", desc: "이상거래 실시간 알림·신고.", path: "/home-products/care" },
+  { id: "fraud", ic: "🚨", bg: "#FEF2F2", name: "금융사기 예방", rate: "최신 사기 수법 알아보기", desc: "최근 발생한 금융사기 유형과 예방법을 확인하세요.", path: "/fraud-prevention" },
 ];
 
 export default function Home() {
