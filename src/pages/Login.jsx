@@ -80,6 +80,24 @@ export default function Login() {
           </div>
         </div>
 
+        <div
+          style={{
+            textAlign: "right",
+            marginTop: "8px",
+            marginBottom: "16px",
+          }}
+        >
+          <Link
+            to="/find-password"
+            style={{
+              fontSize: "14px",
+              textDecoration: "none",
+            }}
+          >
+            비밀번호 찾기
+          </Link>
+        </div>
+
         {err && <div className="form-err">{err}</div>}
 
         <button className="primary" type="submit" disabled={loading}>
