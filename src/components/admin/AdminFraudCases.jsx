@@ -7,6 +7,7 @@ import {
   getCaseStatusLabel,
   getCasePriorityLabel,
   getTransactionTypeLabel,   // 추가
+  getFraudDecisionLabel, // [D파트 추가]
   formatProbabilityPercent,
   formatDateTime,
 } from "../../constants/fraud/fraudCaseLabels";
@@ -164,12 +165,12 @@ export default function AdminFraudCases() {
          <thead>
               <tr>
                 <th>사건번호</th><th>거래ID</th><th>거래유형</th><th>우선순위</th>
-                <th>AI 이상확률</th><th>접수일시</th><th>상태</th><th>처리</th>
+                <th>AI 이상확률</th><th>최종판정</th><th>접수일시</th><th>상태</th><th>처리</th>
               </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={8} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 사건이 없습니다.</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 사건이 없습니다.</td></tr>
             )}
             {filtered.map((c) => {
               const r = RISK[c.priority] ?? { label: getCasePriorityLabel(c.priority), color: "var(--muted)", bg: "transparent" };
@@ -186,6 +187,21 @@ export default function AdminFraudCases() {
                   <td className="tx">{getTransactionTypeLabel(c.transactionType)}</td>
                   <td><span className="chip" style={{ color: r.color, background: r.bg }}>{r.label}</span></td>
                   <td className="tx">{formatProbabilityPercent(c.fraudProbability)}</td>
+                  <td>
+                    {c.fraudDecision ? (
+                      <span
+                        className="chip"
+                        style={{
+                          color: c.fraudDecision === "FRAUD" ? "var(--red)" : "var(--green)",
+                          background: c.fraudDecision === "FRAUD" ? "rgba(220,38,38,0.12)" : "rgba(5,150,105,0.12)",
+                        }}
+                      >
+                        {getFraudDecisionLabel(c.fraudDecision)}
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: 11.5, color: "var(--muted)" }}>미판정</span>
+                    )}
+                  </td>
                   <td style={{ fontSize: 11.5, color: "var(--muted)" }}>{formatDateTime(c.openedAt)}</td>
                   <td><span className="chip" style={{ color: s.color, background: s.bg }}>{s.label}</span></td>
                   <td onClick={(e) => e.stopPropagation()}>
