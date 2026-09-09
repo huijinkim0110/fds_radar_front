@@ -109,6 +109,9 @@ export default function ProductDetail() {
 
   return (
     <div style={styles.page}>
+      <button type="button" className="minibtn" onClick={() => navigate('/')} style={{ marginBottom: '12px' }}>
+        ← 홈으로
+      </button>
       <TopBar
         title="금융 상품 상세"
         crumb={`홈 / 금융 상품 / ${product.productName}`}
@@ -211,8 +214,14 @@ export default function ProductDetail() {
 
       {/* 가입 과정 */}
       {gateStep !== 'idle' && (
-        <div style={{ marginTop: 20 }}>
-          <Panel title="상품 가입">
+        <div className="modal-bg">
+            <div className="modal-box">
+            <div className="ph-head" style={{ marginBottom: '20px' }}>
+              <h3 className="modal-title" style={{ marginBottom: 0 }}>상품 가입</h3>
+              {gateStep !== 'checking' && (
+                <button type="button" className="minibtn" onClick={() => setGateStep('idle')}>✕</button>
+              )}
+            </div>
 
             {gateStep === 'checking' && (
               <div style={styles.gateMessage}>적합성 검사 중...</div>
@@ -255,6 +264,7 @@ export default function ProductDetail() {
                 <SubscribeForm
                   userId={userId}
                   product={product}
+                  onCancel={() => setGateStep('idle')}
                 />
 
               </>
@@ -307,7 +317,7 @@ export default function ProductDetail() {
                 )}
               </div>
             )}
-          </Panel>
+          </div>
         </div>
       )}
     </div>

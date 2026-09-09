@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { subscribe } from '../../api/financialProduct/simulatedSubscriptionAPI';
 import { getMyAccounts } from '../../account/accountAPI';
 import { getGoals } from '../../api/finance/financialGoalsAPI';
 
 // 적금(SAVINGS)은 subscriptionAmount를 "월 납입액"으로, 그 외 상품은 "일시납 총액"으로
-export default function SubscribeForm({ userId, product }) {
+export default function SubscribeForm({ userId, product, onCancel }) {
     const navigate = useNavigate();
     const isInstallment = product.productType === 'SAVINGS';
 
@@ -25,8 +25,10 @@ export default function SubscribeForm({ userId, product }) {
     useEffect(() => {
         getMyAccounts(userId)
             .then((list) => {
-                setAccounts(list);
-                if (list.length > 0) setAccountId(String(list[0].id));
+                const withdrawable = list.filter((a) => a.accountType === 'CHECKING');
+                setAccounts(withdrawable);
+                const firstActive = withdrawable.find((a) => a.status === 'ACTIVE');
+                if (firstActive) setAccountId(String(firstActive.id));
             })
             .catch(() => setError('계좌 목록을 불러오지 못했습니다.'))
             .finally(() => setAccountsLoading(false));
@@ -66,6 +68,11 @@ export default function SubscribeForm({ userId, product }) {
         }
 
         const selectedAccount = accounts.find((a) => String(a.id) === accountId);
+
+        if (selectedAccount && selectedAccount.status !== 'ACTIVE') {
+            setError('사용 정지되었거나 해지된 계좌는 선택할 수 없습니다.');
+            return;
+        }
         if (selectedAccount && selectedAccount.balance < amountValue) {
             setError('선택한 계좌의 잔액이 부족합니다.');
             return;
@@ -87,18 +94,12 @@ export default function SubscribeForm({ userId, product }) {
 
     if (result) {
         return (
-
-            <div>
-                <p>모의가입이 완료되었습니다.</p>
-                <dl>
-                    <dt>출금 계좌</dt>
-                    <dd>{result.accountNumber}</dd>
-
-                    <dt>가입금액</dt>
-                    <dd>{result.subscriptionAmount?.toLocaleString()}원</dd>
-
+            <div style={styles.resultWrap}>
+                <div style={styles.resultBadge}>✓</div>
+                <div style={styles.resultTitle}>모의가입이 완료되었습니다.</div>
 
                 <div style={styles.resultGrid}>
+                    <InfoRow label="출금 계좌" value={result.accountNumber} />
                     <InfoRow
                         label="가입금액"
                         value={`${result.subscriptionAmount?.toLocaleString()}원`}
@@ -109,62 +110,63 @@ export default function SubscribeForm({ userId, product }) {
                             value={`${result.monthlyPayment.toLocaleString()}원`}
                         />
                     )}
-                    <InfoRow label="가입기간" value={`${result.subscriptionPeriod}개월`} />
-                    <InfoRow
-                        label="예상 만기금액"
-                        value={`${result.expectedMaturityAmount?.toLocaleString()}원`}
-                        highlight
-                    />
+                    <InfoRow label="가입기간" value={`${result.subscriptionPeriod}개월`}/>
+                    <InfoRow label="예상 만기금액" value={`${result.expectedMaturityAmount?.toLocaleString()}원`} highlight/> 
+                    <InfoRow label="첫 출금액" value={`${result.paidAmount?.toLocaleString()}원`} />
+                    {result.goalName && (
+                        <InfoRow label="연결된 목표" value={result.goalName} />
+                    )}
                 </div>
 
-
-                    <dt>예상 만기금액</dt>
-                    <dd>{result.expectedMaturityAmount?.toLocaleString()}원</dd>
-
-                    <dt>첫 출금액</dt>
-                    <dd>{result.paidAmount?.toLocaleString()}원</dd>
-
-                    {result.goalName && (
-                        <>
-                            <dt>연결된 목표</dt>
-                            <dd>{result.goalName}</dd>
-                        </>
-                    )}
-                </dl>
-
-                <button onClick={() => navigate('/mypage/portfolio')}>내 모의가입 목록 보기</button>
-                <button onClick={() => setResult(null)}>다시 가입하기</button>
-          </div>
+                <div style={styles.resultActions}>
+                    <button style={styles.primaryButton} onClick={() => navigate('/mypage/portfolio')}>
+                        내 모의가입 목록 보기
+                    </button>
+                    <button style={styles.secondaryButton} onClick={() => setResult(null)}>
+                        다시 가입하기
+                    </button>
+                </div>
+            </div>
         );
     }
 
     return (
 
-        <form onSubmit={handleSubmit}>
-            <div>
-                <label>
-                    출금 계좌
-                    {accountsLoading ? (
-                        <span>계좌 불러오는 중...</span>
-                    ) : accounts.length === 0 ? (
-                        <span>등록된 계좌가 없습니다. 계좌를 먼저 개설해주세요.</span>
-                    ) : (
-                        <select value={accountId} onChange={(e) => setAccountId(e.target.value)}>
-                            {accounts.map((a) => (
-                                <option key={a.id} value={a.id}>
-                                    {a.accountName ?? a.accountNumber} ({a.balance?.toLocaleString()}원)
+        <form onSubmit={handleSubmit} style={styles.form}>
+            <label style={styles.field}>
+                <span style={styles.fieldLabel}>출금 계좌</span>
+                {accountsLoading ? (
+                    <span>계좌 불러오는 중...</span>
+                ) : accounts.length === 0 ? (
+                    <span>등록된 계좌가 없습니다. 계좌를 먼저 개설해주세요.</span>
+                ) : (
+                    <select
+                        style={styles.input}
+                        value={accountId}
+                        onChange={(e) => setAccountId(e.target.value)}
+                    >
+                        {accounts.map((a) => {
+                            const disabled = a.status !== 'ACTIVE';
+                            const statusLabel = 
+                                a.status === 'ACCOUNT_BLOCKED' ? ' (사용 정지)' :
+                                a.status === 'CLOSED' ? ' (해지됨)' : '';
+                            return (
+                                <option key={a.id} value={a.id} disabled={disabled}>
+                                    {a.accountName ? `${a.accountName} (${a.accountNumber})` : a.accountNumber}{statusLabel}
                                 </option>
-                            ))}
-                        </select>
-                    )}
-                </label>
-            </div>
+                            );
+                        })}
+                    </select>
+                )}
+            </label>
 
-            <div>
-                <label>
-                    {isInstallment ? '월 납입액' : '가입금액'} (원)
+            <div style={styles.formGrid}>
+                <label style={styles.field}>
+                    <span style={styles.fieldLabel}>
+                        {isInstallment ? '월 납입액' : '가입금액'} (원)
+                    </span>
                     <input 
-
+                        style={styles.input}
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
@@ -185,30 +187,44 @@ export default function SubscribeForm({ userId, product }) {
                 </label>
             </div>
 
-
             {goals.length > 0 && (
-                <div>
-                    <label>
-                        연결할 재무목표 (선택)
-                        <select value={goalId} onChange={(e) => setGoalId(e.target.value)}>
+                <div style={styles.field}>
+                    <label style={styles.field}>
+                        <span style={styles.fieldLabel}>연결할 재무목표(선택)</span>
+                        <select
+                            style={styles.input}
+                            value={goalId}
+                            onChange={(e) => setGoalId(e.target.value)}
+                        >
                             <option value="">연결 안 함</option>
                             {goals.map((g) => (
                                 <option key={g.goalId} value={g.goalId}>
-                                    {g.goalName} ({g.achievementRate}& 달성중)
+                                    {g.goalName} ({g.achievementRate}% 달성중)
                                 </option>
                             ))}
                         </select>
                     </label>
-                    <p>연결하면 이 가입에서 실제로 빠져나가는 금액이 목표 달성률에 자동 반영돼요.</p>
+                    <p style={styles.fieldLabel}>
+                        연결하면 이 가입에서 빠져나가는 금액이 목표 달성률에 자동 반영돼요.
+                    </p>
                 </div>
             )}
 
-            {error && <p>{error}</p>}
-
-            <button type="submit" disabled={submitting || accounts.length === 0}>
-
-                {submitting ? '가입 처리 중...' : '모의가입 신청'}
-            </button>
+            {error && <p style={styles.errorBox}>{error}</p>}
+            <div style={styles.buttonRow}>
+                <button
+                    type="submit"
+                    style={styles.submitButton}
+                    disabled={submitting || accounts.length === 0}
+                >
+                    {submitting ? '가입 처리 중...' : '모의가입 신청'}
+                </button>
+                {onCancel && (
+                    <button type="button" style={styles.secondaryButton} onClick={onCancel}>
+                        취소
+                    </button>
+                )}
+            </div>
         </form>
     );
 }
@@ -234,12 +250,12 @@ const styles = {
     form: {
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
+        gap: '18px',
     },
     formGrid: {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-        gap: '16px',
+        gap: '18px',
     },
     field: {
         display: 'flex',
@@ -247,7 +263,7 @@ const styles = {
         gap: '6px',
     },
     fieldLabel: {
-        fontSize: '12px',
+        fontSize: '13px',
         color: 'var(--muted)',
         fontWeight: 600,
     },
@@ -256,7 +272,7 @@ const styles = {
         padding: '9px 12px',
         border: '1px solid var(--line)',
         borderRadius: '8px',
-        fontSize: '13px',
+        fontSize: '14px',
         color: 'var(--ink)',
         background: '#fff',
         boxSizing: 'border-box',
@@ -268,7 +284,7 @@ const styles = {
         background: 'rgba(239, 68, 68, 0.08)',
         border: '1px solid rgba(239, 68, 68, 0.25)',
         color: '#ef4444',
-        fontSize: '12px',
+        fontSize: '13px',
         fontWeight: 600,
     },
     submitButton: {
@@ -278,9 +294,15 @@ const styles = {
         borderRadius: '9px',
         background: 'var(--blue)',
         color: '#fff',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: 700,
         cursor: 'pointer',
+    },
+    buttonRow: {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: '8px',
     },
     resultWrap: {
         display: 'flex',
@@ -353,7 +375,7 @@ const styles = {
         borderRadius: '9px',
         background: 'transparent',
         color: 'var(--ink)',
-        fontSize: '13px',
+        fontSize: '14px',
         fontWeight: 600,
         cursor: 'pointer',
     },

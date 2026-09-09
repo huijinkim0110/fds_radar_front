@@ -295,7 +295,7 @@ export default function Dashboard() {
               <h3>재무목표</h3>
               <div className="ph-sub">진행 중인 목표</div>
             </div>
-            <span onClick={() => navigate("/mypage/financial-goal")} style={{ fontSize: 12, color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}>전체 보기 →</span>
+            <span onClick={() => navigate("/mypage/financial-goals")} style={{ fontSize: 12, color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}>전체 보기 →</span>
           </div>
           {inProgressGoals.length === 0 ? (
             <div className="dash-empty">진행 중인 재무목표가 없습니다.</div>
