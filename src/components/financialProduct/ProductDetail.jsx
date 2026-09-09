@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getProductDetail } from "../../api/financialProduct/productAPI";
-import { checkSuitability } from "../../api/recommendation/suitabilityCheckAPI";
+import { checkSuitability, getCheckHistory } from "../../api/recommendation/suitabilityCheckAPI";
 import { hasDiagnosisHistory } from "../../api/finance/investmentProfileAPI";
 import { PRODUCT_TYPE_LABELS } from "../../constants/financialProduct/productLabels";
 
@@ -13,7 +13,16 @@ import SubscribeForm from "./SubscribeForm";
 import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 
+const MIN_CHECK_DURATION = 700;
 
+function withMinDuration(promise, minMs = MIN_CHECK_DURATION) {
+  const start = Date.now();
+  return promise.then((result) => {
+    const elapsed = Date.now() - start;
+    if (elapsed >= minMs) return result;
+    return new Promise((resolve) => setTimeout(() => resolve(result), minMs - elapsed));
+  });
+}
 
 export default function ProductDetail() {
 
@@ -32,6 +41,7 @@ export default function ProductDetail() {
   const [gateStep, setGateStep] = useState('idle');
   const [checkResult, setCheckResult] = useState(null);
   const [riskAcknowledged, setRiskAcknowledged] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -43,7 +53,7 @@ export default function ProductDetail() {
       .finally(() => setLoading(false));
   }, [productId]);
 
-  async function handleStartSubscribe() {
+  async function handleCheckSuitability() {
 
     if (!isLoggedIn) {
       navigate("/login");
@@ -53,16 +63,20 @@ export default function ProductDetail() {
     setGateStep("checking");
 
     setRiskAcknowledged(false);
+    setShowForm(false);
 
     try {
-      const hasHistory = await hasDiagnosisHistory(userId);
+      const { hasHistory, result } = await withMinDuration((async () => {
+        const hasHistory = await hasDiagnosisHistory(userId);
+        if (!hasHistory) return { hasHistory };
+        const result = await checkSuitability(userId, productId);
+        return { hasHistory, result };
+      })());
 
       if (!hasHistory) {
         setGateStep('needsDiagnosis');
         return;
       }
-
-      const result = await checkSuitability(userId, productId);
 
       setCheckResult(result);
       setGateStep(
@@ -70,6 +84,31 @@ export default function ProductDetail() {
       );
     } catch {
       alert('적합성 검사에 실패했습니다.');
+      setGateStep('idle');
+    }
+  }
+
+  async function handleStartSubscribe() {
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    setGateStep("checking");
+    setShowForm(false);
+
+    try {
+      const history = await withMinDuration(getCheckHistory(userId, productId));
+
+      if (!history || history.length === 0) {
+        setGateStep('suggestCheck');
+        return;
+      }
+
+      setCheckResult(history[0]);
+      setGateStep(history[0].suitabilityResult === 'SUITABLE' ? 'suitable' : 'unsuitable');
+    } catch {
+      alert('가입 처리 중 오류가 발생했습니다.');
       setGateStep('idle');
     }
   }
@@ -109,6 +148,12 @@ export default function ProductDetail() {
 
   return (
     <div style={styles.page}>
+      <style>{`
+        @keyframes suitability-spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
       <button type="button" className="minibtn" onClick={() => navigate('/')} style={{ marginBottom: '12px' }}>
         ← 홈으로
       </button>
@@ -158,6 +203,17 @@ export default function ProductDetail() {
 
           <div style={styles.actionRow}>
             <CompareButton productId={productId} />
+
+            {gateStep === 'idle' && (
+              <button
+                type="button"
+                style={styles.checkButton}
+                onClick={handleCheckSuitability}
+              >
+                <span style={{ fontSize: '15px' }}>🔍</span>
+                <span>적합성 검사</span>
+              </button>
+            )}
 
             {gateStep === 'idle' && (
               <button
@@ -217,15 +273,22 @@ export default function ProductDetail() {
         <div className="modal-bg">
             <div className="modal-box">
             <div className="ph-head" style={{ marginBottom: '20px' }}>
-              <h3 className="modal-title" style={{ marginBottom: 0 }}>상품 가입</h3>
+              <h3 className="modal-title" style={{ marginBottom: 0 }}>
+                {gateStep === 'suitable' || gateStep === 'unsuitable' || gateStep === 'checking' || gateStep === 'suggestCheck'
+                  ? '적합성 검사 결과'
+                  : '상품 가입'
+                }
+              </h3>
               {gateStep !== 'checking' && (
                 <button type="button" className="minibtn" onClick={() => setGateStep('idle')}>✕</button>
               )}
             </div>
 
             {gateStep === 'checking' && (
-              <div style={styles.gateMessage}>적합성 검사 중...</div>
-
+              <div style={styles.gateMessage}>
+                <div style={styles.spinner} />
+                <span>적합성 검사 중...</span>
+              </div>
             )}
 
             {gateStep === 'needsDiagnosis' && (
@@ -254,26 +317,67 @@ export default function ProductDetail() {
               </div>
             )}
 
+            {gateStep === 'suggestCheck' && (
+              <div>
+                <p style={styles.gateText}>
+                  아직 이 상품에 대한 적합성 검사 이력이 없어요. 먼저 검사해보시는 걸 추천드려요.
+                </p>
+                <div style={styles.buttonRow}>
+                  <button type="button" style={styles.primaryButton} onClick={handleCheckSuitability}>
+                    적합성 검사 받기
+                  </button>
+                  <button type="button" style={styles.secondaryButton} onClick={() => {setGateStep('suitable'); setShowForm(true);}}>
+                    그냥 가입할게요
+                  </button>
+                </div>
+              </div>
+            )}
 
             {gateStep === "suitable" && (
               <>
+                <GradeBadge checkResult={checkResult} />
+
                 {checkResult?.goalNote && (
                   <p style={styles.gateText}>{checkResult.goalNote}</p>
                 )}
 
-                <SubscribeForm
-                  userId={userId}
-                  product={product}
-                  onCancel={() => setGateStep('idle')}
-                />
+                {checkResult && (
+                  <div style={styles.checkList}>
+                    <CheckItem label="위험등급 적합" passed={checkResult.riskMatch} />
+                    <CheckItem label="투자기간 적합" passed={checkResult.periodMatch} />
+                    <CheckItem label="원금보장 조건 적합" passed={checkResult.principalProtectionMatch} />
+                  </div>
+                )}
 
+                {!showForm ? (
+                  <div>
+                    <p style={styles.gateText}>
+                      이 상품은 회원님의 투자성향과 잘 맞습니다. 가입하시겠어요?
+                    </p>
+                    <div style={styles.buttonRow}>
+                      <button type="button" style={styles.primaryButton} onClick={() => setShowForm(true)}>
+                        지금 가입하기
+                      </button>
+                      <button type="button" style={styles.secondaryButton} onClick={() => setGateStep('idle')}>
+                        아뇨, 다음에 할게요
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <SubscribeForm
+                    userId={userId}
+                    product={product}
+                    onCancel={() => setGateStep('idle')}
+                  />
+                )}
               </>
             )}
 
             {gateStep === 'unsuitable' && (
               <div>
-                <div style={styles.warningBox}>
+                <GradeBadge checkResult={checkResult} />
 
+                <div style={styles.warningBox}>
                   <strong>
                     이 상품은 회원님의 투자성향과 맞지 않습니다.
                   </strong>
@@ -287,8 +391,15 @@ export default function ProductDetail() {
                       {checkResult.goalNote}
                     </p>
                   )}
-
                 </div>
+
+                {checkResult && (
+                  <div style={styles.checkList}>
+                    <CheckItem label="위험등급 적합" passed={checkResult.riskMatch} />
+                    <CheckItem label="투자기간 적합" passed={checkResult.periodMatch} />
+                    <CheckItem label="원금보장 조건 적합" passed={checkResult.principalProtectionMatch} />
+                  </div>
+                )}
 
                 <label style={styles.checkboxRow}>
                   <input
@@ -345,6 +456,34 @@ function InfoRow({ label, value }) {
     <div style={styles.infoRow}>
       <span style={styles.infoLabel}>{label}</span>
       <span style={styles.infoValue}>{value}</span>
+    </div>
+  );
+}
+
+function CheckItem({ label, passed }) {
+  return (
+    <div style={styles.checkItem}>
+      <span style={{ color: passed ? 'var(--green)' : '#ef4444'}}>
+        {passed ? '✓' : '✗'}
+      </span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function getSuitabilityGrade(checkResult) {
+  if (!checkResult) return null;
+  return checkResult.suitabilityResult === 'SUITABLE'
+    ? {label: '적합', color: '#ffffff', bg: 'var(--green)'}
+    : {label: '부적합', color: '#ffffff', bg: '#ef4444'};
+}
+
+function GradeBadge({ checkResult }) {
+  const grade = getSuitabilityGrade(checkResult);
+  if (!grade) return null;
+  return (
+    <div style={{ ...styles.gradeBadge, color: grade.color, background: grade.bg }}>
+      {grade.label}
     </div>
   );
 }
@@ -448,7 +587,7 @@ const styles = {
   },
   actionRow: {
     display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
+    gridTemplateColumns: 'repeat(3, 1fr)',
     gap: 10,
     marginTop: 20,
   },
@@ -462,6 +601,21 @@ const styles = {
     fontWeight: 700,
     cursor: 'pointer',
     fontFamily: 'inherit',
+  },
+  checkButton: {
+    height: 42,
+    border: 'none',
+    borderRadius: 10,
+    background: '#10B981',
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 700,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '6px',
   },
   infoGrid: {
     display: 'grid',
@@ -506,6 +660,19 @@ const styles = {
     padding: '18px 0',
     color: 'var(--muted)',
     fontSize: 14,
+    textAlign: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 12,
+  },
+  spinner: {
+    width: 28,
+    height: 28,
+    border: '3px solid var(--line)',
+    borderTopColor: 'var(--blue)',
+    borderRadius: '50%',
+    animation: 'suitability-spin 0.8s linear infinite',
   },
   gateText: {
     margin: '0 0 16px',
@@ -553,5 +720,26 @@ const styles = {
     marginBottom: 16,
     color: 'var(--ink)',
     fontSize: 13,
+  },
+  checkList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+    marginBottom: 16,
+  },
+  checkItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    fontSize: 13,
+    color: 'var(--ink)',
+  },
+  gradeBadge: {
+    display: 'inline-block',
+    padding: '7px 16px',
+    marginBottom: 12,
+    borderRadius: 999,
+    fontSize: 15,
+    fontWeight: 800,
   },
 };
