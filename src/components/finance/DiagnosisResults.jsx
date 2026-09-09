@@ -234,12 +234,12 @@ export default function DiagnosisResults() {
                                             최신
                                         </span>
                                     )}
-                                    <span style={{ fontSize: "12px", color: "var(--muted)"}}>
+                                    <span style={{ fontSize: "13px", color: "var(--muted)"}}>
                                         {expandedProfileId === profile.investmentProfileId ? '▲ 추천상품 접기' : '▼ 추천상품 보기'}
                                     </span>
                                 </div>
                                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                                    <span style={{ fontSize: "12px", color: "var(--muted)" }}>진단 점수</span>
+                                    <span style={{ fontSize: "13px", color: "var(--muted)" }}>진단 점수</span>
                                     <span style={{ fontSize: "15px", fontWeight: "700", color: "var(--blue)" }}>
                                         {profile.diagnosisScore}점
                                     </span>
@@ -256,23 +256,23 @@ export default function DiagnosisResults() {
                                     borderTop: "1px solid var(--line)",
                                 }}
                             >
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "15px" }}>
                                     <span style={{ color: "var(--muted)" }}>투자성향</span>
                                     <strong style={{ color: "var(--ink)" }}>{RISK_TENDENCY_LABELS[profile.riskTendency]}</strong>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "15px" }}>
                                     <span style={{ color: "var(--muted)" }}>투자경험</span>
                                     <strong style={{ color: "var(--ink)" }}>{INVESTMENT_EXPERIENCE_LABELS[profile.investmentExperience]}</strong>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "15px" }}>
                                     <span style={{ color: "var(--muted)" }}>손실감내수준</span>
                                     <strong style={{ color: "var(--ink)" }}>{LOSS_TOLERANCE_LABELS[profile.lossTolerance]}</strong>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "15px" }}>
                                     <span style={{ color: "var(--muted)" }}>선호 투자기간</span>
                                     <strong style={{ color: "var(--ink)" }}>{PREFERRED_PERIOD_LABELS[profile.preferredPeriod]}</strong>
                                 </div>
-                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "15px" }}>
                                     <span style={{ color: "var(--muted)" }}>원금보장 선호</span>
                                     <strong style={{ color: "var(--ink)" }}>{profile.principalProtectionPreference ? '필요' : '불필요'}</strong>
                                 </div>

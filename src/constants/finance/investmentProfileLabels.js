@@ -22,5 +22,5 @@ export const LOSS_TOLERANCE_LABELS = {
 export const PREFERRED_PERIOD_LABELS = {
     SHORT_TERM: '단기(1년 미만)',
     MID_TERM: '중기(1~3년)',
-    LONG_TERM: '장기(3년 이상'
+    LONG_TERM: '장기(3년 이상)'
 };

@@ -213,24 +213,34 @@ tr:last-child td{border-bottom:none;}
 
 /* ── 투자성향 진단 ── */
 .diag-list { display: flex; flex-direction: column; gap: 22px; }
-.diag-q-title { font-size: 13.5px; font-weight: 600; margin-bottom: 10px; }
-.diag-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.diag-q-title { font-size: 19px; font-weight: 500; margin-bottom: 20px; }
+.diag-options { display: flex; flex-direction: column; gap: 10px; }
+.diag-options-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.diag-options-wrap .diag-opt { width: 100%; box-sizing: border-box; }
 .diag-opt {
-  display: inline-flex; align-items: center; gap: 7px;
-  border: 1px solid var(--line); background: var(--panel2);
-  color: var(--muted); font-size: 12.5px; padding: 9px 13px;
-  border-radius: 9px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--line); background: var(--pane12);
+  color: var(--ink); font-size: 16px; padding: 16px 18px;
+  border-radius: 10px; cursor: pointer;
 }
 .diag-opt input { accent-color: var(--blue); }
 .diag-opt.on { border-color: var(--blue); color: #2563EB; background: rgba(37,99,235,0.10); font-weight:600; }
 .diag-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+.diag-page .panel h3 { font-size: 17px; }
+.diag-page .field { margin-bottom: 0; }
+.diag-page .field label { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.diag-page .field select { font-size: 15px; padding: 10px 12px; }
+.diag-grid .field select { width: 180px; }
+.diag-grid .field-wide { grid-column: 1 / -1; }
+.diag-grid .field-wide select { width: 100%; }
 .diag-result { text-align: center; padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .diag-result-badge {
   font-size: 22px; font-weight: 800; color: #fff;
   background: linear-gradient(135deg, #1E40AF, #3B82F6);
   padding: 14px 30px; border-radius: 14px;
 }
-.diag-result-text { font-size: 14px; color: var(--muted); }
+.diag-result-text { font-size: 18px; color: var(--ink); }
 
 /* date input 달력 아이콘 - 라이트모드 */
 input[type="date"]::-webkit-calendar-picker-indicator {
