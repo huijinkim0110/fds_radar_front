@@ -2,10 +2,10 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const PRODUCTS = [
-  { id: "deposit", ic: "💳", bg: "#EFF6FF", name: "입출금 통장", rate: "연 3.0%", desc: "수수료 0원, 하루만 맡겨도 이자.", path: "/home-products/deposit" },
-  { id: "savings", ic: "🐷", bg: "#ECFDF5", name: "자유 적금", rate: "연 5.2%", desc: "원할 때 넣고 빼는 목표 적금.", path: "/home-products/savings" },
-  { id: "loan", ic: "💸", bg: "#FFF7ED", name: "비상금 대출", rate: "연 4.9%~", desc: "최대 300만원, 30초 심사.", path: "/home-products/loan" },
-  { id: "card", ic: "🪙", bg: "#F5F3FF", name: "체크카드", rate: "최대 5% 캐시백", desc: "쓸수록 쌓이는 혜택.", path: "/home-products/card" },
+  { id: "deposit", ic: "💳", bg: "#EFF6FF", name: "WON플러스예금", rate: "연 3.2%", desc: "가입기간 12개월, 원금보장, 우리은행.", path: "/products/1" },
+  { id: "savings", ic: "🐷", bg: "#ECFDF5", name: "WON적금", rate: "연 3.2%", desc: "가입기간 12개월, 원금보장, 월 50만원 이내.", path: "/products/40" },
+  { id: "loan", ic: "💸", bg: "#FFF7ED", name: "미래에셋생명 헤리티지 종신보험", rate: "연 5.7%", desc: "240개월 가입, 원금 비보장, 50,000원~.", path: "/products/97" },
+  { id: "card", ic: "🪙", bg: "#F5F3FF", name: "MZ 플랜적금", rate: "연 2.95%", desc: "12개월, 원금보장, 월 납입한도 30만원 이하, 제주은행.", path: "/products/52" },
   { id: "invest", ic: "📈", bg: "#FEF2F2", name: "투자성향 진단", rate: "1분이면 끝", desc: "내게 맞는 투자 스타일을 알아보세요.", path: "/investment-diagnosis" },
   { id: "fraud", ic: "🚨", bg: "#FEF2F2", name: "금융사기 예방", rate: "최신 사기 수법 알아보기", desc: "최근 발생한 금융사기 유형과 예방법을 확인하세요.", path: "/fraud-prevention" },
 ];
