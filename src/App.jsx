@@ -84,6 +84,7 @@ function App() {
                     <Route path="/products" element={<ProductList />} />
                     <Route path="/products/:productId" element={<ProductDetail />} />
                     <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
+                    <Route path="/investment-diagnosis" element={<InvestmentDiagnosis />} />
 
                     <Route path="/mypage" element={<MyPageLayout />}>
                       <Route path="dashboard" element={<Dashboard />} />
@@ -105,6 +106,7 @@ function App() {
                       <Route path="portfolio" element={<SimulatedSubscriptionList />} />
                       <Route path="financial-goals" element={<FinancialGoalList />} />
                       <Route path="financial-profile" element={<FinancialProfile />} />
+                      <Route path="recommended-products" element={<RecommendedProducts />} />
 
                       <Route path="admin-fraud-cases" element={<AdminFraudCases />} />
                       <Route path="admin-lock-requests" element={<AdminLockRequests />} />
@@ -114,8 +116,6 @@ function App() {
                       <Route path="admin-reports" element={<AdminReports />} />
 
                       <Route path="profile" element={<ProfileRouter />} />
-
-                      <Route path="recommended-products" element={<RecommendedProducts />} />
                     </Route>
                   </Routes>
 
