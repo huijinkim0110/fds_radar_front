@@ -9,3 +9,10 @@ export async function checkSuitability(userId, productId) {
     });
     return response.data;
 }
+
+export async function getCheckHistory(userId, productId) {
+    const response = await axios.get(`${BASE_URL}/suitability-checks`, {
+        params: { userId, productId }
+    });
+    return response.data;
+}

@@ -214,24 +214,34 @@ tr:last-child td{border-bottom:none;}
 
 /* ── 투자성향 진단 ── */
 .diag-list { display: flex; flex-direction: column; gap: 22px; }
-.diag-q-title { font-size: 13.5px; font-weight: 600; margin-bottom: 10px; }
-.diag-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.diag-q-title { font-size: 19px; font-weight: 500; margin-bottom: 20px; }
+.diag-options { display: flex; flex-direction: column; gap: 10px; }
+.diag-options-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+.diag-options-wrap .diag-opt { width: 100%; box-sizing: border-box; }
 .diag-opt {
-  display: inline-flex; align-items: center; gap: 7px;
-  border: 1px solid var(--line); background: var(--panel2);
-  color: var(--muted); font-size: 12.5px; padding: 9px 13px;
-  border-radius: 9px; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  border: 1px solid var(--line); background: var(--pane12);
+  color: var(--ink); font-size: 16px; padding: 16px 18px;
+  border-radius: 10px; cursor: pointer;
 }
 .diag-opt input { accent-color: var(--blue); }
 .diag-opt.on { border-color: var(--blue); color: #2563EB; background: rgba(37,99,235,0.10); font-weight:600; }
 .diag-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+.diag-page .panel h3 { font-size: 17px; }
+.diag-page .field { margin-bottom: 0; }
+.diag-page .field label { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.diag-page .field select { font-size: 15px; padding: 10px 12px; }
+.diag-grid .field select { width: 180px; }
+.diag-grid .field-wide { grid-column: 1 / -1; }
+.diag-grid .field-wide select { width: 100%; }
 .diag-result { text-align: center; padding: 20px 0; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .diag-result-badge {
   font-size: 22px; font-weight: 800; color: #fff;
   background: linear-gradient(135deg, #1E40AF, #3B82F6);
   padding: 14px 30px; border-radius: 14px;
 }
-.diag-result-text { font-size: 14px; color: var(--muted); }
+.diag-result-text { font-size: 18px; color: var(--ink); }
 
 /* date input 달력 아이콘 - 라이트모드 */
 input[type="date"]::-webkit-calendar-picker-indicator {
@@ -603,3 +613,46 @@ body.dark input[type="date"] {
 }
 .recip-chip span { color: var(--muted); margin-left: 4px; }
 .recip-chip:hover { border-color: var(--blue); }
+
+/* ── 모의가입 포트폴리오 ── */
+.sub-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.sub-summary {
+  display: flex;
+  flex-direction: column;
+}
+.sub-summary > .panel {
+  flex: 1;
+  margin-top: 0;
+}
+.sub-sum-item { padding: 14px 0; border-bottom: 1px solid #F0F3F8; }
+.sub-sum-item:last-child { border-bottom: none; }
+.sub-sum-label { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.sub-sum-value { font-size: 18px; font-weight: 800; }
+
+.sub-list { display: flex; flex-direction: column; gap: 16px; }
+.sub-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.sub-name { font-size: 16px; font-weight: 700; }
+.sub-acc { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.sub-progress { margin-bottom: 18px; }
+.sub-progress-top { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 6px; }
+.sub-progress-top b { color: var(--blue); }
+.sub-bar { height: 8px; background: var(--line); border-radius: 6px; overflow: hidden; }
+.sub-bar span { display: block; height: 100%; background: linear-gradient(90deg, #60A5FA, #2563EB); border-radius: 6px; transition: 0.3s; }
+
+.sub-info { display: flex; flex-direction: column; gap: 0; }
+.sub-info > div {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid #F0F3F8; font-size: 13px;
+}
+.sub-info > div:last-child { border-bottom: none; }
+.sub-info > div span { color: var(--muted); }
+.sub-info > div b { font-weight: 600; }
+
+/* 오른쪽 상품 항목 간격 넓힘 (왼쪽 요약 높이에 맞추려고) */
+.sub-info-wide > div { padding: 13px 0 !important; }

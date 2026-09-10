@@ -40,7 +40,6 @@ export const CROSS_COVERAGE_OPTIONS = [
 export const DISEASE_HISTORY_OPTIONS = [
     { label: '없음', value: 'NONE' },
     { label: '근골격계', value: '근골격계' },
-    { label: '기타', value: '기타' },
     { label: '내부장기계', value: '내부장기계' },
     { label: '산부인과계', value: '산부인과계' },
     { label: '소화기용종', value: '소화기용종' },
@@ -52,6 +51,7 @@ export const DISEASE_HISTORY_OPTIONS = [
     { label: '신경정신계', value: 'MENTAL' },
     { label: '척추계', value: 'SPINE' },
     { label: '치아계', value: 'DENTAL' },
+    { label: '기타', value: '기타' },
 ];
 
 export const DISEASE_HISTORY_VALUE_MAP = {

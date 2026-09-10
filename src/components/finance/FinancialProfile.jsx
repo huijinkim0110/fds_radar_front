@@ -6,9 +6,9 @@ import {
 } from "../../api/finance/financialProfileAPI";
 import { INCOME_SOURCE_LABELS } from "../../constants/finance/financialProfileLabels";
 import { isStale, formatElapsed } from "../../utils/staleness";
-import TopBar from "../Topbar.jsx"
+import TopBar from "../TopBar.jsx";
+import { useAuth } from "../../context/AuthContext.jsx";
 
-const TEMP_USER_ID = 1;
 const INCOME_SOURCE_OPTIONS = Object.keys(INCOME_SOURCE_LABELS);
 
 const EMPTY_FORM = {
@@ -20,6 +20,10 @@ const EMPTY_FORM = {
 };
 
 function FinancialProfile() {
+
+    const { user } = useAuth();
+    const userId = user?.userId ?? 1;
+
     const [profile, setProfile] = useState(null);
     const [hasProfile, setHasProfile] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -37,12 +41,12 @@ function FinancialProfile() {
         setLoading(true);
         setError(null);
 
-        hasFinancialProfile(TEMP_USER_ID)
+        hasFinancialProfile(userId)
             .then((has) => {
                 setHasProfile(has);
 
                 if (has) {
-                    return getFinancialProfile(TEMP_USER_ID).then(setProfile);
+                    return getFinancialProfile(userId).then(setProfile);
                 }
             })
             .catch(() => setError("재무 프로필을 불러오지 못했습니다."))
@@ -109,7 +113,7 @@ function FinancialProfile() {
         setSubmitting(true);
 
         upsertFinancialProfile({
-            userId: TEMP_USER_ID,
+            userId: userId,
             occupation: form.occupation,
             incomeSource: form.incomeSource,
             monthlyIncome: Number(form.monthlyIncome),

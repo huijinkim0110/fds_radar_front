@@ -10,6 +10,14 @@ const CARD_TYPE = {
   DEBIT: { label: "직불카드", bg: "linear-gradient(135deg,#334155,#0F172A)" },
 };
 
+const CARD_STATUS_LABELS = {
+  ACTIVE: "정상",
+  SUSPENDED: "일시정지",
+  LOCKED: "잠금",
+  CANCELLED: "해지",
+  EXPIRED: "만료",
+};
+
 export default function Cards() {
   const { user } = useAuth();
   const userId = user?.userId;
@@ -30,16 +38,16 @@ export default function Cards() {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-  if (!userId) { setLoading(false); return; }
-  getMyCards(userId)
-    .then((data) => {
-      const active = data.filter(c => c.status !== "CANCELLED");
-      setCards(active);
-      if (active.length > 0) setSelectedId(active[0].id);
-    })
-    .catch(() => setError("카드 목록을 불러오지 못했습니다."))
-    .finally(() => setLoading(false));
-}, [userId]);
+    if (!userId) { setLoading(false); return; }
+    getMyCards(userId)
+      .then((data) => {
+        const active = data.filter(c => c.status !== "CANCELLED");
+        setCards(active);
+        if (active.length > 0) setSelectedId(active[0].id);
+      })
+      .catch(() => setError("카드 목록을 불러오지 못했습니다."))
+      .finally(() => setLoading(false));
+  }, [userId]);
 
   const selected = cards.find((c) => c.id === selectedId);
 
@@ -62,8 +70,9 @@ export default function Cards() {
       if (!res.ok) throw new Error();
       setAddMsg("카드가 추가되었습니다!");
       const updated = await getMyCards(userId);
-      setCards(updated);
-      setSelectedId(updated[updated.length - 1]?.id ?? null);
+      const active = updated.filter(c => c.status !== "CANCELLED");
+      setCards(active);
+      setSelectedId(active[active.length - 1]?.id ?? null);
       setTimeout(() => {
         setShowAddCard(false);
         setAddMsg("");
@@ -76,22 +85,22 @@ export default function Cards() {
     }
   }
 
- async function handleCancelCard() {
-  if (!window.confirm("정말 이 카드를 해지하시겠습니까?")) return;
-  try {
-    const res = await fetch(`http://localhost:9090/api/cards/${selected.id}?userId=${userId}`, {
-      method: "DELETE"
-    });
-    if (!res.ok) throw new Error();
-    alert("카드가 해지되었습니다.");
-    const updated = await getMyCards(userId);
-    const active = updated.filter(c => c.status !== "CANCELLED");
-    setCards(active);
-    setSelectedId(active.length > 0 ? active[0].id : null);
-  } catch {
-    alert("해지에 실패했습니다.");
+  async function handleCancelCard() {
+    if (!window.confirm("정말 이 카드를 해지하시겠습니까?")) return;
+    try {
+      const res = await fetch(`http://localhost:9090/api/cards/${selected.id}?userId=${userId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error();
+      alert("카드가 해지되었습니다.");
+      const updated = await getMyCards(userId);
+      const active = updated.filter(c => c.status !== "CANCELLED");
+      setCards(active);
+      setSelectedId(active.length > 0 ? active[0].id : null);
+    } catch {
+      alert("해지에 실패했습니다.");
+    }
   }
-}
 
   if (loading) return <div className="loading">불러오는 중…</div>;
   if (error) return (
@@ -133,7 +142,7 @@ export default function Cards() {
                   <div className="acc-foot" style={{ marginBottom: 18 }}>
                     <span>{card.cardName}</span>
                     <span style={{ background: "rgba(255,255,255,0.2)", padding: "2px 8px", borderRadius: 10, fontSize: 11 }}>
-                      {card.status === "ACTIVE" ? "정상" : card.status}
+                      {CARD_STATUS_LABELS[card.status] ?? card.status}
                     </span>
                   </div>
                   <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: 1, marginBottom: 18 }}>
@@ -167,8 +176,8 @@ export default function Cards() {
                 </div>
                 <div className="acc-detail-item">
                   <div className="acc-detail-label">상태</div>
-                  <div className="acc-detail-value" style={{ color: "var(--green)" }}>
-                    {selected.status === "ACTIVE" ? "정상 사용중" : selected.status}
+                  <div className="acc-detail-value" style={{ color: selected.status === "ACTIVE" ? "var(--green)" : "var(--amber)" }}>
+                    {CARD_STATUS_LABELS[selected.status] ?? selected.status}
                   </div>
                 </div>
               </div>

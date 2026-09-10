@@ -43,7 +43,6 @@ import { ChatWidgetProvider } from "./context/ChatWidgetContext";
 
 import { useAuth } from "./context/AuthContext";
 
-// admin
 import AdminFraudCases from "./components/admin/AdminFraudCases";
 import AdminLockRequests from "./components/admin/AdminLockRequests";
 import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
@@ -60,12 +59,12 @@ import Toast from "./components/common/Toast";
 
 import { ConfirmProvider } from "./context/ConfirmContext";
 
+import FraudPrevention from "./components/fraud/FraudPrevention";
+
 function AppChatWidget() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
-
   if (isAdminRoute) return null;
-
   return <ChatWidget />;
 }
 
@@ -78,29 +77,21 @@ function App() {
             <ToastProvider>
               <ConfirmProvider>
                 <ChatWidgetProvider>
-
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/support" element={<CustomerCenter />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
 
-                    {/* 상품 */}
                     <Route path="/products" element={<ProductList />} />
                     <Route path="/products/:productId" element={<ProductDetail />} />
-
-
                     <Route path="/portfolio" element={<SimulatedSubscriptionList />} />
-
                     <Route path="/investment-diagnosis" element={<InvestmentDiagnosis />} />
+                    <Route path="/fraud-prevention" element={<FraudPrevention />} />
 
-
-
-                    {/* 마이페이지 (유저+관리자 공용, 하나로 통일) */}
                     <Route path="/mypage" element={<MyPageLayout />}>
                       <Route path="dashboard" element={<Dashboard />} />
 
-                      {/* 유저 */}
                       <Route path="accounts" element={<Account />} />
                       <Route path="cards" element={<Cards />} />
                       <Route path="transactions" element={<Transactions />} />
@@ -114,11 +105,12 @@ function App() {
                       <Route path="comparisons" element={<ProductComparison />} />
                       <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
                       <Route path="diagnosis/results" element={<DiagnosisResults />} />
+                      <Route path="investment-diagnosis" element={<InvestmentDiagnosis />} />
                       <Route path="portfolio" element={<SimulatedSubscriptionList />} />
                       <Route path="financial-goals" element={<FinancialGoalList />} />
                       <Route path="financial-profile" element={<FinancialProfile />} />
+                      <Route path="recommended-products" element={<RecommendedProducts />} />
 
-                      {/* 관리자 */}
                       <Route path="admin-fraud-cases" element={<AdminFraudCases />} />
                       <Route path="admin-lock-requests" element={<AdminLockRequests />} />
                       <Route path="admin-fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
@@ -126,7 +118,6 @@ function App() {
                       <Route path="admin-disputes" element={<AdminDisputes />} />
                       <Route path="admin-reports" element={<AdminReports />} />
 
-                      {/* profile — role로 갈림 (아래 2번 참고) */}
                       <Route path="profile" element={<ProfileRouter />} />
                     </Route>
                   </Routes>

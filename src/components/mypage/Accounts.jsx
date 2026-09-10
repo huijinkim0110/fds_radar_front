@@ -10,6 +10,14 @@ const BG = [
   "linear-gradient(135deg,#4A5568,#2D3748)",
 ];
 
+const ACCOUNT_STATUS_LABELS = {
+  ACTIVE: "정상",
+  CLOSED: "해지",
+  ACCOUNT_BLOCKED: "활동 정지",
+  DORMANT: "휴면",
+  SUSPENDED: "일시정지",
+};
+
 const isSavings = (acc) => acc.accountName?.includes("적금");
 const isEmergency = (acc) => acc.accountName?.includes("비상금");
 
@@ -41,16 +49,16 @@ export default function Accounts() {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-  if (!userId) { setLoading(false); return; }
-  getMyAccounts(userId)
-    .then((data) => {
-      const active = data.filter(a => a.status !== "CLOSED");
-      setAccounts(active);
-      if (active.length > 0) setSelectedId(active[0].id);
-    })
-    .catch(() => setError("계좌 목록을 불러오지 못했습니다."))
-    .finally(() => setLoading(false));
-}, [userId]);
+    if (!userId) { setLoading(false); return; }
+    getMyAccounts(userId)
+      .then((data) => {
+        const active = data.filter(a => a.status !== "CLOSED");
+        setAccounts(active);
+        if (active.length > 0) setSelectedId(active[0].id);
+      })
+      .catch(() => setError("계좌 목록을 불러오지 못했습니다."))
+      .finally(() => setLoading(false));
+  }, [userId]);
 
   const selected = accounts.find((a) => a.id === selectedId);
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
@@ -86,7 +94,10 @@ export default function Accounts() {
       await transfer(userId, form.receiverAccountNumber, amt);
       setMsg("송금이 완료되었습니다.");
       if (isEmergency(fromAccount)) setEmergencyCount((c) => c + 1);
-      getMyAccounts(userId).then(setAccounts).catch(() => {});
+      getMyAccounts(userId).then((data) => {
+        const active = data.filter(a => a.status !== "CLOSED");
+        setAccounts(active);
+      }).catch(() => {});
       setTimeout(() => { setShowTransfer(false); setMsg(""); }, 1500);
     } catch {
       setMsg("송금에 실패했습니다.");
@@ -113,7 +124,10 @@ export default function Accounts() {
       });
       if (!res.ok) throw new Error();
       setAddMsg("계좌가 추가되었습니다!");
-      getMyAccounts(userId).then(setAccounts).catch(() => {});
+      getMyAccounts(userId).then((data) => {
+        const active = data.filter(a => a.status !== "CLOSED");
+        setAccounts(active);
+      }).catch(() => {});
       setTimeout(() => {
         setShowAddAccount(false);
         setAddMsg("");
@@ -127,21 +141,21 @@ export default function Accounts() {
   }
 
   async function handleCloseAccount() {
-  if (!window.confirm("정말 이 계좌를 해지하시겠습니까?")) return;
-  try {
-    const res = await fetch(`http://localhost:9090/api/accounts/${selected.id}?userId=${userId}`, {
-      method: "DELETE"
-    });
-    if (!res.ok) throw new Error();
-    alert("계좌가 해지되었습니다.");
-    const updated = await getMyAccounts(userId);
-    const active = updated.filter(a => a.status !== "CLOSED");
-    setAccounts(active);
-    setSelectedId(active.length > 0 ? active[0].id : null);
-  } catch {
-    alert("해지에 실패했습니다. 잔액이 남아있으면 해지할 수 없습니다.");
+    if (!window.confirm("정말 이 계좌를 해지하시겠습니까?")) return;
+    try {
+      const res = await fetch(`http://localhost:9090/api/accounts/${selected.id}?userId=${userId}`, {
+        method: "DELETE"
+      });
+      if (!res.ok) throw new Error();
+      alert("계좌가 해지되었습니다.");
+      const updated = await getMyAccounts(userId);
+      const active = updated.filter(a => a.status !== "CLOSED");
+      setAccounts(active);
+      setSelectedId(active.length > 0 ? active[0].id : null);
+    } catch {
+      alert("해지에 실패했습니다. 잔액이 남아있으면 해지할 수 없습니다.");
+    }
   }
-}
 
   if (loading) return <div className="loading">불러오는 중…</div>;
   if (error) return (
@@ -186,7 +200,7 @@ export default function Accounts() {
                   <div className="acc-name">{acc.accountName} <span>({acc.accountNumber})</span></div>
                   <div className="acc-balance">₩ {Number(acc.balance).toLocaleString()}</div>
                   <div className="acc-foot">
-                    <span>{acc.status === "ACTIVE" ? "정상" : acc.status}</span>
+                    <span>{ACCOUNT_STATUS_LABELS[acc.status] ?? acc.status}</span>
                     {!savings ? (
                       <button
                         onClick={(e) => { e.stopPropagation(); openTransfer(acc); }}
@@ -216,8 +230,8 @@ export default function Accounts() {
                 </div>
                 <div className="acc-detail-item">
                   <div className="acc-detail-label">상태</div>
-                  <div className="acc-detail-value" style={{ color: "var(--green)" }}>
-                    {selected.status === "ACTIVE" ? "정상 사용중" : selected.status}
+                  <div className="acc-detail-value" style={{ color: selected.status === "ACTIVE" ? "var(--green)" : "var(--amber)" }}>
+                    {ACCOUNT_STATUS_LABELS[selected.status] ?? selected.status}
                   </div>
                 </div>
               </div>
