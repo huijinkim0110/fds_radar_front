@@ -40,6 +40,8 @@ import FinancialProfile from "./components/finance/FinancialProfile";
 
 import ChatWidget from "./components/chat/ChatWidget";
 import { ChatWidgetProvider } from "./context/ChatWidgetContext";
+import AdminChatList from "./components/admin/AdminChatList";
+import AdminChatRoom from "./components/admin/AdminChatRoom";
 
 import { useAuth } from "./context/AuthContext";
 
@@ -64,7 +66,8 @@ import FraudPrevention from "./components/fraud/FraudPrevention";
 function AppChatWidget() {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
-  if (isAdminRoute) return null;
+  const isAuthRoute = location.pathname === "/login" || location.pathname === "/signup";
+  if (isAdminRoute || isAuthRoute) return null;
   return <ChatWidget />;
 }
 
@@ -117,6 +120,8 @@ function App() {
                       <Route path="admin-fraud-analysis" element={<AdminFraudAnalysis />} />
                       <Route path="admin-disputes" element={<AdminDisputes />} />
                       <Route path="admin-reports" element={<AdminReports />} />
+                      <Route path="admin-chats" element={<AdminChatList />} />
+                      <Route path="admin-chats/:sessionId" element={<AdminChatRoom />} />
 
                       <Route path="profile" element={<ProfileRouter />} />
                     </Route>

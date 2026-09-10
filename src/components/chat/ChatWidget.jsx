@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { getOrCreateSession, closeSession, sendFreeTextMessage, saveChatMessage } from "../../api/chat/chatAPI";
+import { getOrCreateSession, closeSession, sendFreeTextMessage, saveChatMessage, requestAdmin, markUserRead } from "../../api/chat/chatAPI";
 import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "../../api/chat/chatSocket";
 import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE, REQUIRES_AUTH_MESSAGE } from "../../constants/chat/chatMenuTree";
 import { useChatActions } from "../../hooks/chat/useChatActions";
-
-
+import { useChatWidget } from "../../context/ChatWidgetContext";
 
 function ChatWidget() {
 
@@ -16,7 +15,7 @@ function ChatWidget() {
   const userId = user?.userId ?? 1;
   const isLoggedIn = !!user;
 
-  const [open, setOpen] = useState(false);
+  const {open, setOpen, pendingAdminConnect, clearPendingAdminConnect} = useChatWidget();
   const [session, setSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [menuPath, setMenuPath] = useState([]);
@@ -41,9 +40,22 @@ function ChatWidget() {
     });
   }, [open, session]);
 
+  // 위젯을 열면(이미 세션이 있어도) 관리자 답장 읽음 처리
+  useEffect(() => {
+    if (open && session) markUserRead(session.sessionId);
+  }, [open, session]);
+
   useEffect(() => {
     return () => disconnectChatSocket(socketRef.current);
   }, []);
+
+  // 고객센터 등 다른 페이지에서 "상담원 연결" 요청이 예약되어 있으면, 세션이 준비되는 대로 자동 연결
+  useEffect(() => {
+    if (pendingAdminConnect && session && !adminMode) {
+      enterAdminMode();
+      clearPendingAdminConnect();
+    }
+  }, [pendingAdminConnect, session, adminMode]);
 
   // 메시지 늘어나면 맨 아래로 스크롤
   useEffect(() => {
@@ -107,8 +119,10 @@ function ChatWidget() {
 
   function enterAdminMode() {
     setAdminMode(true);
+    requestAdmin(session.sessionId).catch(() => {});
     socketRef.current = connectChatSocket(session.sessionId, (msg) => {
       setMessages((prev) => [...prev, msg]);
+      if (open) markUserRead(session.sessionId);
     });
   }
 
@@ -136,6 +150,7 @@ function ChatWidget() {
         : []);
       setMenuPath([]);
       setAdminMode(false);
+      clearPendingAdminConnect();
     });
   }
 
@@ -176,6 +191,9 @@ function ChatWidget() {
           <div className="cw-empty">무엇을 도와드릴까요?<br />아래 메뉴에서 선택하거나 직접 입력해 주세요.</div>
         )}
         {messages.map((msg, idx) => {
+          if (msg.senderType === "SYSTEM") {
+            return <div key={idx} className="cw-system">{msg.content}</div>;
+          }
           const isUser = msg.senderType === "USER";
           return (
             <div key={idx} className={`cw-msg ${isUser ? "user" : "bot"}`}>

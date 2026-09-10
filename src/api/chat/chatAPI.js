@@ -35,3 +35,13 @@ export async function saveChatMessage(sessionId, senderType, senderId, content) 
     });
     return response.data;
 }
+
+// 상담원 연결 요청 - 서버가 가장 한가한 관리자로 자동 배정
+export async function requestAdmin(sessionId) {
+    await axios.post(`${BASE_URL}/chat/sessions/${sessionId}/request-admin`);
+}
+
+// 사용자가 챗봇 위젯 열람 - 관리자 답장 읽음 처리
+export async function markUserRead(sessionId) {
+    await axios.patch(`${BASE_URL}/chat/sessions/${sessionId}/user-read`);
+}
