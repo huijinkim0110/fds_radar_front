@@ -32,3 +32,9 @@ export async function getAdminLockRequests(status) {
     });
     return response.data;
 }
+
+// [D파트 담당자 추가] 완료된 잠금 요청 해제 API 호출 함수
+export async function releaseLockRequest(lockRequestId) {
+    const response = await axios.patch(`${BASE_URL}/api/locks/admin/${lockRequestId}/release`);
+    return response.data;
+}

@@ -29,6 +29,26 @@ export default function AdminFraudAnalysis() {
       .finally(() => setLoading(false));
   }, []);
 
+  // [D파트 추가] 반올림 오차로 항목별 %의 합이 100이 안 되는 문제 방지 (최대잔여법)
+  function distributeToHundred(counts) {
+  const total = counts.reduce((a, b) => a + b, 0);
+  if (total <= 0) return counts.map(() => 0);
+
+  const raw = counts.map((c) => (c / total) * 100);
+  const floors = raw.map(Math.floor);
+  const remainder = 100 - floors.reduce((a, b) => a + b, 0);
+
+  const order = raw
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac);
+
+  const result = [...floors];
+  for (let k = 0; k < remainder; k++) {
+    result[order[k].i] += 1;
+  }
+  return result;
+}
+
   if (loading) return <div>불러오는 중...</div>;
   if (error) return <div>{error}</div>;
   if (!stats) return null;
@@ -43,10 +63,18 @@ export default function AdminFraudAnalysis() {
 
   const maxDaily = Math.max(1, ...stats.daily.map((d) => d.count));
   const maxType = Math.max(1, ...stats.types.map((t) => t.count));
-  const totalRisk = RISK_ORDER.reduce(
-    (sum, r) => sum + (stats.risk.find((x) => x.priority === r.level)?.count ?? 0),
-    0
+  // 기존
+  // const totalRisk = RISK_ORDER.reduce(
+  //   (sum, r) => sum + (stats.risk.find((x) => x.priority === r.level)?.count ?? 0),
+  //   0
+  // );
+
+  // [D파트 수정] 카운트를 배열로 뽑아서 최대잔여법으로 % 배분
+  const riskCounts = RISK_ORDER.map(
+    (r) => stats.risk.find((x) => x.priority === r.level)?.count ?? 0
   );
+  const totalRisk = riskCounts.reduce((sum, c) => sum + c, 0);
+  const riskPercents = distributeToHundred(riskCounts); // [D파트 추가]
 
   return (
     <>
@@ -98,8 +126,9 @@ export default function AdminFraudAnalysis() {
         <Panel title="위험도 비율" sub="전체 사건 기준">
           <div className="risk-bars">
             {RISK_ORDER.map((r, i) => {
-              const count = stats.risk.find((x) => x.priority === r.level)?.count ?? 0;
-              const pct = totalRisk > 0 ? Math.round((count / totalRisk) * 100) : 0;
+              // [D파트 수정] 개별 반올림 대신 위에서 배분한 값 사용
+              const count = riskCounts[i];
+              const pct = riskPercents[i];
               return (
                 <div className="risk-row" key={i}>
                   <div className="risk-label">

@@ -13,17 +13,29 @@ function mapCase(raw) {
         id: raw.fraudCaseId,
         merchant: raw.merchantName,
         amount: raw.amount,
-        occurredAt: raw.transactionOccurredAt,
+        // [D파트 수정] 원본 ISO 문자열 그대로 보여주던 걸 사람이 읽기 좋은 형식으로 변환
+        occurredAt: raw.transactionOccurredAt
+            ? new Date(raw.transactionOccurredAt).toLocaleString()
+            : "-",
         type: raw.transactionType,
         // fraudProbability는 0~1 사이 소수라 백분율로 변환, 반올림
         riskScore: Math.round((raw.fraudProbability ?? 0) * 100),
-        status: mapStatus(raw.confirmation),
+        // [D파트 추가] 사건 종결 여부/최종판정을 status 계산에 반영하기 위해 원본값 보관
+        caseStatus: raw.caseStatus,
+        fraudDecision: raw.fraudDecision,
+        status: mapStatus(raw.caseStatus, raw.fraudDecision, raw.confirmation), // [D파트 수정]
     };
 }
 
-// UserConfirmation enum 실제 상수명 확인 후 다르면 여기만 고치면 됨
-// (기본값은 NO_RESPONSE로 확인됨, MINE/NOT_MINE도 정확한 철자 확인 필요)
-function mapStatus(confirmation) {
+// [D파트 수정] 사건이 이미 종결(CLOSED)됐으면 관리자 최종판정 결과를 우선 표시.
+// 아직 진행 중(RECEIVED/INVESTIGATING)이면 기존처럼 유저 응답(confirmation) 기준으로 표시.
+// 이렇게 안 하면 유저가 응답을 안 한 채로 관리자가 먼저 종결해도 화면엔 계속 "확인 필요"로 남는 버그가 생김.
+function mapStatus(caseStatus, fraudDecision, confirmation) {
+    if (caseStatus === "CLOSED") {
+        if (fraudDecision === "FRAUD") return "사기 확정 처리됨";
+        if (fraudDecision === "NORMAL") return "정상 처리 완료";
+        return "처리 완료";
+    }
     if (confirmation === "CONFIRMED") return "정상 확인";
     if (confirmation === "DENIED") return "신고 필요";
     return "확인 필요"; // NO_RESPONSE
@@ -288,7 +300,10 @@ const userId = user?.userId ?? 1;
                                         <span
                                             className="filterpill"
                                             style={{
-                                                color: fraudCase.status === "신고 필요" ? "#ef4444" : "#22c55e",
+                                                color:
+                                                    fraudCase.status === "신고 필요" || fraudCase.status === "사기 확정 처리됨"
+                                                        ? "#ef4444"
+                                                        : "#22c55e",
                                             }}
                                         >
                                             {fraudCase.status}

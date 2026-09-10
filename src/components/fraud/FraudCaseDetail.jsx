@@ -201,6 +201,8 @@ function FraudCaseDetail() {
     if (!detail) return null;
 
     const targetType = getLockTargetType(detail.transactionType);
+    // 컴포넌트 안, targetType 선언 근처에 추가
+    const hasLockRequest = histories.some((h) => h.actionType === "LOCK");
     const isClosed = detail.caseStatus === "CLOSED";
     const status = STATUS[detail.caseStatus] ?? { label: getCaseStatusLabel(detail.caseStatus), color: "var(--muted)", bg: "transparent" };
     const risk = RISK[detail.priority] ?? { label: getCasePriorityLabel(detail.priority), color: "var(--muted)", bg: "transparent" };
@@ -309,7 +311,11 @@ function FraudCaseDetail() {
 
             {!isClosed && (
                 <Panel title="카드·계좌 잠금 요청" style={{ marginTop: 16 }}>
-                    {!targetType ? (
+                    {hasLockRequest ? (
+                        <div style={{ fontSize: 13, color: "var(--muted)" }}>
+                            이미 이 사건에 대한 잠금 요청이 처리되었습니다.
+                        </div>
+                    ) : !targetType ? (
                         <div style={{ fontSize: 13, color: "var(--muted)" }}>
                             이 거래의 유형을 확인할 수 없어 잠금 요청을 진행할 수 없습니다.
                         </div>
