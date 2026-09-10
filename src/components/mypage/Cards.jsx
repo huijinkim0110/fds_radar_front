@@ -115,10 +115,10 @@ export default function Cards() {
       <TopBar title="카드 관리" crumb="마이페이지 / 카드 관리" search={false} />
 
       <div style={{ marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontSize: 14, color: "var(--muted)" }}>보유 카드 {cards.length}장</div>
+        <div style={{ fontSize: 16, color: "var(--muted)" }}>보유 카드 {cards.length}장</div>
         <button
           onClick={() => setShowAddCard(true)}
-          style={{ background: "var(--blue)", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, padding: "10px 18px", borderRadius: 10, cursor: "pointer" }}
+          style={{ background: "var(--blue)", color: "#fff", border: "none", fontSize: 15, fontWeight: 700, padding: "12px 20px", borderRadius: 10, cursor: "pointer" }}
         >
           + 카드 추가
         </button>
@@ -137,15 +137,15 @@ export default function Cards() {
                   key={card.id}
                   className="acc-card"
                   onClick={() => setSelectedId(card.id)}
-                  style={{ background: t.bg, boxShadow: isSel ? "0 0 0 3px var(--blue)" : "none" }}
+                  style={{ background: t.bg, boxShadow: isSel ? "0 0 0 5px var(--blue)" : "none" }}
                 >
                   <div className="acc-foot" style={{ marginBottom: 18 }}>
                     <span>{card.cardName}</span>
-                    <span style={{ background: "rgba(255,255,255,0.2)", padding: "2px 8px", borderRadius: 10, fontSize: 11 }}>
+                    <span style={{ background: "rgba(255,255,255,0.2)", padding: "6px 16px", borderRadius: 10, fontSize: 13, fontWeight: 700 }}>
                       {CARD_STATUS_LABELS[card.status] ?? card.status}
                     </span>
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, letterSpacing: 1, marginBottom: 18 }}>
+                  <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: 1, marginBottom: 18 }}>
                     {card.cardNumber}
                   </div>
                   <div className="acc-foot">
@@ -158,7 +158,7 @@ export default function Cards() {
           </div>
 
           {selected && (
-            <Panel title={`${selected.cardName} 상세`} sub={`카드번호 ${selected.cardNumber}`} style={{ marginTop: 20 }}>
+            <Panel title={`${selected.cardName} 상세`} sub={`카드번호 ${selected.cardNumber}`} style={{ marginTop: 30 }}>
               <div className="acc-detail">
                 <div className="acc-detail-item">
                   <div className="acc-detail-label">카드 유형</div>
@@ -181,7 +181,7 @@ export default function Cards() {
                   </div>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              <div style={{ display: "flex", gap: 15, marginTop: 30 }}>
                 <button className="minibtn" onClick={() => alert("비밀번호 변경 신청이 접수되었습니다.")}>
                   🔑 비밀번호 변경
                 </button>

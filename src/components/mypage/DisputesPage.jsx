@@ -35,6 +35,7 @@ export default function DisputesPage() {
 // 1. [GET] 대상 거래 목록 조회 (Transactions DB 연동)
 // =========================================================
 useEffect(() => {
+  if (!userId) return;
   getMyTransactions(userId)
     .then((data) => {
       const list = data.content ? data.content : data;
@@ -56,7 +57,7 @@ useEffect(() => {
     .catch((error) => {
       console.error("대상 거래 내역 조회 실패:", error);
     });
-}, []);
+}, [userId]);
 
   // =========================================================
   // 2. [GET] 이의 제기 내역 조회 (DB 연동)
@@ -80,8 +81,9 @@ useEffect(() => {
   };
 
   useEffect(() => {
+    if (!userId) return;
     fetchDisputes();
-  }, []);
+  }, [userId]);
 
   // =========================================================
   // 3. 외부/타 페이지에서 네비게이션으로 전달받은 경우 자동 선택
