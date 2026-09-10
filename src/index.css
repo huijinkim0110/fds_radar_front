@@ -696,4 +696,190 @@ body.dark input[type="date"] {
 .sub-info > div span { color: var(--muted); }
 .sub-info > div b { font-weight: 600; }
 
+
+/* 오른쪽 상품 항목 간격 넓힘 (왼쪽 요약 높이에 맞추려고) */
 .sub-info-wide > div { padding: 13px 0 !important; }
+
+/* ── 프로필 드롭다운 ── */
+
+.profile-dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+
+  width: 320px;
+  padding: 14px;
+
+  background: var(--panel);
+  border: 1px solid #e8edf5;
+  border-radius: 16px;
+
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.11);
+
+  z-index: 1000;
+}
+
+
+/* ── 사용자 정보 ── */
+
+.profile-dropdown-user {
+  padding: 6px 9px 13px;
+  margin-bottom: 8px;
+
+  border-bottom: 1px solid #edf0f5;
+}
+
+.profile-dropdown-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.profile-dropdown-email {
+  margin-top: 4px;
+
+  font-size: 12.5px;
+  color: var(--muted);
+
+  word-break: break-all;
+}
+
+/* ── 메뉴 버튼 공통 ── */
+
+.profile-dropdown-btn {
+  width: 100%;
+  min-height: 68px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 13px 14px;
+  margin-bottom: 6px;
+
+  border: 1px solid transparent;
+  border-radius: 12px;
+
+  text-align: left;
+  cursor: pointer;
+
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.18s ease;
+}
+
+/* ── 글자 ── */
+
+.profile-dropdown-content {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.profile-dropdown-content strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.profile-dropdown-content span {
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* ── 화살표 ── */
+
+.profile-dropdown-arrow {
+  flex-shrink: 0;
+
+  margin-left: 10px;
+
+  font-size: 23px;
+  line-height: 1;
+
+  transition:
+    color 0.18s ease,
+    transform 0.18s ease;
+}
+
+.profile-dropdown-btn:hover {
+  transform: translateX(2px);
+}
+
+.profile-dropdown-btn:hover .profile-dropdown-arrow {
+  transform: translateX(2px);
+}
+
+/* 회원정보 */
+
+.profile-dropdown-btn:nth-of-type(1) {
+  background: #f1f6ff;
+  border-color: #e3edff;
+}
+
+.profile-dropdown-btn:nth-of-type(1) strong {
+  color: #4f6f9f;
+}
+
+.profile-dropdown-btn:nth-of-type(1) span {
+  color: #8294ae;
+}
+
+.profile-dropdown-btn:nth-of-type(1) .profile-dropdown-arrow {
+  color: #8ba7d1;
+}
+
+.profile-dropdown-btn:nth-of-type(1):hover {
+  background: #e5efff;
+  border-color: #d6e5fc;
+}
+
+/* 알림 */
+
+.profile-dropdown-btn:nth-of-type(2) {
+  background: #fff9e9;
+  border-color: #f8edcc;
+}
+
+.profile-dropdown-btn:nth-of-type(2) strong {
+  color: #9a7a35;
+}
+
+.profile-dropdown-btn:nth-of-type(2) span {
+  color: #a99770;
+}
+
+.profile-dropdown-btn:nth-of-type(2) .profile-dropdown-arrow {
+  color: #c9aa63;
+}
+
+.profile-dropdown-btn:nth-of-type(2):hover {
+  background: #fff3d2;
+  border-color: #f3e1ae;
+}
+
+/* 로그아웃 */
+
+.profile-dropdown-logout {
+  margin-bottom: 0;
+
+  background: #fff1f3 !important;
+  border-color: #f8e1e5 !important;
+}
+
+.profile-dropdown-logout .profile-dropdown-content strong {
+  color: #b96874;
+}
+
+.profile-dropdown-logout .profile-dropdown-content span {
+  color: #b98b92;
+}
+
+.profile-dropdown-logout .profile-dropdown-arrow {
+  color: #cf8f99;
+}
+
+.profile-dropdown-logout:hover {
+  background: #ffe5e9 !important;
+  border-color: #f4d2d8 !important;
+}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function TopBar({ title, crumb, search = true, }) {
+export default function TopBar({ title, crumb, search = true }) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
@@ -45,19 +45,19 @@ export default function TopBar({ title, crumb, search = true, }) {
           position: "relative",
         }}
       >
-        {/* 동그라미 */}
+        {/* 동그라미 프로필 버튼 */}
         <button
           onClick={() => setProfileOpen((prev) => !prev)}
           style={{
-            width: "40px",
-            height: "40px",
+            width: "42px",
+            height: "42px",
             borderRadius: "50%",
             border: "1px solid var(--line)",
             background: "var(--panel)",
             color: "var(--ink)",
             cursor: "pointer",
             fontWeight: "700",
-            fontSize: "15px",
+            fontSize: "16px",
           }}
         >
           {user?.name?.charAt(0) || "U"}
@@ -65,108 +65,65 @@ export default function TopBar({ title, crumb, search = true, }) {
 
         {/* 프로필 메뉴 */}
         {profileOpen && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50px",
-              right: "0",
-              width: "210px",
-              background: "var(--panel)",
-              border: "1px solid var(--line)",
-              borderRadius: "10px",
-              padding: "8px",
-              zIndex: 1000,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
-            }}
-          >
-            {/* 로그인 사용자 정보 */}
-            <div
-              style={{
-                padding: "10px",
-                borderBottom: "1px solid var(--line)",
-                marginBottom: "6px",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: "13px",
-                  fontWeight: "700",
-                }}
-              >
+          <div className="profile-dropdown">
+            {/* 사용자 정보 */}
+            <div className="profile-dropdown-user">
+              <div className="profile-dropdown-name">
                 {user?.name || "사용자"}
               </div>
 
-              <div
-                style={{
-                  fontSize: "11px",
-                  color: "var(--muted)",
-                  marginTop: "4px",
-                  wordBreak: "break-all",
-                }}
-              >
+              <div className="profile-dropdown-email">
                 {user?.email || ""}
               </div>
             </div>
 
             {/* 회원정보 */}
             <button
-              className="minibtn"
-              style={{
-                width: "100%",
-                marginBottom: "6px",
-              }}
+              className="profile-dropdown-btn"
               onClick={() => {
                 navigate("/mypage/profile");
                 setProfileOpen(false);
               }}
             >
-              회원정보
-            </button>
+              <div className="profile-dropdown-content">
+                <strong>회원정보</strong>
+                <span>내 정보를 확인하고 관리할 수 있습니다.</span>
+              </div>
 
-            {/* 로그인 기기 이력 */}
-            <button
-              className="minibtn"
-              style={{
-                width: "100%",
-                marginBottom: "6px",
-              }}
-              onClick={() => {
-                navigate("/mypage/devices");
-                setProfileOpen(false);
-              }}
-            >
-
-              로그인 기기 이력
+              <span className="profile-dropdown-arrow">›</span>
             </button>
 
             {/* 알림 */}
             <button
-              className="minibtn"
-              style={{
-                width: "100%",
-                marginBottom: "6px",
-              }}
+              className="profile-dropdown-btn"
               onClick={() => {
                 navigate("/mypage/notifications");
                 setProfileOpen(false);
               }}
             >
-              알림
+              <div className="profile-dropdown-content">
+                <strong>알림</strong>
+                <span>새로운 알림과 주요 소식을 확인할 수 있습니다.</span>
+              </div>
+
+              <span className="profile-dropdown-arrow">›</span>
             </button>
 
             {/* 로그아웃 */}
             <button
-              className="minibtn"
-              style={{
-                width: "100%",
-              }}
+              className="profile-dropdown-btn profile-dropdown-logout"
               onClick={() => {
                 logout();
                 setProfileOpen(false);
                 navigate("/");
               }}
             >
-              로그아웃
+              <div className="profile-dropdown-content">
+                <strong>로그아웃</strong>
+                <span>안전하게 계정을 로그아웃합니다.</span>
+              </div>
+
+              <span className="profile-dropdown-arrow">›</span>
             </button>
           </div>
         )}
