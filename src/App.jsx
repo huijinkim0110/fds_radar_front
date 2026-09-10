@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import FindPassword from "./pages/FindPassword";
 import Report from "./pages/Report";
 import UserProfile from "./components/mypage/UserProfile";
 import LoginDeviceHistory from "./components/mypage/LoginDeviceHistory";
@@ -82,6 +83,7 @@ function App() {
                     <Route path="/support" element={<CustomerCenter />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<Signup />} />
+                    <Route path="/find-password" element={<FindPassword />} />
 
                     <Route path="/products" element={<ProductList />} />
                     <Route path="/products/:productId" element={<ProductDetail />} />
