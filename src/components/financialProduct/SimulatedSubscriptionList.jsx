@@ -111,7 +111,7 @@ function SimulatedSubscriptionList() {
                   {s.goalName && <div><span>연결 목표</span><b>{s.goalName}</b></div>}
                   <div><span>가입금액</span><b>{s.subscriptionAmount?.toLocaleString()}원</b></div>
                   {s.monthlyPayment != null && <div><span>월 납입액</span><b>{s.monthlyPayment.toLocaleString()}원</b></div>}
-                  <div><span>가입기간</span><b>{s.subscriptionPeriod}개월</b></div>
+                  {s.initialAmount != null && <div><span>일시납 초기금액</span><b>{s.initialAmount.toLocaleString()}원</b></div>}
                   <div><span>예상 만기금액</span><b>{s.expectedMaturityAmount?.toLocaleString()}원</b></div>
                   <div><span>누적 납입액</span><b>{s.paidAmount?.toLocaleString()}원</b></div>
                   {s.monthlyPayment != null && <div><span>납입 회차</span><b>{s.paidInstallments}/{s.subscriptionPeriod}회</b></div>}

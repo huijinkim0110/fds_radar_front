@@ -4,10 +4,25 @@ import { subscribe } from '../../api/financialProduct/simulatedSubscriptionAPI';
 import { getMyAccounts } from '../../account/accountAPI';
 import { getGoals } from '../../api/finance/financialGoalsAPI';
 
-// 적금(SAVINGS)은 subscriptionAmount를 "월 납입액"으로, 그 외 상품은 "일시납 총액"으로
+// 백엔드 ALLOWED_METHODS와 반드시 동일하게 유지할 것
+const ALLOWED_METHODS = {
+    DEPOSIT: ['LUMP_SUM'],
+    SAVINGS: ['INSTALLMENT'],
+    BOND: ['LUMP_SUM'],
+    FUND: ['LUMP_SUM', 'INSTALLMENT', 'MIXED'],
+    INSURANCE: ['LUMP_SUM', 'INSTALLMENT', 'MIXED'],
+    OTHER_PRODUCT: ['LUMP_SUM'],
+};
+
+const METHOD_LABELS = {
+    LUMP_SUM: '일시납',
+    INSTALLMENT: '월납', 
+    MIXED: '혼합(일시납+월납)',
+};
+
 export default function SubscribeForm({ userId, product, onCancel }) {
     const navigate = useNavigate();
-    const isInstallment = product.productType === 'SAVINGS';
+    const allowedMethods = ALLOWED_METHODS[product.productType] ?? ['LUMP_SUM'];
 
     const [accounts, setAccounts] = useState([]);
     const [accountsLoading, setAccountsLoading] = useState(true);
@@ -16,11 +31,16 @@ export default function SubscribeForm({ userId, product, onCancel }) {
     const [goals, setGoals] = useState([]);
     const [goalId, setGoalId] = useState(''); // 선택사항 - 빈 문자열이면 미연동
 
-    const [amount, setAmount] = useState('');
+    const [paymentMethod, setPaymentMethod] = useState(allowedMethods[0]);
+    const [initialAmount, setInitialAmount] = useState('');
+    const [monthlyPayment, setMonthlyPayment] = useState('');
     const [period, setPeriod] = useState(product.subscriptionPeriod ?? '');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const [result, setResult] = useState(null);
+
+    const needsInitial = paymentMethod === 'LUMP_SUM' || paymentMethod === 'MIXED';
+    const needsMonthly = paymentMethod === 'INSTALLMENT' || paymentMethod === 'MIXED';
 
     useEffect(() => {
         getMyAccounts(userId)
@@ -42,27 +62,31 @@ export default function SubscribeForm({ userId, product, onCancel }) {
         e.preventDefault();
         setError(null);
 
-        if (!accountId) {
-            setError('출금할 계좌를 선택해주세요.');
-            return;
-        }
-
-        const amountValue = Number(amount);
         const periodValue = Number(period);
 
-        if (!amountValue || amountValue <= 0) {
-            setError('가입금액을 입력해주세요.');
-            return;
-        }
         if (!periodValue || periodValue <= 0) {
             setError('가입기간을 입력해주세요.');
             return;
         }
-        if (product.minAmount != null && amountValue < product.minAmount) {
+        
+        const initialValue = needsInitial ? Number(initialAmount) : 0;
+        const monthlyValue = needsMonthly ? Number(monthlyPayment) : 0;
+
+        if (needsInitial && (!initialValue || initialValue <= 0)) {
+            setError('일시납 초기금액을 입력해주세요.');
+            return;
+        }
+        if (needsMonthly && (!monthlyValue || monthlyValue <= 0)) {
+            setError('월 납입액을 입력해주세요.');
+            return;
+        }
+
+        const totalAmount = initialValue + monthlyValue * periodValue;
+        if (product.minAmount != null && totalAmount < product.minAmount) {
             setError(`최소 가입금액은 ${product.minAmount.toLocaleString()}원입니다.`);
             return;
         }
-        if (product.maxAmount != null && amountValue > product.maxAmount) {
+        if (product.maxAmount != null && totalAmount > product.maxAmount) {
             setError(`최대 가입금액은 ${product.maxAmount.toLocaleString()}원입니다.`);
             return;
         }
@@ -73,7 +97,7 @@ export default function SubscribeForm({ userId, product, onCancel }) {
             setError('사용 정지되었거나 해지된 계좌는 선택할 수 없습니다.');
             return;
         }
-        if (selectedAccount && selectedAccount.balance < amountValue) {
+        if (selectedAccount && selectedAccount.balance < initialValue + monthlyValue) {
             setError('선택한 계좌의 잔액이 부족합니다.');
             return;
         }
@@ -84,7 +108,9 @@ export default function SubscribeForm({ userId, product, onCancel }) {
             productId: product.productId,
             accountId: Number(accountId),
             goalId: goalId ? Number(goalId) : null,
-            subscriptionAmount: amountValue,
+            paymentMethod,
+            initialAmount: needsInitial ? initialValue : null,
+            monthlyPayment: needsMonthly ? monthlyValue: null,
             subscriptionPeriod: periodValue
         })
             .then((data) => setResult(data))
@@ -100,10 +126,9 @@ export default function SubscribeForm({ userId, product, onCancel }) {
 
                 <div style={styles.resultGrid}>
                     <InfoRow label="출금 계좌" value={result.accountNumber} />
-                    <InfoRow
-                        label="가입금액"
-                        value={`${result.subscriptionAmount?.toLocaleString()}원`}
-                    />
+                    {result.initialAmount != null && (
+                        <InfoRow label="일시납 초기금액" value={`${result.initialAmount.toLocaleString()}원`} />
+                    )}
                     {result.monthlyPayment != null && (
                         <InfoRow
                             label="월 납입액"
@@ -161,19 +186,44 @@ export default function SubscribeForm({ userId, product, onCancel }) {
             </label>
 
             <div style={styles.formGrid}>
-                <label style={styles.field}>
-                    <span style={styles.fieldLabel}>
-                        {isInstallment ? '월 납입액' : '가입금액'} (원)
-                    </span>
-                    <input 
-                        style={styles.input}
-                        type="number"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        min={product.minAmount ?? undefined}
-                        max={product.maxAmount ?? undefined}
-                    />
-                </label>
+                {allowedMethods.length > 1 && (
+                    <label style={styles.field}>
+                        <span style={styles.fieldLabel}>결제 방식</span>
+                        <select
+                            style={styles.input}
+                            value={paymentMethod}
+                            onChange={(e) => setPaymentMethod(e.target.value)}
+                        >
+                            {allowedMethods.map((m) => (
+                                <option key={m} value={m}>{METHOD_LABELS[m]}</option>
+                            ))}
+                        </select>
+                    </label>
+                )}
+
+                {needsInitial && (
+                    <label style={styles.field}>
+                        <span style={styles.fieldLabel}>일시납 초기금액(원)</span>
+                        <input 
+                            style={styles.input}
+                            type="number"
+                            value={initialAmount}
+                            onChange={(e) => setInitialAmount(e.target.value)}
+                        />
+                    </label>
+                )}
+
+                {needsMonthly && (
+                    <label style={styles.field}>
+                        <span style={styles.fieldLabel}>월 납입액(원)</span>
+                        <input 
+                            style={styles.input}
+                            type="number"
+                            value={monthlyPayment}
+                            onChange={(e) => setMonthlyPayment(e.target.value)}
+                        />
+                    </label>
+                )}
 
                 <label style={styles.field}>
                     <span style={styles.fieldLabel}>가입기간(개월)</span>
