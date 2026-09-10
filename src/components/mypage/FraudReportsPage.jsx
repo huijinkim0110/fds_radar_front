@@ -41,6 +41,8 @@ export default function FraudReportsPage() {
             // 신고 API에서 실제로 필요한 거래 ID
             transactionId: raw.transactionId,
 
+            userName: raw.userName,
+
             merchant: raw.merchantName,
             amount: raw.amount,
             occurredAt: raw.transactionOccurredAt,

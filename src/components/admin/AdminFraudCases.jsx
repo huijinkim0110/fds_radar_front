@@ -109,7 +109,7 @@ export default function AdminFraudCases() {
       {toast && (
                 <div style={{
                     position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)",
-                    zIndex: 2000, padding: "12px 22px", borderRadius: 8, fontSize: 14, fontWeight: 500,
+                    zIndex: 2000, padding: "12px 25px", borderRadius: 8, fontSize: 16, fontWeight: 500,
                     color: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
                     background: toast.type === "error" ? "#dc2626" : "#059669",
                 }}>
@@ -126,7 +126,7 @@ export default function AdminFraudCases() {
                   background: "#fff", borderRadius: 10, padding: "24px 28px",
                   minWidth: 300, maxWidth: 380, boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
               }}>
-                  <div style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}>{confirmState.message}</div>
+                  <div style={{ fontSize: 16, marginBottom: 20, lineHeight: 1.5 }}>{confirmState.message}</div>
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                       <button className="minibtn" onClick={() => setConfirmState(null)}>취소</button>
                       <button
