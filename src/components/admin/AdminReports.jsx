@@ -112,13 +112,13 @@ export default function AdminReports() {
         <table>
           <thead>
             <tr>
-              <th>번호</th><th>회원</th><th>신고유형</th><th>대상거래</th>
-              <th>내용</th><th>접수시각</th><th>상태</th><th>처리</th>
+              <th>번호</th><th>회원</th><th>신고유형</th><th>신고사유</th><th>대상거래</th>
+              <th>상세내용</th><th>접수시각</th><th>상태</th><th>처리</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={8} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 신고가 없습니다.</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: "center", color: "var(--muted)" }}>해당하는 신고가 없습니다.</td></tr>
             )}
             {filtered.map((r) => {
               const s = STATUS[r.status] ?? { label: r.statusLabel ?? r.status, color: "var(--muted)", bg: "transparent" };
@@ -127,6 +127,12 @@ export default function AdminReports() {
                   <td className="tx">#{r.id}</td>
                   <td className="tx">{r.userEmail}</td>
                   <td style={{ fontSize: 12 }}>{r.reportTypeLabel}</td>
+                  {/* 선택형 신고사유를 칩으로 표시 */}
+                  <td>
+                    <span className="chip" style={{ color: "var(--blue)", background: "rgba(37,99,235,0.12)" }}>
+                      {r.reasonCategory || "-"}
+                    </span>
+                  </td>
                   <td style={{ fontSize: 12, color: "var(--muted)" }}>
                     거래 #{r.transactionId} ({getTransactionTypeLabel(r.transactionType)})
                   </td>

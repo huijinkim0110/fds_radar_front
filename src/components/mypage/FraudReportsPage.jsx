@@ -41,6 +41,8 @@ export default function FraudReportsPage() {
             // 신고 API에서 실제로 필요한 거래 ID
             transactionId: raw.transactionId,
 
+            userName: raw.userName,
+
             merchant: raw.merchantName,
             amount: raw.amount,
             occurredAt: raw.transactionOccurredAt,
@@ -138,7 +140,8 @@ export default function FraudReportsPage() {
           },
           body: JSON.stringify({
             transactionId: Number(selectedTransaction),
-            reason: reason,
+            reasonCategory: reason, // [D파트 담당자 수정] 선택형 사유는 reasonCategory로
+            reason: detail,          // [D파트 담당자 수정] 상세 내용을 reason으로 (기존엔 유실되고 있었음)
           }),
         }
       );
@@ -430,6 +433,7 @@ export default function FraudReportsPage() {
                           : "거래 정보를 불러올 수 없습니다."}
                       </div>
 
+                      {/* [D파트 담당자 수정] 신고유형(선택형 사유)과 상세내용을 분리해서 표시 */}
                       <div
                         style={{
                           fontSize: "12px",
@@ -438,10 +442,23 @@ export default function FraudReportsPage() {
                       >
                         신고 사유:{" "}
                         <strong>
-                          {report.reason}
+                          {report.reasonCategory || "-"}
                         </strong>
                       </div>
-                    </div>
+                        {report.reason && (
+                          <div
+                            style={{
+                              fontSize: "12px",
+                              color: "var(--muted)",
+                            }}
+                          >
+                            상세 내용:{" "}
+                            <span style={{ color: "var(--ink)" }}>
+                              {report.reason}
+                            </span>
+                          </div>
+                        )}
+                      </div>
 
                     {/* ---------------------------------------------
                         하단
@@ -579,6 +596,11 @@ export default function FraudReportsPage() {
                   "결제 금액이 다름",
                   "중복 결제",
                   "알 수 없는 가맹점",
+                  // [D파트 담당자 추가] 이의제기 기능 통합에 따라 추가된 사유
+                  "중복 결제 승인",
+                  "서비스 미제공/미이용",
+                  "결제 금액 상이",
+                  "취소 후 미환급",
                 ].map((item) => (
                   <button
                     key={item}

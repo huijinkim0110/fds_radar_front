@@ -20,8 +20,19 @@ export default function Login() {
     try {
       const data = await login({ email: form.email, password: form.password });
       navigate("/");
-    } catch {
-      setErr("이메일 또는 비밀번호를 확인하세요.");
+    } catch (e) {
+      const msg = e.message ?? "";
+      if (
+        msg.includes("정지") ||
+        msg.includes("SUSPENDED") ||
+        msg.includes("LOCKED") ||
+        msg.includes("suspended") ||
+        msg.includes("locked")
+      ) {
+        setErr("정지된 계정입니다.");
+      } else {
+        setErr("이메일 또는 비밀번호를 확인하세요.");
+      }
     } finally {
       setLoading(false);
     }
@@ -78,6 +89,24 @@ export default function Login() {
               {showPassword ? "숨기기" : "보기"}
             </button>
           </div>
+        </div>
+
+        <div
+          style={{
+            textAlign: "right",
+            marginTop: "8px",
+            marginBottom: "16px",
+          }}
+        >
+          <Link
+            to="/find-password"
+            style={{
+              fontSize: "14px",
+              textDecoration: "none",
+            }}
+          >
+            비밀번호 찾기
+          </Link>
         </div>
 
         {err && <div className="form-err">{err}</div>}

@@ -6,6 +6,18 @@ import Panel from "../Panel";
 import { getMyFraudCases, confirmFraudCase } from "../../api/fraud/fraudUserAPI";
 import { useAuth } from "../../context/AuthContext.jsx";
 
+// 거래유형 라벨 매핑 객체
+const TRANSACTION_TYPE_LABELS = {
+    CARD_PAYMENT: "카드결제",
+    ACCOUNT_TRANSFER: "계좌이체",
+};
+
+// 거래유형 변환 함수 (소문자/대문자 안전 변환)
+function formatTransactionType(type) {
+    if (!type) return "-";
+    const key = String(type).toUpperCase();
+    return TRANSACTION_TYPE_LABELS[key] || type;
+}
 
 // API 응답(FraudCaseListResponse) -> 화면에서 쓰는 필드명으로 매핑.
 function mapCase(raw) {
@@ -17,7 +29,7 @@ function mapCase(raw) {
         occurredAt: raw.transactionOccurredAt
             ? new Date(raw.transactionOccurredAt).toLocaleString()
             : "-",
-        type: raw.transactionType,
+        type: formatTransactionType(raw.transactionType), // [수정] 한글 라벨로 변환 적용
         // fraudProbability는 0~1 사이 소수라 백분율로 변환, 반올림
         riskScore: Math.round((raw.fraudProbability ?? 0) * 100),
         // [D파트 추가] 사건 종결 여부/최종판정을 status 계산에 반영하기 위해 원본값 보관
@@ -29,7 +41,6 @@ function mapCase(raw) {
 
 // [D파트 수정] 사건이 이미 종결(CLOSED)됐으면 관리자 최종판정 결과를 우선 표시.
 // 아직 진행 중(RECEIVED/INVESTIGATING)이면 기존처럼 유저 응답(confirmation) 기준으로 표시.
-// 이렇게 안 하면 유저가 응답을 안 한 채로 관리자가 먼저 종결해도 화면엔 계속 "확인 필요"로 남는 버그가 생김.
 function mapStatus(caseStatus, fraudDecision, confirmation) {
     if (caseStatus === "CLOSED") {
         if (fraudDecision === "FRAUD") return "사기 확정 처리됨";
@@ -42,7 +53,6 @@ function mapStatus(caseStatus, fraudDecision, confirmation) {
 }
 
 export default function FraudConfirmations() {
-
 
 const { user } = useAuth();
 const userId = user?.userId ?? 1;

@@ -34,6 +34,12 @@ export const PREDICTED_RESULT_LABELS = {
     FRAUD: "이상",
 };
 
+// [D파트 담당자 추가] 사건 생성 경로 (FraudCaseDetailResponse.origin: "AI_DETECTION" | "USER_REPORT")
+export const CASE_ORIGIN_LABELS = {
+    AI_DETECTION: "AI 자동 탐지",
+    USER_REPORT: "사용자 신고",
+};
+
 // 거래 유형 (TransactionType)
 export const TRANSACTION_TYPE_LABELS = {
     CARD_PAYMENT: "카드",
@@ -94,6 +100,10 @@ export function getTransactionTypeLabel(value) {
 
 export function getFraudActionTypeLabel(value) {
     return getLabel(FRAUD_ACTION_TYPE_LABELS, value);
+}
+
+export function getCaseOriginLabel(value) {
+    return getLabel(CASE_ORIGIN_LABELS, value);
 }
 
 // 이상확률(0~1 사이 소수)을 퍼센트 문자열로 변환: 0.8 -> "80%"

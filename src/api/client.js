@@ -1,7 +1,6 @@
-// ── API 클라이언트 ───────────────────────────────────────────────
 import { MOCK } from "../data/mock.js";
 
-export const USE_MOCK = false; 
+export const USE_MOCK = false;
 
 function authHeader() {
   const token = localStorage.getItem("accessToken");
@@ -22,7 +21,11 @@ async function request(path, options = {}) {
     throw new Error("인증이 필요합니다 (401)");
   }
   if (!res.ok) {
-    throw new Error(`요청 실패: ${res.status}`);
+    const errorData = await res.json().catch(() => ({}));
+    const error = new Error(errorData.message || `요청 실패: ${res.status}`);
+    error.status = res.status;
+    error.data = errorData;
+    throw error;
   }
   return res.json();
 }
@@ -30,7 +33,6 @@ async function request(path, options = {}) {
 const delay = (data) => new Promise((r) => setTimeout(() => r(data), 300));
 
 export const api = {
-  // ── 인증 ──
   login: async ({ email, password }) => {
     if (USE_MOCK) {
       const role = email.includes("admin") ? "ADMIN" : "USER";
@@ -48,13 +50,13 @@ export const api = {
   },
 
   signup: ({ name, email, password, birthDate, phoneNumber }) =>
-  USE_MOCK
-    ? delay({ ok: true })
-    : request("/auth/signup", {
-        method: "POST",
-        body: JSON.stringify({ name, email, password, birthDate, phoneNumber }),
-      }),
-      
+    USE_MOCK
+      ? delay({ ok: true })
+      : request("/auth/signup", {
+          method: "POST",
+          body: JSON.stringify({ name, email, password, birthDate, phoneNumber }),
+        }),
+
   logout: () => localStorage.removeItem("accessToken"),
 
   getMe: () => {
@@ -67,7 +69,6 @@ export const api = {
     return request("/me");
   },
 
-  // ── 송금 — USE_MOCK 무관하게 실제 백엔드로 (테스트용, JWT 붙으면 수정)
   transfer: async ({ amount }) => {
     const res = await fetch("http://localhost:9090/api/transactions/transfer?userId=1", {
       method: "POST",
@@ -109,4 +110,3 @@ export const api = {
       ? delay({ ok: true })
       : request("/me/security", { method: "PATCH", body: JSON.stringify(payload) }),
 };
-

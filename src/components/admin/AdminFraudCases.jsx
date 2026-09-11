@@ -18,6 +18,9 @@ const RISK = {
   LOW: { label: "낮음", color: "var(--green)", bg: "rgba(5,150,105,0.12)" },
 };
 
+// 우선순위 정렬 순서 (숫자가 작을수록 먼저 옴)
+const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+
 const STATUS = {
   RECEIVED: { label: "접수", color: "var(--red)", bg: "rgba(220,38,38,0.12)" },
   INVESTIGATING: { label: "조사중", color: "var(--amber)", bg: "rgba(217,119,6,0.12)" },
@@ -31,14 +34,16 @@ export default function AdminFraudCases() {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("ALL");
   const [busyId, setBusyId] = useState(null);
+  const [sortKey, setSortKey] = useState("priority"); // 기본: 우선순위
+  const [sortDir, setSortDir] = useState("desc"); // desc: 위험한/큰 것부터
 
-  const [toast, setToast] = useState(null); // { text, type: "success" | "error" }
+  const [toast, setToast] = useState(null);
   function notify(text, type = "success") {
       setToast({ text, type });
       setTimeout(() => setToast(null), 2000);
   }
 
-  const [confirmState, setConfirmState] = useState(null); // { message, onConfirm }
+  const [confirmState, setConfirmState] = useState(null);
   function askConfirm(message, onConfirm) {
       setConfirmState({ message, onConfirm });
   }
@@ -47,7 +52,7 @@ export default function AdminFraudCases() {
     try {
       setLoading(true);
       const data = await getFraudCaseList();
-      setCases(data.content); // Spring Page 응답이라 실제 목록은 content 안에 있음
+      setCases(data.content);
       setError(null);
     } catch (err) {
       setError("사건 목록을 불러오지 못했습니다.");
@@ -60,7 +65,40 @@ export default function AdminFraudCases() {
     fetchCases();
   }, []);
 
-  const filtered = filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter);
+  // [D파트 담당자 수정] 컬럼 헤더 클릭으로 정렬 기준/방향을 바꿀 수 있도록 변경
+  function getSortValue(c, key) {
+    if (key === "priority") return PRIORITY_ORDER[c.priority] ?? 99;
+    if (key === "fraudProbability") return c.fraudProbability ?? -1;
+    if (key === "openedAt") return new Date(c.openedAt).getTime();
+    return 0;
+  }
+
+  const filtered = (filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter))
+    .slice()
+    .sort((a, b) => {
+      const va = getSortValue(a, sortKey);
+      const vb = getSortValue(b, sortKey);
+      const diff = va - vb;
+      if (diff !== 0) return sortDir === "asc" ? diff : -diff;
+      // 동점일 때는 항상 접수일시 최신순으로 보조 정렬
+      return new Date(b.openedAt) - new Date(a.openedAt);
+    });
+
+  // [D파트 담당자 추가] 헤더 클릭 핸들러 — 같은 컬럼 다시 클릭하면 방향 반전, 다른 컬럼 클릭하면 기본 내림차순으로 시작
+  function handleSort(key) {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
+
+  // [D파트 담당자 추가] 헤더에 표시할 정렬 방향 화살표
+  function sortArrow(key) {
+    if (sortKey !== key) return "";
+    return sortDir === "asc" ? " ▲" : " ▼";
+  }
 
   async function doStartInvestigation(fraudCaseId) {
       try {
@@ -109,7 +147,7 @@ export default function AdminFraudCases() {
       {toast && (
                 <div style={{
                     position: "fixed", top: 24, left: "50%", transform: "translateX(-50%)",
-                    zIndex: 2000, padding: "12px 22px", borderRadius: 8, fontSize: 14, fontWeight: 500,
+                    zIndex: 2000, padding: "12px 25px", borderRadius: 8, fontSize: 16, fontWeight: 500,
                     color: "#fff", boxShadow: "0 8px 24px rgba(0,0,0,0.25)",
                     background: toast.type === "error" ? "#dc2626" : "#059669",
                 }}>
@@ -126,7 +164,7 @@ export default function AdminFraudCases() {
                   background: "#fff", borderRadius: 10, padding: "24px 28px",
                   minWidth: 300, maxWidth: 380, boxShadow: "0 12px 32px rgba(0,0,0,0.25)",
               }}>
-                  <div style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.5 }}>{confirmState.message}</div>
+                  <div style={{ fontSize: 16, marginBottom: 20, lineHeight: 1.5 }}>{confirmState.message}</div>
                   <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                       <button className="minibtn" onClick={() => setConfirmState(null)}>취소</button>
                       <button
@@ -146,7 +184,6 @@ export default function AdminFraudCases() {
 
       <TopBar title="이상거래 사건" crumb="관리자 / 이상거래 관리" search={false} />
 
-      {/* 상태 필터 — 백엔드 CaseStatus(RECEIVED/INVESTIGATING/CLOSED) 기준 */}
       <div className="tabs" style={{ marginBottom: 16 }}>
         {[
           ["ALL", "전체"],
@@ -164,8 +201,18 @@ export default function AdminFraudCases() {
         <table>
          <thead>
               <tr>
-                <th>사건번호</th><th>거래ID</th><th>거래유형</th><th>우선순위</th>
-                <th>AI 이상확률</th><th>최종판정</th><th>접수일시</th><th>상태</th><th>처리</th>
+                <th>사건번호</th><th>거래ID</th><th>거래유형</th>
+                <th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("priority")}>
+                  우선순위{sortArrow("priority")}
+                </th>
+                <th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("fraudProbability")}>
+                  AI 이상확률{sortArrow("fraudProbability")}
+                </th>
+                <th>최종판정</th>
+                <th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("openedAt")}>
+                  접수일시{sortArrow("openedAt")}
+                </th>
+                <th>상태</th><th>처리</th>
               </tr>
           </thead>
           <tbody>

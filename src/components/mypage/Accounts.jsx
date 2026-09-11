@@ -13,9 +13,9 @@ const BG = [
 const ACCOUNT_STATUS_LABELS = {
   ACTIVE: "정상",
   CLOSED: "해지",
-  ACCOUNT_BLOCKED: "활동 정지",
+  ACCOUNT_BLOCKED: "정지",
   DORMANT: "휴면",
-  SUSPENDED: "일시정지",
+  SUSPENDED: "일시정지",                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 };
 
 const isSavings = (acc) => acc.accountName?.includes("적금");
@@ -169,14 +169,14 @@ export default function Accounts() {
     <>
       <TopBar title="계좌 관리" crumb="마이페이지 / 계좌 관리" search={false} />
 
-      <div style={{ marginBottom: 24, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+      <div style={{ marginBottom: 30, display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
         <div>
-          <div style={{ fontSize: 14, color: "var(--muted)", marginBottom: 4 }}>내 총 자산</div>
-          <div style={{ fontSize: 30, fontWeight: 800 }}>₩ {totalBalance.toLocaleString()}</div>
+          <div style={{ fontSize: 18, color: "var(--muted)", marginBottom: 4 }}>내 총 자산</div>
+          <div style={{ fontSize: 32, fontWeight: 800 }}>₩ {totalBalance.toLocaleString()}</div>
         </div>
         <button
           onClick={() => setShowAddAccount(true)}
-          style={{ background: "var(--blue)", color: "#fff", border: "none", fontSize: 13, fontWeight: 700, padding: "10px 18px", borderRadius: 10, cursor: "pointer" }}
+          style={{ background: "var(--blue)", color: "#fff", border: "none", fontSize: 15, fontWeight: 700, padding: "12px 20px", borderRadius: 10, cursor: "pointer" }}
         >
           + 계좌 추가
         </button>
@@ -195,7 +195,7 @@ export default function Accounts() {
                   key={acc.id}
                   className="acc-card"
                   onClick={() => setSelectedId(acc.id)}
-                  style={{ background: BG[i % BG.length], boxShadow: isSel ? "0 0 0 3px var(--blue)" : "none" }}
+                  style={{ background: BG[i % BG.length], boxShadow: isSel ? "0 0 0 5px var(--blue)" : "none" }}
                 >
                   <div className="acc-name">{acc.accountName} <span>({acc.accountNumber})</span></div>
                   <div className="acc-balance">₩ {Number(acc.balance).toLocaleString()}</div>
@@ -204,10 +204,10 @@ export default function Accounts() {
                     {!savings ? (
                       <button
                         onClick={(e) => { e.stopPropagation(); openTransfer(acc); }}
-                        style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 8, cursor: "pointer" }}
+                        style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "#fff", fontSize: 13, fontWeight: 700, padding: "6px 16px", borderRadius: 10, cursor: "pointer" }}
                       >↗ 송금</button>
                     ) : (
-                      <span style={{ fontSize: 11, opacity: 0.7 }}>입금 전용</span>
+                      <span style={{ fontSize: 13, opacity: 0.7 }}>입금 전용</span>
                     )}
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export default function Accounts() {
           </div>
 
           {selected && (
-            <Panel title={selected.accountName} sub={`계좌번호 ${selected.accountNumber}`} style={{ marginTop: 20 }}>
+            <Panel title={selected.accountName} sub={`계좌번호 ${selected.accountNumber}`} style={{ marginTop: 30 }}>
               <div className="acc-detail">
                 <div className="acc-detail-item">
                   <div className="acc-detail-label">잔액</div>
@@ -235,7 +235,7 @@ export default function Accounts() {
                   </div>
                 </div>
               </div>
-              <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+              <div style={{ display: "flex", gap: 15, marginTop: 30 }}>
                 <button className="minibtn warn" onClick={handleCloseAccount}>
                   계좌 해지
                 </button>

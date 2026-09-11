@@ -2,6 +2,7 @@ import { useState } from "react";
 import TopBar from "./TopBar.jsx";
 import Panel from "./Panel.jsx";
 import { useChatWidget } from "../context/ChatWidgetContext.jsx";
+import { useNavigate } from "react-router-dom";
 
 const FAQS = [
   {
@@ -216,6 +217,7 @@ function HighlightQuestion({ text, indexes }) {
 }
 
 export default function CustomerCenter() {
+  const navigate = useNavigate();
   const [openIndex, setOpenIndex] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const { openAdminChat } = useChatWidget();
@@ -248,6 +250,11 @@ export default function CustomerCenter() {
         padding: "32px 24px 60px 24px",
       }}
     >
+
+     <button type="button" className="minibtn" onClick={() => navigate('/')} style={{ marginBottom: '12px' }}>
+      ← 홈으로
+    </button>
+
       <TopBar
         title="고객센터"
         crumb="홈 / 고객센터"

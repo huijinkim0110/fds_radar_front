@@ -15,8 +15,6 @@ import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
 import Panel from "../Panel.jsx";
 
-const userId = 1;
-
 const RISK_TENDENCY_LABELS = {
   STABLE: "안정형",
   NEUTRAL: "중립형",
@@ -40,41 +38,54 @@ function AccountCarousel({ accounts, onNavigate, onAdd }) {
     <div>
       {acc ? (
         <div onClick={onNavigate} style={{
-          padding: "20px", borderRadius: 16,
+          padding: "32px", borderRadius: 16,
           background: ACCOUNT_COLORS[current % ACCOUNT_COLORS.length],
           cursor: "pointer", marginBottom: 12, minHeight: 140
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
-            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.6)" }}>계좌</span>
-            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.6)" }}>{acc.accountNumber}</span>
+            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.6)" }}>계좌</span>
+            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.6)" }}>{acc.accountNumber}</span>
           </div>
-          <div style={{ fontSize: 14, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{acc.accountName || "계좌"}</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "#1E1E3C" }}>₩ {Number(acc.balance).toLocaleString()}</div>
+          <div style={{ fontSize: 16, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{acc.accountName || "계좌"}</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E3C" }}>₩ {Number(acc.balance).toLocaleString()}</div>
         </div>
       ) : (
         <div style={{
-          minHeight: 140, borderRadius: 16, border: "2px dashed var(--line)",
+          minHeight: 160, borderRadius: 18, border: "2px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 14
+          marginBottom: 14, cursor: "pointer", color: "var(--muted)", fontSize: 16
         }} onClick={onAdd}>+ 계좌 추가</div>
       )}
-      <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+
+      {/* 방식 2: 한 줄 고정 + 자연스러운 가로 스크롤 영역 */}
+      <div style={{
+        display: "flex",
+        gap: 6,
+        width: "100%",
+        overflowX: "auto",
+        whiteSpace: "nowrap",
+        paddingBottom: 4,
+        scrollbarWidth: "none",
+        msOverflowStyle: "none"
+      }}>
         {accounts.map((a, i) => (
           <div key={a.id} onClick={() => setCurrent(i)} style={{
-            minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+            flex: "0 0 90px",
+            padding: "8px 10px", borderRadius: 10, cursor: "pointer",
             background: i === current ? ACCOUNT_COLORS[i % ACCOUNT_COLORS.length] : "var(--panel2)",
             border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
-            transition: "all 0.2s", flexShrink: 0
+            transition: "all 0.2s"
           }}>
-            <div style={{ fontSize: 10, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2 }}>{a.accountNumber}</div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountName || "계좌"}</div>
+            <div style={{ fontSize: 12, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountNumber}</div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountName || "계좌"}</div>
           </div>
         ))}
         <div onClick={onAdd} style={{
-          minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+          flex: "0 0 40px",
+          padding: "8px 0", borderRadius: 10, cursor: "pointer",
           background: "var(--panel2)", border: "1.5px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0, color: "var(--muted)", fontSize: 18, fontWeight: 300
+          color: "var(--muted)", fontSize: 18, fontWeight: 300
         }}>+</div>
       </div>
     </div>
@@ -89,45 +100,58 @@ function CardCarousel({ cards, onNavigate, onAdd }) {
     <div>
       {card ? (
         <div onClick={onNavigate} style={{
-          padding: "20px", borderRadius: 16,
+          padding: "32px", borderRadius: 16,
           background: CARD_COLORS[current % CARD_COLORS.length],
-          cursor: "pointer", marginBottom: 12, minHeight: 140
+          cursor: "pointer", marginBottom: 12, minHeight: 160
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
-            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.6)" }}>{card.cardType === "CREDIT" ? "신용" : "체크"}</span>
-            <span style={{ fontSize: 12, color: "rgba(30,30,60,0.7)" }}>{card.cardNumber}</span>
+            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.6)" }}>{card.cardType === "CREDIT" ? "신용" : "체크"}</span>
+            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.7)" }}>{card.cardNumber}</span>
           </div>
-          <div style={{ fontSize: 14, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{card.cardName || "카드"}</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: "#1E1E3C" }}>한도 ₩ {Number(card.availableLimit).toLocaleString()}</div>
+          <div style={{ fontSize: 16, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{card.cardName || "카드"}</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E3C" }}>한도 ₩ {Number(card.availableLimit).toLocaleString()}</div>
         </div>
       ) : (
         <div style={{
           minHeight: 140, borderRadius: 16, border: "2px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 14
+          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 16
         }} onClick={onAdd}>+ 카드 추가</div>
       )}
-      <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+
+      {/* 방식 2: 한 줄 고정 + 자연스러운 가로 스크롤 영역 */}
+      <div style={{
+        display: "flex",
+        gap: 6,
+        width: "100%",
+        overflowX: "auto",
+        whiteSpace: "nowrap",
+        paddingBottom: 4,
+        scrollbarWidth: "none",
+        msOverflowStyle: "none"
+      }}>
         {cards.map((c, i) => (
           <div key={c.id} onClick={() => setCurrent(i)} style={{
-            minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+            flex: "0 0 90px",
+            padding: "8px 10px", borderRadius: 10, cursor: "pointer",
             background: i === current ? CARD_COLORS[i % CARD_COLORS.length] : "var(--panel2)",
             border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
-            transition: "all 0.2s", flexShrink: 0
+            transition: "all 0.2s"
           }}>
-            <div style={{ fontSize: 10, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2 }}>
+            <div style={{ fontSize: 12, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {c.cardType === "CREDIT" ? "신용" : "체크"}
             </div>
-            <div style={{ fontSize: 11, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {c.cardName || "카드"}
             </div>
           </div>
         ))}
         <div onClick={onAdd} style={{
-          minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+          flex: "0 0 40px",
+          padding: "8px 0", borderRadius: 10, cursor: "pointer",
           background: "var(--panel2)", border: "1.5px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0, color: "var(--muted)", fontSize: 18, fontWeight: 300
+          color: "var(--muted)", fontSize: 18, fontWeight: 300
         }}>+</div>
       </div>
     </div>
@@ -157,20 +181,21 @@ export default function Dashboard() {
   }, [userId]);
 
   useEffect(() => {
+    if (!userId) return;
     getFavorites(userId).then((list) => setFavoriteCount(list.length)).catch(() => {});
     getPortfolio(userId).then((list) => setSubscriptions(list)).catch(() => {});
     getGoals(userId).then(setGoals).catch(() => {});
     hasDiagnosisHistory(userId).then(setHasDiagnosis).catch(() => {});
     hasFinancialProfile(userId).then(setHasFinProfile).catch(() => {});
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
-    if (hasDiagnosis) getLatestProfile(userId).then(setLatestProfile).catch(() => {});
-  }, [hasDiagnosis]);
+    if (hasDiagnosis && userId) getLatestProfile(userId).then(setLatestProfile).catch(() => {});
+  }, [hasDiagnosis, userId]);
 
   useEffect(() => {
-    if (hasFinProfile) getFinancialProfile(userId).then(setFinancialProfile).catch(() => {});
-  }, [hasFinProfile]);
+    if (hasFinProfile && userId) getFinancialProfile(userId).then(setFinancialProfile).catch(() => {});
+  }, [hasFinProfile, userId]);
 
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
 
@@ -236,7 +261,7 @@ export default function Dashboard() {
         <div>
           <div className="lbl">내 총 자산</div>
           <div className="big">₩ {totalBalance.toLocaleString()}</div>
-          <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 20 }}>
             <span className="safe"><i />계정 보안 상태 · 안전</span>
           </div>
         </div>
@@ -245,7 +270,7 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <div className="ac-row" style={{ marginTop: 16 }}>
+      <div className="ac-row" style={{ marginTop: 20 }}>
         <Panel title="내 계좌" sub={`${accounts.length}개`}>
           <AccountCarousel
             accounts={accounts}
@@ -286,16 +311,16 @@ export default function Dashboard() {
         display: "grid",
         gridTemplateColumns: "1.6fr 1fr",
         gap: 16,
-        marginTop: 16,
+        marginTop: 20,
         alignItems: "stretch"
       }}>
         <div style={{ background: "var(--panel)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 3px rgba(16,24,40,0.04)" }}>
-          <div className="ph-head" style={{ marginBottom: 16 }}>
+          <div className="ph-head" style={{ marginBottom: 20 }}>
             <div>
               <h3>재무목표</h3>
               <div className="ph-sub">진행 중인 목표</div>
             </div>
-            <span onClick={() => navigate("/mypage/financial-goals")} style={{ fontSize: 12, color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}>전체 보기 →</span>
+            <span onClick={() => navigate("/mypage/financial-goals")} style={{ fontSize: 14, color: "var(--blue)", cursor: "pointer", fontWeight: 600 }}>전체 보기 →</span>
           </div>
           {inProgressGoals.length === 0 ? (
             <div className="dash-empty">진행 중인 재무목표가 없습니다.</div>
@@ -321,7 +346,7 @@ export default function Dashboard() {
         </div>
 
         <div style={{ background: "var(--panel)", border: "1px solid var(--line)", borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 3px rgba(16,24,40,0.04)" }}>
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ marginBottom: 20 }}>
             <h3>내 투자·재무</h3>
             <div className="ph-sub">진단 및 프로필</div>
           </div>
