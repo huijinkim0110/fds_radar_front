@@ -1,6 +1,7 @@
 import { useState } from "react";
 import TopBar from "./TopBar.jsx";
 import Panel from "./Panel.jsx";
+import { useChatWidget } from "../context/ChatWidgetContext.jsx";
 import { useNavigate } from "react-router-dom";
 
 const FAQS = [
@@ -219,6 +220,7 @@ export default function CustomerCenter() {
   const navigate = useNavigate();
   const [openIndex, setOpenIndex] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { openAdminChat } = useChatWidget();
 
   /*
     질문만 검색
@@ -317,9 +319,7 @@ export default function CustomerCenter() {
             }}
           >
             <button
-              onClick={() =>
-                alert("1:1 문의 연결 기능은 준비 중입니다.")
-              }
+              onClick={openAdminChat}
               className="fill"
               style={{
                 padding: "10px 20px",

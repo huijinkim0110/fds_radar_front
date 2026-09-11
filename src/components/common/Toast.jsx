@@ -1,11 +1,13 @@
 import { useToast } from "../../context/ToastContext";
 
 export default function Toast() {
-    const { message } = useToast();
+    const { message, onClick } = useToast();
 
     if (!message) return null;
 
     return (
-        <div>{message}</div>
+        <div className="toast" onClick={onClick || undefined} style={onClick ? { cursor: "pointer" } : undefined}>
+            {message}
+        </div>
     );
 }

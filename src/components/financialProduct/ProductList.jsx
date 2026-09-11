@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProducts } from "../../api/financialProduct/productAPI";
-import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from "../../constants/financialProduct/productLabels";
+import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS, SORT_TYPE_LABELS } from "../../constants/financialProduct/productLabels";
 import FavoriteButton from "./FavoriteButton";
 import CompareButton from "./CompareButton";
 import TopBar from "../TopBar.jsx";
@@ -31,23 +31,29 @@ const userId = user?.userId ?? 1;
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [productType, setProductType] = useState("");
-  const [riskLevel, setRiskLevel] = useState("");
+  const [productTypes, setProductTypes] = useState("");
+  const [riskLevels, setRiskLevels] = useState("");
+  const [sortType, setSortType] = useState("");
 
   useEffect(() => {
     setLoading(true);
     setError(null);
-    getProducts({ productType, riskLevel, page })
+    getProducts({ productTypes, riskLevels, sortType, page })
       .then((data) => {
         setProducts(data.content);
         setTotalPages(data.totalPages);
       })
       .catch(() => setError("상품 목록을 불러오지 못했습니다."))
       .finally(() => setLoading(false));
-  }, [productType, riskLevel, page]);
+  }, [productTypes, riskLevels, sortType, page]);
 
   function handleFilterChange(setter, value) {
     setter(value);
+    setPage(0);
+  }
+
+  function toggleCheckbox(setter, list, key) {
+    setter(list.includes(key) ? list.filter((v) => v !== key) : [...list, key]);
     setPage(0);
   }
 
@@ -70,21 +76,44 @@ const userId = user?.userId ?? 1;
 
       {/* 필터 */}
       <Panel title="상품 찾기" sub="유형·위험등급으로 필터링">
-        <div className="prodfilter">
-          <div className="field">
-            <label>상품 유형</label>
-            <select value={productType} onChange={(e) => handleFilterChange(setProductType, e.target.value)}>
-              <option value="">전체 유형</option>
-              {Object.entries(PRODUCT_TYPE_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>{label}</option>
-              ))}
-            </select>
+        <div className="prodFilter">
+          <div className="filter-main">
+            <div className="field">
+              <label>상품 유형</label>
+              <div className="radio-group">
+                <label>
+                  <input type="checkbox" checked={productTypes.length === 0} onChange={() => handleFilterChange(setProductTypes, [])} />
+                  전체 유형
+                </label>
+                {Object.entries(PRODUCT_TYPE_LABELS).map(([key, label]) => (
+                  <label key={key}>
+                    <input type="checkbox" checked={productTypes.includes(key)} onChange={() => toggleCheckbox(setProductTypes, productTypes, key)} /> 
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <label>위험 등급</label>
+              <div className="radio-group">
+                <label>
+                  <input type="checkbox" checked={riskLevels.length === 0} onChange={() => handleFilterChange(setRiskLevels, [])} />
+                  전체 위험등급
+                </label>
+                {Object.entries(RISK_LEVEL_LABELS).map(([key, label]) => (
+                  <label key={key}>
+                    <input type="checkbox" checked={riskLevels.includes(key)} onChange={() => toggleCheckbox(setRiskLevels, riskLevels, key)} />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="field">
-            <label>위험 등급</label>
-            <select value={riskLevel} onChange={(e) => handleFilterChange(setRiskLevel, e.target.value)}>
-              <option value="">전체 위험등급</option>
-              {Object.entries(RISK_LEVEL_LABELS).map(([key, label]) => (
+          <div className="filter-sort">
+            <label>정렬</label>
+            <select value={sortType} onChange={(e) => handleFilterChange(setSortType, e.target.value)}>
+              <option value="">기본순</option>
+              {Object.entries(SORT_TYPE_LABELS).map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>
               ))}
             </select>

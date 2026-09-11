@@ -31,6 +31,22 @@ export function sendChatSocketMessage(client, sessionId, senderType, senderId, c
     });
 }
 
+// 관리자 알림용 - 세 메시지/세션 이벤트 구독 (AdminChatList 목록 갱신 트리거)
+export function connectAdminChatSocket(onEvent) {
+    const client = new Client({
+        webSocketFactory: () => new SockJS(WS_URL),
+        reconnectDelay: 5000,
+        onConnect: () => {
+            client.subscribe('/topic/admin/chats', (message) => {
+                onEvent(message.body);
+            });
+        },
+    });
+
+    client.activate();
+    return client;
+}
+
 // 연결 종료
 export function disconnectChatSocket(client) {
     if (client) client.deactivate();
