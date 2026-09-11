@@ -16,7 +16,6 @@ import Cards from "./components/mypage/Cards";
 import FraudReportsPage from "./components/mypage/FraudReportsPage";
 import FraudConfirmations from "./components/mypage/FraudConfirmations";
 
-import DisputesPage from "./components/mypage/DisputesPage";
 import LockRequestsPage from "./components/mypage/LockRequestsPage";
 
 import { ThemeProvider } from "./context/ThemeContext";
@@ -48,7 +47,6 @@ import AdminFraudCases from "./components/admin/AdminFraudCases";
 import AdminLockRequests from "./components/admin/AdminLockRequests";
 import FraudCaseDetail from "./components/fraud/FraudCaseDetail";
 import AdminFraudAnalysis from "./components/admin/AdminFraudAnalysis";
-import AdminDisputes from "./components/admin/AdminDisputes";
 import AdminReports from "./components/admin/AdminReports";
 import AdminProfile from "./components/admin/AdminProfile";
 
@@ -99,7 +97,6 @@ function App() {
                       <Route path="transactions" element={<Transactions />} />
                       <Route path="fraud-reports" element={<FraudReportsPage />} />
                       <Route path="fraud-confirmations" element={<FraudConfirmations />} />
-                      <Route path="disputes" element={<DisputesPage />} />
                       <Route path="lock-requests" element={<LockRequestsPage />} />
                       <Route path="devices" element={<LoginDeviceHistory />} />
                       <Route path="notifications" element={<Notifications />} />
@@ -117,7 +114,6 @@ function App() {
                       <Route path="admin-lock-requests" element={<AdminLockRequests />} />
                       <Route path="admin-fraud-cases/:fraudCaseId" element={<FraudCaseDetail />} />
                       <Route path="admin-fraud-analysis" element={<AdminFraudAnalysis />} />
-                      <Route path="admin-disputes" element={<AdminDisputes />} />
                       <Route path="admin-reports" element={<AdminReports />} />
 
                       <Route path="profile" element={<ProfileRouter />} />

@@ -17,7 +17,6 @@ const USER_MENU = [
     children: [
       { path: "fraud-confirmations", label: "이상거래 확인" },
       { path: "fraud-reports", label: "거래 신고" },
-      { path: "disputes", label: "이의제기" },
       { path: "lock-requests", label: "계좌·카드 잠금 요청" },
     ],
   },
@@ -61,7 +60,6 @@ const ADMIN_MENU = [
     type: "group", label: "요청 처리",
     children: [
       { path: "admin-lock-requests", label: "잠금 요청 처리" },
-      { path: "admin-disputes", label: "이의제기 심사" },
       { path: "admin-reports", label: "신고 처리" },
     ],
   },
