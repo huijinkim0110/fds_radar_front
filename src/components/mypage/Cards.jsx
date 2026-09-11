@@ -164,16 +164,30 @@ export default function Cards() {
                   <div className="acc-detail-label">카드 유형</div>
                   <div className="acc-detail-value">{CARD_TYPE[selected.cardType]?.label || selected.cardType}</div>
                 </div>
-                <div className="acc-detail-item">
-                  <div className="acc-detail-label">이용 한도</div>
-                  <div className="acc-detail-value">₩ {Number(selected.creditLimit).toLocaleString()}</div>
-                </div>
-                <div className="acc-detail-item">
-                  <div className="acc-detail-label">사용 가능 한도</div>
-                  <div className="acc-detail-value" style={{ color: "var(--blue)" }}>
-                    ₩ {Number(selected.availableLimit).toLocaleString()}
+
+                {/* 체크카드일 때: 계좌 잔액 분기 / 신용카드일 때: 이용 한도 및 사용 가능 한도 */}
+                {selected.cardType === "CHECK" ? (
+                  <div className="acc-detail-item">
+                    <div className="acc-detail-label">계좌 잔액</div>
+                    <div className="acc-detail-value" style={{ color: "var(--blue)" }}>
+                      ₩ {Number(selected.availableLimit ?? selected.creditLimit ?? 0).toLocaleString()}
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <div className="acc-detail-item">
+                      <div className="acc-detail-label">이용 한도</div>
+                      <div className="acc-detail-value">₩ {Number(selected.creditLimit).toLocaleString()}</div>
+                    </div>
+                    <div className="acc-detail-item">
+                      <div className="acc-detail-label">사용 가능 한도</div>
+                      <div className="acc-detail-value" style={{ color: "var(--blue)" }}>
+                        ₩ {Number(selected.availableLimit).toLocaleString()}
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 <div className="acc-detail-item">
                   <div className="acc-detail-label">상태</div>
                   <div className="acc-detail-value" style={{ color: selected.status === "ACTIVE" ? "var(--green)" : "var(--amber)" }}>
@@ -224,7 +238,7 @@ export default function Cards() {
                 </select>
               </div>
               <div className="field">
-                <label>이용 한도 (원)</label>
+                <label>{addForm.cardType === "CHECK" ? "초기 잔액 (원)" : "이용 한도 (원)"}</label>
                 <input
                   type="number"
                   value={addForm.creditLimit}
