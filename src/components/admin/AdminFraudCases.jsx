@@ -35,13 +35,13 @@ export default function AdminFraudCases() {
   const [filter, setFilter] = useState("ALL");
   const [busyId, setBusyId] = useState(null);
 
-  const [toast, setToast] = useState(null); // { text, type: "success" | "error" }
+  const [toast, setToast] = useState(null);
   function notify(text, type = "success") {
       setToast({ text, type });
       setTimeout(() => setToast(null), 2000);
   }
 
-  const [confirmState, setConfirmState] = useState(null); // { message, onConfirm }
+  const [confirmState, setConfirmState] = useState(null);
   function askConfirm(message, onConfirm) {
       setConfirmState({ message, onConfirm });
   }
@@ -50,7 +50,7 @@ export default function AdminFraudCases() {
     try {
       setLoading(true);
       const data = await getFraudCaseList();
-      setCases(data.content); // Spring Page 응답이라 실제 목록은 content 안에 있음
+      setCases(data.content);
       setError(null);
     } catch (err) {
       setError("사건 목록을 불러오지 못했습니다.");
@@ -63,13 +63,40 @@ export default function AdminFraudCases() {
     fetchCases();
   }, []);
 
+  // [D파트 담당자 수정] 컬럼 헤더 클릭으로 정렬 기준/방향을 바꿀 수 있도록 변경
+  function getSortValue(c, key) {
+    if (key === "priority") return PRIORITY_ORDER[c.priority] ?? 99;
+    if (key === "fraudProbability") return c.fraudProbability ?? -1;
+    if (key === "openedAt") return new Date(c.openedAt).getTime();
+    return 0;
+  }
+
   const filtered = (filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter))
-  .slice()
-  .sort((a, b) => {
-    const priorityDiff = (PRIORITY_ORDER[a.priority] ?? 99) - (PRIORITY_ORDER[b.priority] ?? 99);
-    if (priorityDiff !== 0) return priorityDiff;
-    return new Date(b.openedAt) - new Date(a.openedAt);
-  });
+    .slice()
+    .sort((a, b) => {
+      const va = getSortValue(a, sortKey);
+      const vb = getSortValue(b, sortKey);
+      const diff = va - vb;
+      if (diff !== 0) return sortDir === "asc" ? diff : -diff;
+      // 동점일 때는 항상 접수일시 최신순으로 보조 정렬
+      return new Date(b.openedAt) - new Date(a.openedAt);
+    });
+
+  // [D파트 담당자 추가] 헤더 클릭 핸들러 — 같은 컬럼 다시 클릭하면 방향 반전, 다른 컬럼 클릭하면 기본 내림차순으로 시작
+  function handleSort(key) {
+    if (sortKey === key) {
+      setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  }
+
+  // [D파트 담당자 추가] 헤더에 표시할 정렬 방향 화살표
+  function sortArrow(key) {
+    if (sortKey !== key) return "";
+    return sortDir === "asc" ? " ▲" : " ▼";
+  }
 
   async function doStartInvestigation(fraudCaseId) {
       try {
@@ -155,7 +182,6 @@ export default function AdminFraudCases() {
 
       <TopBar title="이상거래 사건" crumb="관리자 / 이상거래 관리" search={false} />
 
-      {/* 상태 필터 — 백엔드 CaseStatus(RECEIVED/INVESTIGATING/CLOSED) 기준 */}
       <div className="tabs" style={{ marginBottom: 16 }}>
         {[
           ["ALL", "전체"],
@@ -173,8 +199,18 @@ export default function AdminFraudCases() {
         <table>
          <thead>
               <tr>
-                <th>사건번호</th><th>거래ID</th><th>거래유형</th><th>우선순위</th>
-                <th>AI 이상확률</th><th>최종판정</th><th>접수일시</th><th>상태</th><th>처리</th>
+                <th>사건번호</th><th>거래ID</th><th>거래유형</th>
+                <th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("priority")}>
+                  우선순위{sortArrow("priority")}
+                </th>
+                <th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("fraudProbability")}>
+                  AI 이상확률{sortArrow("fraudProbability")}
+                </th>
+                <th>최종판정</th>
+                <th style={{ cursor: "pointer", userSelect: "none" }} onClick={() => handleSort("openedAt")}>
+                  접수일시{sortArrow("openedAt")}
+                </th>
+                <th>상태</th><th>처리</th>
               </tr>
           </thead>
           <tbody>
