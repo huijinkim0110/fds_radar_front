@@ -62,12 +62,17 @@ export default function AdminMyPage() {
     );
   }
 
+  // 전체 사건 합계 계산 (접수 + 조사중 + 종결)
+  const totalCasesCount = dashboard
+    ? (dashboard.totalCaseCount ?? ((dashboard.receivedCaseCount || 0) + (dashboard.investigatingCaseCount || 0) + (dashboard.closedCaseCount || 0)))
+    : 0;
+
   const kpis = dashboard
     ? [
-        { k: "배정된 사건", v: `${dashboard.assignedCaseCount}건`, d: "진행 중", dir: "up", pct: 60, color: "var(--blue)" },
-        { k: "오늘 접수", v: `${dashboard.todayReceivedCaseCount}건`, d: "전체", dir: "up", pct: 45, color: "var(--red)" },
-        { k: "조사중", v: `${dashboard.investigatingCaseCount}건`, d: "처리 중", dir: "up", pct: 50, color: "var(--amber)" },
-        { k: "종결", v: `${dashboard.closedCaseCount}건`, d: "완료", dir: "down", pct: 80, color: "var(--green)" },
+        { k: "배정된 사건", v: `${totalCasesCount}건`, d: "전체 사건", dir: "up", pct: 100, color: "var(--blue)" },
+        { k: "접수", v: `${dashboard.receivedCaseCount || 0}건`, d: "신규 접수", dir: "up", pct: 45, color: "var(--red)" },
+        { k: "조사중", v: `${dashboard.investigatingCaseCount || 0}건`, d: "처리 중", dir: "up", pct: 50, color: "var(--amber)" },
+        { k: "종결", v: `${dashboard.closedCaseCount || 0}건`, d: "완료", dir: "down", pct: 80, color: "var(--green)" },
       ]
     : [];
 
@@ -75,41 +80,46 @@ export default function AdminMyPage() {
     <>
       <TopBar title="관리자 대시보드" crumb={`관리자 / ${user?.name || "관리자"}님`} search={false} />
 
-      {/* 상단 레이아웃 */}
-      <div className="cols">
-        <div style={{ flex: 1 }}>
+      {/* 상단 레이아웃: alignItems: "stretch" 적용으로 양쪽 높이 동일하게 고정 */}
+      <div className="cols" style={{ display: "flex", gap: "16px", alignItems: "stretch" }}>
+        
+        {/* 좌측: KPI 카드 4개 */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
           {loading ? (
-            <div className="loading">불러오는 중…</div>
+            <div className="loading" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>불러오는 중…</div>
           ) : dashboardError ? (
-            <Panel><div className="prod-empty">{dashboardError}</div></Panel>
+            <Panel style={{ height: "100%" }}><div className="prod-empty">{dashboardError}</div></Panel>
           ) : (
-            <div className="kpis" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="kpis" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", height: "100%" }}>
               {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
             </div>
           )}
         </div>
 
-        <div style={{ flex: 1 }}>
-          <Panel title="처리 현황" sub="내 담당 기준">
+        {/* 우측: 처리 현황 Panel */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          <Panel title="처리 현황" sub="내 담당 기준" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
             {dashboard ? (
-              <div className="admin-stat" style={{ padding: "8px 0" }}>
-                <div className="admin-stat-row"><span>접수</span><b>{dashboard.receivedCaseCount}건</b></div>
-                <div className="admin-stat-row"><span>조사중</span><b style={{ color: "var(--amber)" }}>{dashboard.investigatingCaseCount}건</b></div>
-                <div className="admin-stat-row"><span>종결</span><b style={{ color: "var(--green)" }}>{dashboard.closedCaseCount}건</b></div>
+              <div className="admin-stat" style={{ padding: "8px 0", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-around" }}>
+                <div className="admin-stat-row"><span>총 배정 사건</span><b style={{ color: "var(--blue)" }}>{totalCasesCount}건</b></div>
+                <div className="admin-stat-row"><span>접수</span><b>{dashboard.receivedCaseCount || 0}건</b></div>
+                <div className="admin-stat-row"><span>조사중</span><b style={{ color: "var(--amber)" }}>{dashboard.investigatingCaseCount || 0}건</b></div>
+                <div className="admin-stat-row"><span>종결</span><b style={{ color: "var(--green)" }}>{dashboard.closedCaseCount || 0}건</b></div>
               </div>
             ) : (
-              <div className="prod-empty">데이터 없음</div>
+              <div className="prod-empty" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>데이터 없음</div>
             )}
           </Panel>
         </div>
+
       </div>
 
-      {/* 중단 레이아웃: 바로가기 슬림화 & 내 담당 사건 넓게 확보 */}
+      {/* 중단 레이아웃: 바로가기 & 내 담당 사건 */}
       <div className="cols" style={{ marginTop: 16, alignItems: "stretch", display: "flex", gap: "16px" }}>
         
-        {/* 좌측: 바로가기 (폭을 180px로 딱 고정) */}
+        {/* 좌측: 바로가기 (폭 180px 고정) */}
         <div style={{ width: "180px", flexShrink: 0 }}>
-          <Panel title="바로가기" sub="관리 업무">
+          <Panel title="바로가기" sub="관리 업무" style={{ height: "100%" }}>
             <div className="feed" style={{ display: "flex", flexDirection: "column", gap: "4px", paddingRight: 0 }}>
 
               <div className="fitem" style={{ cursor: "pointer", padding: "6px 0", gap: "6px" }} onClick={() => navigate("/mypage/admin-lock-requests")}>
@@ -120,7 +130,6 @@ export default function AdminMyPage() {
                 </div>
               </div>
 
-              {/* 이의제기 → 신고 처리로 교체 (이의제기는 신고 기능에 통합됨) */}
               <div className="fitem" style={{ cursor: "pointer", padding: "6px 0", gap: "6px" }} onClick={() => navigate("/mypage/admin-reports")}>
                 <span className="fdot" style={{ background: "var(--red)", flexShrink: 0 }} />
                 <div style={{ minWidth: 0, overflow: "hidden" }}>
@@ -140,9 +149,9 @@ export default function AdminMyPage() {
           </Panel>
         </div>
 
-        {/* 우측: 내 담당 사건 (남는 공간 전체 차지) */}
+        {/* 우측: 내 담당 사건 */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <Panel>
+          <Panel style={{ height: "100%" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: isCasesOpen ? 12 : 0 }}>
               <div>
                 <span style={{ fontSize: 16, fontWeight: "bold" }}>내 담당 사건</span>

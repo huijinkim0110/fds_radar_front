@@ -35,58 +35,85 @@ function AccountCarousel({ accounts, onNavigate, onAdd }) {
   const acc = accounts[current];
 
   return (
-    <div>
+    <div style={{ width: "100%", overflow: "hidden" }}>
       {acc ? (
         <div onClick={onNavigate} style={{
-          padding: "32px", borderRadius: 16,
+          padding: "24px 28px", borderRadius: 16,
           background: ACCOUNT_COLORS[current % ACCOUNT_COLORS.length],
-          cursor: "pointer", marginBottom: 12, minHeight: 140
+          cursor: "pointer", marginBottom: 12, minHeight: 130
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
-            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.6)" }}>계좌</span>
-            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.6)" }}>{acc.accountNumber}</span>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
+            <span style={{ fontSize: 14, color: "rgba(30,30,60,0.6)" }}>계좌</span>
+            <span style={{ fontSize: 14, color: "rgba(30,30,60,0.6)" }}>{acc.accountNumber}</span>
           </div>
-          <div style={{ fontSize: 16, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{acc.accountName || "계좌"}</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E3C" }}>₩ {Number(acc.balance).toLocaleString()}</div>
+          <div style={{ fontSize: 15, color: "rgba(30,30,60,0.7)", marginBottom: 4 }}>{acc.accountName || "계좌"}</div>
+          <div style={{ fontSize: "clamp(16px, 2.5vw, 20px)", fontWeight: 700, color: "#1E1E3C" }}>
+            ₩ {Number(acc.balance).toLocaleString()}
+          </div>
         </div>
       ) : (
         <div style={{
-          minHeight: 160, borderRadius: 18, border: "2px dashed var(--line)",
+          minHeight: 130, borderRadius: 16, border: "2px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 14, cursor: "pointer", color: "var(--muted)", fontSize: 16
+          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 15
         }} onClick={onAdd}>+ 계좌 추가</div>
       )}
 
-      {/* 방식 2: 한 줄 고정 + 자연스러운 가로 스크롤 영역 */}
+      {/* 화면 비율에 맞춰 동적으로 크기가 조절되는 하단 탭 */}
       <div style={{
         display: "flex",
-        gap: 6,
+        gap: "1%",
         width: "100%",
         overflowX: "auto",
-        whiteSpace: "nowrap",
+        WebkitOverflowScrolling: "touch",
         paddingBottom: 4,
-        scrollbarWidth: "none",
-        msOverflowStyle: "none"
+        scrollbarWidth: "none"
       }}>
         {accounts.map((a, i) => (
-          <div key={a.id} onClick={() => setCurrent(i)} style={{
-            flex: "0 0 90px",
-            padding: "8px 10px", borderRadius: 10, cursor: "pointer",
-            background: i === current ? ACCOUNT_COLORS[i % ACCOUNT_COLORS.length] : "var(--panel2)",
-            border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
-            transition: "all 0.2s"
-          }}>
-            <div style={{ fontSize: 12, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountNumber}</div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountName || "계좌"}</div>
+          <div 
+            key={a.id} 
+            onClick={() => setCurrent(i)} 
+            style={{
+              flex: "1 1 calc(25% - 8px)",
+              minWidth: "65px",
+              maxWidth: "120px",
+              padding: "8px 6px", 
+              borderRadius: 10, 
+              cursor: "pointer",
+              background: i === current ? ACCOUNT_COLORS[i % ACCOUNT_COLORS.length] : "var(--panel2)",
+              border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
+              transition: "all 0.2s",
+              boxSizing: "border-box",
+              textAlign: "center"
+            }}
+          >
+            <div style={{ fontSize: "clamp(10px, 1.1vw, 12px)", color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {a.accountNumber}
+            </div>
+            <div style={{ fontSize: "clamp(11px, 1.2vw, 13px)", fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {a.accountName || "계좌"}
+            </div>
           </div>
         ))}
-        <div onClick={onAdd} style={{
-          flex: "0 0 40px",
-          padding: "8px 0", borderRadius: 10, cursor: "pointer",
-          background: "var(--panel2)", border: "1.5px dashed var(--line)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: "var(--muted)", fontSize: 18, fontWeight: 300
-        }}>+</div>
+        <div 
+          onClick={onAdd} 
+          style={{
+            flex: "0 0 36px",
+            minWidth: "36px",
+            padding: "8px 0", 
+            borderRadius: 10, 
+            cursor: "pointer",
+            background: "var(--panel2)", 
+            border: "1.5px dashed var(--line)",
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center",
+            color: "var(--muted)", 
+            fontSize: 16, 
+            fontWeight: 300,
+            boxSizing: "border-box"
+          }}
+        >+</div>
       </div>
     </div>
   );
@@ -97,62 +124,85 @@ function CardCarousel({ cards, onNavigate, onAdd }) {
   const card = cards[current];
 
   return (
-    <div>
+    <div style={{ width: "100%", overflow: "hidden" }}>
       {card ? (
         <div onClick={onNavigate} style={{
-          padding: "32px", borderRadius: 16,
+          padding: "24px 28px", borderRadius: 16,
           background: CARD_COLORS[current % CARD_COLORS.length],
-          cursor: "pointer", marginBottom: 12, minHeight: 160
+          cursor: "pointer", marginBottom: 12, minHeight: 130
         }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 32 }}>
-            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.6)" }}>{card.cardType === "CREDIT" ? "신용" : "체크"}</span>
-            <span style={{ fontSize: 15, color: "rgba(30,30,60,0.7)" }}>{card.cardNumber}</span>
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 24 }}>
+            <span style={{ fontSize: 14, color: "rgba(30,30,60,0.6)" }}>{card.cardType === "CREDIT" ? "신용" : "체크"}</span>
+            <span style={{ fontSize: 14, color: "rgba(30,30,60,0.7)" }}>{card.cardNumber}</span>
           </div>
-          <div style={{ fontSize: 16, color: "rgba(30,30,60,0.7)", marginBottom: 6 }}>{card.cardName || "카드"}</div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: "#1E1E3C" }}>한도 ₩ {Number(card.availableLimit).toLocaleString()}</div>
+          <div style={{ fontSize: 15, color: "rgba(30,30,60,0.7)", marginBottom: 4 }}>{card.cardName || "카드"}</div>
+          <div style={{ fontSize: "clamp(16px, 2.5vw, 20px)", fontWeight: 700, color: "#1E1E3C" }}>
+            한도 ₩ {Number(card.availableLimit).toLocaleString()}
+          </div>
         </div>
       ) : (
         <div style={{
-          minHeight: 140, borderRadius: 16, border: "2px dashed var(--line)",
+          minHeight: 130, borderRadius: 16, border: "2px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 16
+          marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 15
         }} onClick={onAdd}>+ 카드 추가</div>
       )}
 
-      {/* 방식 2: 한 줄 고정 + 자연스러운 가로 스크롤 영역 */}
+      {/* 화면 비율에 맞춰 동적으로 크기가 조절되는 하단 탭 */}
       <div style={{
         display: "flex",
-        gap: 6,
+        gap: "1%",
         width: "100%",
         overflowX: "auto",
-        whiteSpace: "nowrap",
+        WebkitOverflowScrolling: "touch",
         paddingBottom: 4,
-        scrollbarWidth: "none",
-        msOverflowStyle: "none"
+        scrollbarWidth: "none"
       }}>
         {cards.map((c, i) => (
-          <div key={c.id} onClick={() => setCurrent(i)} style={{
-            flex: "0 0 90px",
-            padding: "8px 10px", borderRadius: 10, cursor: "pointer",
-            background: i === current ? CARD_COLORS[i % CARD_COLORS.length] : "var(--panel2)",
-            border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
-            transition: "all 0.2s"
-          }}>
-            <div style={{ fontSize: 12, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div 
+            key={c.id} 
+            onClick={() => setCurrent(i)} 
+            style={{
+              flex: "1 1 calc(25% - 8px)",
+              minWidth: "65px",
+              maxWidth: "120px",
+              padding: "8px 6px", 
+              borderRadius: 10, 
+              cursor: "pointer",
+              background: i === current ? CARD_COLORS[i % CARD_COLORS.length] : "var(--panel2)",
+              border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
+              transition: "all 0.2s",
+              boxSizing: "border-box",
+              textAlign: "center"
+            }}
+          >
+            <div style={{ fontSize: "clamp(10px, 1.1vw, 12px)", color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {c.cardType === "CREDIT" ? "신용" : "체크"}
             </div>
-            <div style={{ fontSize: 13, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            <div style={{ fontSize: "clamp(11px, 1.2vw, 13px)", fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {c.cardName || "카드"}
             </div>
           </div>
         ))}
-        <div onClick={onAdd} style={{
-          flex: "0 0 40px",
-          padding: "8px 0", borderRadius: 10, cursor: "pointer",
-          background: "var(--panel2)", border: "1.5px dashed var(--line)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          color: "var(--muted)", fontSize: 18, fontWeight: 300
-        }}>+</div>
+        <div 
+          onClick={onAdd} 
+          style={{
+            flex: "0 0 36px",
+            minWidth: "36px",
+            padding: "8px 0", 
+            borderRadius: 10, 
+            cursor: "pointer",
+            background: "var(--panel2)", 
+            border: "1.5px dashed var(--line)",
+            display: "flex", 
+            alignItems: "center", 
+            justifyContent: "center",
+            color: "var(--muted)", 
+            fontSize: 16, 
+            fontWeight: 300,
+            boxSizing: "border-box"
+          }}
+        >+</div>
       </div>
     </div>
   );
@@ -270,15 +320,16 @@ export default function Dashboard() {
         </button>
       </div>
 
-      <div className="ac-row" style={{ marginTop: 20 }}>
-        <Panel title="내 계좌" sub={`${accounts.length}개`}>
+      {/* 화면 크기에 따라 반응형 레이아웃 */}
+      <div className="ac-row" style={{ marginTop: 20, display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+        <Panel title="내 계좌" sub={`${accounts.length}개`} style={{ minWidth: 0 }}>
           <AccountCarousel
             accounts={accounts}
             onNavigate={() => navigate("/mypage/accounts")}
             onAdd={() => navigate("/mypage/accounts")}
           />
         </Panel>
-        <Panel title="내 카드" sub={`${cards.length}장`}>
+        <Panel title="내 카드" sub={`${cards.length}장`} style={{ minWidth: 0 }}>
           <CardCarousel
             cards={cards}
             onNavigate={() => navigate("/mypage/cards")}
@@ -306,10 +357,9 @@ export default function Dashboard() {
         {kpis.map((k, i) => <KpiCard key={i} {...k} />)}
       </div>
 
-      {/* 재무목표 + 투자재무 — 높이 맞춤 */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "1.6fr 1fr",
+        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
         gap: 16,
         marginTop: 20,
         alignItems: "stretch"
