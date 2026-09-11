@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useTheme } from "../../context/ThemeContext";
-import { getAdminDashboard, getMyCases } from "../../api/fraud/fraudCaseAPI";
+import { getMyCases } from "../../api/fraud/fraudCaseAPI.js";
+import { getAdminDashboard } from "../../api/admin/adminDashboardAPI.js";
 import {
   getCaseStatusLabel,
   getCasePriorityLabel,
@@ -64,10 +65,10 @@ export default function AdminMyPage() {
 
   const kpis = dashboard
     ? [
-        { k: "배정된 사건", v: `${dashboard.assignedCaseCount}건`, d: "진행 중", dir: "up", pct: 60, color: "var(--blue)" },
-        { k: "오늘 접수", v: `${dashboard.todayReceivedCaseCount}건`, d: "전체", dir: "up", pct: 45, color: "var(--red)" },
-        { k: "조사중", v: `${dashboard.investigatingCaseCount}건`, d: "처리 중", dir: "up", pct: 50, color: "var(--amber)" },
-        { k: "종결", v: `${dashboard.closedCaseCount}건`, d: "완료", dir: "down", pct: 80, color: "var(--green)" },
+        { k: "배정된 사건", v: `${dashboard.fraud.assignedCaseCount}건`, d: "진행 중", dir: "up", pct: 60, color: "var(--blue)" },
+        { k: "오늘 접수", v: `${dashboard.fraud.todayReceivedCaseCount}건`, d: "전체", dir: "up", pct: 45, color: "var(--red)" },
+        { k: "조사중", v: `${dashboard.fraud.investigatingCaseCount}건`, d: "처리 중", dir: "up", pct: 50, color: "var(--amber)" },
+        { k: "종결", v: `${dashboard.fraud.closedCaseCount}건`, d: "완료", dir: "down", pct: 80, color: "var(--green)" },
       ]
     : [];
 
@@ -93,9 +94,23 @@ export default function AdminMyPage() {
           <Panel title="처리 현황" sub="내 담당 기준">
             {dashboard ? (
               <div className="admin-stat" style={{ padding: "8px 0" }}>
-                <div className="admin-stat-row"><span>접수</span><b>{dashboard.receivedCaseCount}건</b></div>
-                <div className="admin-stat-row"><span>조사중</span><b style={{ color: "var(--amber)" }}>{dashboard.investigatingCaseCount}건</b></div>
-                <div className="admin-stat-row"><span>종결</span><b style={{ color: "var(--green)" }}>{dashboard.closedCaseCount}건</b></div>
+                <div className="admin-stat-row"><span>접수</span><b>{dashboard.fraud.receivedCaseCount}건</b></div>
+                <div className="admin-stat-row"><span>조사중</span><b style={{ color: "var(--amber)" }}>{dashboard.fraud.investigatingCaseCount}건</b></div>
+                <div className="admin-stat-row"><span>종결</span><b style={{ color: "var(--green)" }}>{dashboard.fraud.closedCaseCount}건</b></div>
+              </div>
+            ) : (
+              <div className="prod-empty">데이터 없음</div>
+            )}
+          </Panel>
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <Panel title="상담 현황" sub="내 담당 기준">
+            {dashboard ? (
+              <div className="admin-stat" style={{ padding: "8px 0" }}>
+                <div className="admin-stat-row"><span>전체 대기</span><b style={{ color: "var(--amber)" }}>{dashboard.chat.totalWaitingChatCount}건</b></div>
+                <div className="admin-stat-row"><span>내 대기</span><b style={{ color: "var(--amber)" }}>{dashboard.chat.myWaitingChatCount}건</b></div>
+                <div className="admin-stat-row"><span>내 진행중</span><b style={{ color: "var(--green)" }}>{dashboard.chat.myInProgressChatCount}건</b></div>
               </div>
             ) : (
               <div className="prod-empty">데이터 없음</div>

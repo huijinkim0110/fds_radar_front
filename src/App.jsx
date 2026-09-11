@@ -42,7 +42,6 @@ import ChatWidget from "./components/chat/ChatWidget";
 import { ChatWidgetProvider } from "./context/ChatWidgetContext";
 import AdminChatList from "./components/admin/AdminChatList";
 import AdminChatRoom from "./components/admin/AdminChatRoom";
-import AdminChatNotifier from "./components/admin/AdminChatNotifier";
 
 import { useAuth } from "./context/AuthContext";
 
@@ -128,7 +127,6 @@ function App() {
 
                   <Toast />
                   <AppChatWidget />
-                  <AdminChatNotifier />
                 </ChatWidgetProvider>
               </ConfirmProvider>
             </ToastProvider>
