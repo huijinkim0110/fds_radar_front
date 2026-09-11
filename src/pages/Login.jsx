@@ -20,8 +20,19 @@ export default function Login() {
     try {
       const data = await login({ email: form.email, password: form.password });
       navigate("/");
-    } catch {
-      setErr("이메일 또는 비밀번호를 확인하세요.");
+    } catch (e) {
+      const msg = e.message ?? "";
+      if (
+        msg.includes("정지") ||
+        msg.includes("SUSPENDED") ||
+        msg.includes("LOCKED") ||
+        msg.includes("suspended") ||
+        msg.includes("locked")
+      ) {
+        setErr("정지된 계정입니다.");
+      } else {
+        setErr("이메일 또는 비밀번호를 확인하세요.");
+      }
     } finally {
       setLoading(false);
     }
