@@ -18,6 +18,9 @@ const RISK = {
   LOW: { label: "낮음", color: "var(--green)", bg: "rgba(5,150,105,0.12)" },
 };
 
+// 우선순위 정렬 순서 (숫자가 작을수록 먼저 옴)
+const PRIORITY_ORDER = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+
 const STATUS = {
   RECEIVED: { label: "접수", color: "var(--red)", bg: "rgba(220,38,38,0.12)" },
   INVESTIGATING: { label: "조사중", color: "var(--amber)", bg: "rgba(217,119,6,0.12)" },
@@ -60,7 +63,13 @@ export default function AdminFraudCases() {
     fetchCases();
   }, []);
 
-  const filtered = filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter);
+  const filtered = (filter === "ALL" ? cases : cases.filter((c) => c.caseStatus === filter))
+  .slice()
+  .sort((a, b) => {
+    const priorityDiff = (PRIORITY_ORDER[a.priority] ?? 99) - (PRIORITY_ORDER[b.priority] ?? 99);
+    if (priorityDiff !== 0) return priorityDiff;
+    return new Date(b.openedAt) - new Date(a.openedAt);
+  });
 
   async function doStartInvestigation(fraudCaseId) {
       try {
