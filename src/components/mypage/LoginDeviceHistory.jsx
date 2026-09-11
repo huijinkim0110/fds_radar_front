@@ -51,6 +51,14 @@ export default function LoginDeviceHistory() {
     return new Date(date).toLocaleString("ko-KR");
   };
 
+  // 가장 최근 로그인 기록 5개만 표시
+  const recentHistories = [...histories]
+    .sort(
+      (a, b) =>
+        new Date(b.createAt) - new Date(a.createAt)
+    )
+    .slice(0, 5);
+
   return (
     <>
       <TopBar
@@ -59,6 +67,7 @@ export default function LoginDeviceHistory() {
         search={false}
       />
 
+      {/* 등록 기기 */}
       <Panel
         title="등록 기기"
         sub="내 계정에 등록된 기기를 확인할 수 있습니다."
@@ -118,7 +127,8 @@ export default function LoginDeviceHistory() {
                     color: "var(--muted)",
                   }}
                 >
-                  신뢰 기기: {device.trusted ? "예" : "아니오"}
+                  신뢰 기기:{" "}
+                  {device.trusted ? "예" : "아니오"}
                 </div>
 
                 <div
@@ -128,7 +138,8 @@ export default function LoginDeviceHistory() {
                     marginTop: "4px",
                   }}
                 >
-                  차단 상태: {device.blocked ? "차단됨" : "정상"}
+                  차단 상태:{" "}
+                  {device.blocked ? "차단됨" : "정상"}
                 </div>
               </div>
             ))}
@@ -136,9 +147,10 @@ export default function LoginDeviceHistory() {
         )}
       </Panel>
 
+      {/* 로그인 이력 */}
       <Panel
         title="로그인 이력"
-        sub="최근 로그인 기록을 확인할 수 있습니다."
+        sub="최근 로그인 기록 5개를 확인할 수 있습니다."
         style={{ marginTop: "16px" }}
       >
         {loading ? (
@@ -152,7 +164,7 @@ export default function LoginDeviceHistory() {
           >
             불러오는 중입니다.
           </div>
-        ) : histories.length === 0 ? (
+        ) : recentHistories.length === 0 ? (
           <div
             style={{
               padding: "28px 0",
@@ -171,7 +183,7 @@ export default function LoginDeviceHistory() {
               gap: "12px",
             }}
           >
-            {histories.map((history) => (
+            {recentHistories.map((history) => (
               <div
                 key={history.id}
                 style={{
@@ -201,9 +213,14 @@ export default function LoginDeviceHistory() {
                     style={{
                       fontSize: "12px",
                       fontWeight: "600",
+                      color: history.success
+                        ? "var(--green)"
+                        : "var(--red)",
                     }}
                   >
-                    {history.success ? "로그인 성공" : "로그인 실패"}
+                    {history.success
+                      ? "로그인 성공"
+                      : "로그인 실패"}
                   </div>
                 </div>
 
@@ -224,7 +241,8 @@ export default function LoginDeviceHistory() {
                     color: "var(--muted)",
                   }}
                 >
-                  로그인 시간: {formatDate(history.createAt)}
+                  로그인 시간:{" "}
+                  {formatDate(history.createAt)}
                 </div>
               </div>
             ))}
