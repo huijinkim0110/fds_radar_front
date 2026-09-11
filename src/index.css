@@ -759,6 +759,8 @@ body.dark input[type="date"] {
   z-index: 2000; padding: 12px 22px; border-radius: 8px;
   font-size: 14px; font-weight: 500; color: #fff;
   background: #2563EB; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+}
+
 /* ── 프로필 드롭다운 ── */
 
 .profile-dropdown {
