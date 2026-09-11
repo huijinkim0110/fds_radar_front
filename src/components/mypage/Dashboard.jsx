@@ -15,8 +15,6 @@ import TopBar from "../TopBar.jsx";
 import KpiCard from "../KpiCard.jsx";
 import Panel from "../Panel.jsx";
 
-const userId = 1;
-
 const RISK_TENDENCY_LABELS = {
   STABLE: "안정형",
   NEUTRAL: "중립형",
@@ -58,23 +56,36 @@ function AccountCarousel({ accounts, onNavigate, onAdd }) {
           marginBottom: 14, cursor: "pointer", color: "var(--muted)", fontSize: 16
         }} onClick={onAdd}>+ 계좌 추가</div>
       )}
-      <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+
+      {/* 방식 2: 한 줄 고정 + 자연스러운 가로 스크롤 영역 */}
+      <div style={{
+        display: "flex",
+        gap: 6,
+        width: "100%",
+        overflowX: "auto",
+        whiteSpace: "nowrap",
+        paddingBottom: 4,
+        scrollbarWidth: "none",
+        msOverflowStyle: "none"
+      }}>
         {accounts.map((a, i) => (
           <div key={a.id} onClick={() => setCurrent(i)} style={{
-            minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+            flex: "0 0 90px",
+            padding: "8px 10px", borderRadius: 10, cursor: "pointer",
             background: i === current ? ACCOUNT_COLORS[i % ACCOUNT_COLORS.length] : "var(--panel2)",
             border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
-            transition: "all 0.2s", flexShrink: 0
+            transition: "all 0.2s"
           }}>
-            <div style={{ fontSize: 15, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2 }}>{a.accountNumber}</div>
+            <div style={{ fontSize: 12, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountNumber}</div>
             <div style={{ fontSize: 13, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.accountName || "계좌"}</div>
           </div>
         ))}
         <div onClick={onAdd} style={{
-          minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+          flex: "0 0 40px",
+          padding: "8px 0", borderRadius: 10, cursor: "pointer",
           background: "var(--panel2)", border: "1.5px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0, color: "var(--muted)", fontSize: 18, fontWeight: 300
+          color: "var(--muted)", fontSize: 18, fontWeight: 300
         }}>+</div>
       </div>
     </div>
@@ -107,15 +118,27 @@ function CardCarousel({ cards, onNavigate, onAdd }) {
           marginBottom: 12, cursor: "pointer", color: "var(--muted)", fontSize: 16
         }} onClick={onAdd}>+ 카드 추가</div>
       )}
-      <div style={{ display: "flex", gap: 6, overflowX: "auto" }}>
+
+      {/* 방식 2: 한 줄 고정 + 자연스러운 가로 스크롤 영역 */}
+      <div style={{
+        display: "flex",
+        gap: 6,
+        width: "100%",
+        overflowX: "auto",
+        whiteSpace: "nowrap",
+        paddingBottom: 4,
+        scrollbarWidth: "none",
+        msOverflowStyle: "none"
+      }}>
         {cards.map((c, i) => (
           <div key={c.id} onClick={() => setCurrent(i)} style={{
-            minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+            flex: "0 0 90px",
+            padding: "8px 10px", borderRadius: 10, cursor: "pointer",
             background: i === current ? CARD_COLORS[i % CARD_COLORS.length] : "var(--panel2)",
             border: `0.5px solid ${i === current ? "transparent" : "var(--line)"}`,
-            transition: "all 0.2s", flexShrink: 0
+            transition: "all 0.2s"
           }}>
-            <div style={{ fontSize: 15, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2 }}>
+            <div style={{ fontSize: 12, color: i === current ? "rgba(30,30,60,0.7)" : "var(--muted)", marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
               {c.cardType === "CREDIT" ? "신용" : "체크"}
             </div>
             <div style={{ fontSize: 13, fontWeight: 600, color: i === current ? "rgba(30,30,60,0.7)" : "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -124,10 +147,11 @@ function CardCarousel({ cards, onNavigate, onAdd }) {
           </div>
         ))}
         <div onClick={onAdd} style={{
-          minWidth: 60, padding: "8px 10px", borderRadius: 10, cursor: "pointer",
+          flex: "0 0 40px",
+          padding: "8px 0", borderRadius: 10, cursor: "pointer",
           background: "var(--panel2)", border: "1.5px dashed var(--line)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0, color: "var(--muted)", fontSize: 18, fontWeight: 300
+          color: "var(--muted)", fontSize: 18, fontWeight: 300
         }}>+</div>
       </div>
     </div>
@@ -157,20 +181,21 @@ export default function Dashboard() {
   }, [userId]);
 
   useEffect(() => {
+    if (!userId) return;
     getFavorites(userId).then((list) => setFavoriteCount(list.length)).catch(() => {});
     getPortfolio(userId).then((list) => setSubscriptions(list)).catch(() => {});
     getGoals(userId).then(setGoals).catch(() => {});
     hasDiagnosisHistory(userId).then(setHasDiagnosis).catch(() => {});
     hasFinancialProfile(userId).then(setHasFinProfile).catch(() => {});
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
-    if (hasDiagnosis) getLatestProfile(userId).then(setLatestProfile).catch(() => {});
-  }, [hasDiagnosis]);
+    if (hasDiagnosis && userId) getLatestProfile(userId).then(setLatestProfile).catch(() => {});
+  }, [hasDiagnosis, userId]);
 
   useEffect(() => {
-    if (hasFinProfile) getFinancialProfile(userId).then(setFinancialProfile).catch(() => {});
-  }, [hasFinProfile]);
+    if (hasFinProfile && userId) getFinancialProfile(userId).then(setFinancialProfile).catch(() => {});
+  }, [hasFinProfile, userId]);
 
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
 
