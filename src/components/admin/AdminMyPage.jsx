@@ -111,13 +111,6 @@ export default function AdminMyPage() {
         <div style={{ width: "180px", flexShrink: 0 }}>
           <Panel title="바로가기" sub="관리 업무">
             <div className="feed" style={{ display: "flex", flexDirection: "column", gap: "4px", paddingRight: 0 }}>
-              <div className="fitem" style={{ cursor: "pointer", padding: "6px 0", gap: "6px" }} onClick={() => navigate("/mypage/admin-fraud-analysis")}>
-                <span className="fdot" style={{ background: "var(--blue)", flexShrink: 0 }} />
-                <div style={{ minWidth: 0, overflow: "hidden" }}>
-                  <div className="ft" style={{ fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>오탐·미탐 분석</div>
-                  <div className="fm" style={{ fontSize: 11, whiteSpace: "nowrap" }}>이상거래 분석</div>
-                </div>
-              </div>
 
               <div className="fitem" style={{ cursor: "pointer", padding: "6px 0", gap: "6px" }} onClick={() => navigate("/mypage/admin-lock-requests")}>
                 <span className="fdot" style={{ background: "var(--amber)", flexShrink: 0 }} />
@@ -127,11 +120,12 @@ export default function AdminMyPage() {
                 </div>
               </div>
 
-              <div className="fitem" style={{ cursor: "pointer", padding: "6px 0", gap: "6px" }} onClick={() => navigate("/mypage/admin-disputes")}>
+              {/* 이의제기 → 신고 처리로 교체 (이의제기는 신고 기능에 통합됨) */}
+              <div className="fitem" style={{ cursor: "pointer", padding: "6px 0", gap: "6px" }} onClick={() => navigate("/mypage/admin-reports")}>
                 <span className="fdot" style={{ background: "var(--red)", flexShrink: 0 }} />
                 <div style={{ minWidth: 0, overflow: "hidden" }}>
-                  <div className="ft" style={{ fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>이의제기</div>
-                  <div className="fm" style={{ fontSize: 11, whiteSpace: "nowrap" }}>이의제기 심사</div>
+                  <div className="ft" style={{ fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>신고 처리</div>
+                  <div className="fm" style={{ fontSize: 11, whiteSpace: "nowrap" }}>거래 신고 처리</div>
                 </div>
               </div>
 
