@@ -492,6 +492,22 @@ body.dark input[type="date"] {
 }
 .cw-fab:hover { transform: scale(1.08); }
 
+.admin-notif-fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 900;
+  width: 58px; height: 58px; border-radius: 50%; border: none;
+  background: linear-gradient(135deg, #3B82F6, #2563EB); color: #fff;
+  font-size: 24px; cursor: pointer; box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+  transition: 0.2s;
+}
+.admin-notif-fab:hover { transform: scale(1.08); }
+.admin-notif-badge {
+  position: absolute; top: -4px; right: -4px;
+  min-width: 20px; height: 20px; padding: 0 5px;
+  border-radius: 10px; background: var(--red, #DC2626); color: #fff;
+  font-size: 11px; font-weight: 700; line-height: 20px;
+  border: 2px solid var(--panel);
+}
+
 .cw-panel {
   position: fixed; bottom: 24px; right: 24px; z-index: 900;
   width: 360px; height: 560px; max-height: 80vh;
@@ -759,8 +775,9 @@ body.dark input[type="date"] {
   z-index: 2000; padding: 12px 22px; border-radius: 8px;
   font-size: 14px; font-weight: 500; color: #fff;
   background: #2563EB; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-/* ── 프로필 드롭다운 ── */
+}
 
+/* ── 프로필 드롭다운 ── */
 .profile-dropdown {
   position: absolute;
   top: 50px;
