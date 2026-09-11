@@ -11,6 +11,22 @@ export async function getOrCreateSession(userId) {
     return response.data;
 }
 
+// 상담원 관련 진행 중 세션 있는지 가볍게 확인(위젯 열 때 배너 표시용, 메시지 이력 없음)
+export async function getActiveAdminSession(userId) {
+    const response = await axios.get(`${BASE_URL}/chat/sessions/active-admin`, {
+        params: { userId },
+    });
+    return response.data; // { hasActiveSession, sessionId, status}
+}
+
+// 상담원 세션 조회 or 생성 - "상담원 연결" 액션(배너/고객센터)에서 호출
+export async function getOrCreateAdminSession(userId) {
+    const response = await axios.get(`${BASE_URL}/chat/sessions/admin`, {
+        params: { userId },
+    });
+    return response.data;
+}
+
 // 새 대화 시작 - 현재 세션 닫기
 export async function closeSession(sessionId) {
     await axios.post(`${BASE_URL}/chat/sessions/${sessionId}/close`)

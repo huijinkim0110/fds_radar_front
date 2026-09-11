@@ -42,6 +42,7 @@ import ChatWidget from "./components/chat/ChatWidget";
 import { ChatWidgetProvider } from "./context/ChatWidgetContext";
 import AdminChatList from "./components/admin/AdminChatList";
 import AdminChatRoom from "./components/admin/AdminChatRoom";
+import AdminChatNotifier from "./components/admin/AdminChatNotifier";
 
 import { useAuth } from "./context/AuthContext";
 
@@ -64,10 +65,10 @@ import { ConfirmProvider } from "./context/ConfirmContext";
 import FraudPrevention from "./components/fraud/FraudPrevention";
 
 function AppChatWidget() {
+  const { user } = useAuth();
   const location = useLocation();
-  const isAdminRoute = location.pathname.startsWith("/admin");
   const isAuthRoute = location.pathname === "/login" || location.pathname === "/signup";
-  if (isAdminRoute || isAuthRoute) return null;
+  if (user?.role === "ADMIN" || isAuthRoute) return null;
   return <ChatWidget />;
 }
 
@@ -129,6 +130,7 @@ function App() {
 
                   <Toast />
                   <AppChatWidget />
+                  <AdminChatNotifier />
                 </ChatWidgetProvider>
               </ConfirmProvider>
             </ToastProvider>

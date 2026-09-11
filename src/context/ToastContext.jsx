@@ -5,14 +5,16 @@ const DISPLAY_DURATION_MS = 2000;
 
 export function ToastProvider({ children }) {
     const [message, setMessage] = useState(null);
+    const [onClick, setOnClick] = useState(null);
 
-    const showToast = useCallback((text) => {
+    const showToast = useCallback((text, clickHandler) => {
         setMessage(text);
+        setOnClick(() => clickHandler || null);
         setTimeout(() => setMessage(null), DISPLAY_DURATION_MS);
     }, []);
 
     return (
-        <ToastContext.Provider value={{ message, showToast }}>
+        <ToastContext.Provider value={{ message, onClick, showToast }}>
             {children}
         </ToastContext.Provider>
     );
