@@ -88,7 +88,7 @@ function MyPageLayout() {
   return (
     <div className="mp-app">
       <aside className="mp-side">
-        <div className="mp-brand" style={{ cursor: "pointer"}} onClick={() => navigate("/")}>
+        <div className="mp-brand" style={{ cursor: "pointer", alignItems: "center" }} onClick={() => navigate("/")}>
           <div className="mp-lg">W</div>
           <div>
             <b>Wonly</b>
