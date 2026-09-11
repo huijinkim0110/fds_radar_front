@@ -34,6 +34,8 @@ export default function AdminFraudCases() {
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("ALL");
   const [busyId, setBusyId] = useState(null);
+  const [sortKey, setSortKey] = useState("priority"); // 기본: 우선순위
+  const [sortDir, setSortDir] = useState("desc"); // desc: 위험한/큰 것부터
 
   const [toast, setToast] = useState(null);
   function notify(text, type = "success") {
