@@ -65,6 +65,9 @@ export default function Accounts() {
 
   function openTransfer(acc) {
     if (isSavings(acc)) { alert("적금 계좌는 송금이 불가능합니다."); return; }
+    if (acc.status === "ACCOUNT_BLOCKED" || acc.status === "SUSPENDED" || acc.status === "DORMANT") {
+      alert('정지된 계좌입니다. 송금이 불가능합니다.'); return;
+    }
     if (isEmergency(acc) && emergencyCount >= 2) { alert("비상금 통장은 비상 출금 2회까지만 가능합니다."); return; }
     setFromAccount(acc);
     setForm({ receiverAccountNumber: "", amount: "" });
