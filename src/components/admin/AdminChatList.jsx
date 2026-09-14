@@ -139,12 +139,12 @@ function AdminChatList() {
                 <table>
                     <thead>
                         <tr>
-                            <th>상태</th><th>고객</th><th>최근 메시지</th><th>요청시각</th>
+                            <th>상태</th><th>고객</th><th>담당 관리자</th><th>최근 메시지</th><th>요청시각</th>
                         </tr>
                     </thead>
                     <tbody>
                         {sessions.length === 0 && (
-                            <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--muted)" }}>상담 내역이 없습니다.</td></tr>
+                            <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--muted)" }}>상담 내역이 없습니다.</td></tr>
                         )}
                         {sessions.map((session) => {
                             const s = STATUS[session.status] ?? { label: session.status, color: "var(--muted)", bg: "transparent" };
@@ -156,6 +156,9 @@ function AdminChatList() {
                                             <span className="fdot" style={{ display: "inline-block", backgroung: "var(--red)", marginRight: 6 }} />
                                         )}
                                         {session.userName}
+                                    </td>
+                                    <td style={{ fontSize: 12.5, color: session.assignedAdminName ? "inherit" : "var(--muted)" }}>
+                                        {session.assignedAdminName ?? "미배정"}
                                     </td>
                                     <td style={{ fontSize: 12.5}}>{session.lastMessagePreview}</td>
                                     <td style={{ fontSize: 11.5, color: "var(--muted)"}}>{formatDateTime(session.createdAt)}</td>
