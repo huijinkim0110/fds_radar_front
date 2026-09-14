@@ -45,6 +45,7 @@ const USER_MENU = [
     children: [
       { path: "profile", label: "회원정보" },
       { path: "devices", label: "로그인 기기·이력" },
+      { path: "chat-history", label: "상담 내역" },
       { path: "notifications", label: "알림" },
     ],
   },

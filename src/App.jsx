@@ -8,6 +8,7 @@ import Report from "./pages/Report";
 import UserProfile from "./components/mypage/UserProfile";
 import LoginDeviceHistory from "./components/mypage/LoginDeviceHistory";
 import Notifications from "./components/mypage/Notifications";
+import ChatHistory from "./components/mypage/ChatHistory";
 import TransactionReport from "./components/mypage/TransactionReport";
 import ReportHistory from "./components/mypage/ReportHistory";
 
@@ -103,6 +104,7 @@ function App() {
                       <Route path="lock-requests" element={<LockRequestsPage />} />
                       <Route path="devices" element={<LoginDeviceHistory />} />
                       <Route path="notifications" element={<Notifications />} />
+                      <Route path="chat-history" element={<ChatHistory />} />
                       <Route path="favorites" element={<FavoriteProductList />} />
                       <Route path="comparisons" element={<ProductComparison />} />
                       <Route path="comparisons/:comparisonId" element={<ProductComparison />} />
