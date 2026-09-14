@@ -61,3 +61,11 @@ export async function requestAdmin(sessionId) {
 export async function markUserRead(sessionId) {
     await axios.patch(`${BASE_URL}/chat/sessions/${sessionId}/user-read`);
 }
+
+// 내 상담 내역 조회 - 봇 세션 제외
+export async function getSessionHistory(userId) {
+    const response = await axios.get(`${BASE_URL}/chat/sessions/history`, {
+        params: { userId },
+    });
+    return response.data;
+}
