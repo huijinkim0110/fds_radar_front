@@ -4,8 +4,8 @@ import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
 import { markSessionInProgress, getSessionById } from "../../api/chat/adminChatAPI";
 import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "../../api/chat/chatSocket";
-
-const TEMP_ADMIN_ID = 1;
+import { useAuth } from "../../context/AuthContext.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
 
 const STATUS = {
     WAITING: { label: "대기중", color: "var(--amber)", bg: "rgba(217, 119, 6, 0.12)" },
@@ -16,6 +16,10 @@ const STATUS = {
 function AdminChatRoom() {
     const { sessionId } = useParams();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const { showToast } = useToast();
+    const adminId = user?.userId;
+    const adminName = user?.name ?? "상담원";
 
     const [session, setSession] = useState(null);
     const [messages, setMessages] = useState([]);
@@ -24,19 +28,40 @@ function AdminChatRoom() {
     const scrollRef = useRef(null);
 
     useEffect(() => {
-        markSessionInProgress(sessionId, TEMP_ADMIN_ID);
+        if (!adminId) return;
+        let cancelled = false;
 
-        getSessionById(sessionId).then((data) => {
-            setSession(data);
-            setMessages(data.messages || []);
-        });
+        markSessionInProgress(sessionId, adminId)
+            .then(() => {
+                if (cancelled) return;
 
-        socketRef.current = connectChatSocket(sessionId, (msg) => {
-            setMessages((prev) => [...prev, msg]);
-        });
+                getSessionById(sessionId).then((data) => {
+                    if (cancelled) return;
+                    setSession(data);
+                    setMessages(data.mesages || []);
+                });
 
-        return () => disconnectChatSocket(socketRef.current);
-    }, [sessionId]);
+                socketRef.current = connectChatSocket(sessionId, (msg) => {
+                    setMessages((prev) => [...prev, msg]);
+                });
+            })
+            .catch((err) => {
+                if (cancelled) return;
+                if (err.response?.status === 403) {
+                    showToast(err.response.data?.message || "접근 권한이 없습니다.");
+                    navigate('/mypage/admin-chats');
+                    return;
+                }
+                alert("상담방을 불러오지 못했습니다.");
+                navigate('/mypage/admin-chats');
+            });
+        
+        return () => {
+            cancelled = true;
+            disconnectChatSocket(socketRef.current);
+            socketRef.current = null;
+        };
+    }, [sessionId, adminId]);
 
     useEffect(() => {
         if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -45,7 +70,7 @@ function AdminChatRoom() {
     function handleSend() {
         if (!inputText.trim() || !socketRef.current) return;
 
-        sendChatSocketMessage(socketRef.current, sessionId, 'ADMIN', TEMP_ADMIN_ID, inputText);
+        sendChatSocketMessage(socketRef.current, sessionId, 'ADMIN', adminId, inputText);
         setInputText('');
     }
 

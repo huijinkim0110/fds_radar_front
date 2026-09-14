@@ -1,5 +1,9 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
+import { connectAdminChatSocket, disconnectChatSocket } from "../../api/chat/chatSocket";
+import { getSessions } from "../../api/chat/adminChatAPI";
 
 // 유저 메뉴
 const USER_MENU = [
@@ -80,8 +84,42 @@ const ADMIN_MENU = [
 function MyPageLayout() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { showToast } = useToast();
   const isAdmin = user?.role === "ADMIN";
+  const adminId = user?.userId;
   const menu = isAdmin ? ADMIN_MENU : USER_MENU;
+
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+
+  function refreshUnreadChatCount() {
+    getSessions(["WAITING", "IN_PROGRESS"], adminId)
+      .then((sessions) => {
+        const count = sessions.filter((s) => s.status === "WAITING" || s.adminUnread).length;
+        setUnreadChatCount(count);
+      })
+      .catch(() => {});
+  }
+
+  // 소켓 연결 - 새 상담 요청/메시지 이벤트마다 배지 + 토스트 갱신
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    refreshUnreadChatCount();
+
+    const socket = connectAdminChatSocket(() => {
+      refreshUnreadChatCount();
+      showToast("새로운 상담 요청이 있습니다.", () => navigate("admin-chats"), undefined, 5000);
+    });
+
+    return () => disconnectChatSocket(socket);
+  }, [isAdmin, adminId]);
+
+  // 페이지 이동할 때마다 다시 세서, 상담방에서 읽고 나온 경우 등을 반영
+  useEffect(() => {
+    if (!isAdmin) return;
+    refreshUnreadChatCount();
+  }, [isAdmin, location.pathname]);
 
   return (
     <div className="mp-app">
@@ -119,6 +157,16 @@ function MyPageLayout() {
                   >
                     <span className="mp-dot" />
                     {child.label}
+                    {child.path === "admin-chats" && unreadChatCount > 0 && (
+                      <span
+                        style={{
+                          marginLeft: "auto", background: "var(--red)", color: "#fff",
+                          borderRadius: 10, padding: "1px 7px", fontSize: 11, fontWeight: "bold",
+                        }}
+                      >
+                        {unreadChatCount}
+                      </span>
+                    )}
                   </NavLink>
                 ))}
               </div>

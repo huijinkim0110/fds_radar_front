@@ -19,7 +19,7 @@ export default function Login() {
     setLoading(true);
     try {
       const data = await login({ email: form.email, password: form.password });
-      navigate("/");
+      navigate(data.role === "ADMIN" ? "/mypage/dashboard" : "/");
     } catch (e) {
       const msg = e.message ?? "";
       if (
