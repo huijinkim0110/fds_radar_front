@@ -65,22 +65,15 @@ export default function AdminMyPage() {
 
   // 전체 사건 합계 계산 (접수 + 조사중 + 종결)
   const totalCasesCount = dashboard
-    ? (dashboard.totalCaseCount ?? ((dashboard.receivedCaseCount || 0) + (dashboard.investigatingCaseCount || 0) + (dashboard.closedCaseCount || 0)))
+    ? ((dashboard.fraud?.receivedCaseCount || 0) + (dashboard.fraud?.investigatingCaseCount || 0) + (dashboard.fraud?.closedCaseCount || 0))
     : 0;
 
   const kpis = dashboard
     ? [
-<<<<<<< HEAD
         { k: "배정된 사건", v: `${totalCasesCount}건`, d: "전체 사건", dir: "up", pct: 100, color: "var(--blue)" },
-        { k: "접수", v: `${dashboard.receivedCaseCount || 0}건`, d: "신규 접수", dir: "up", pct: 45, color: "var(--red)" },
-        { k: "조사중", v: `${dashboard.investigatingCaseCount || 0}건`, d: "처리 중", dir: "up", pct: 50, color: "var(--amber)" },
-        { k: "종결", v: `${dashboard.closedCaseCount || 0}건`, d: "완료", dir: "down", pct: 80, color: "var(--green)" },
-=======
-        { k: "배정된 사건", v: `${dashboard.fraud.assignedCaseCount}건`, d: "진행 중", dir: "up", pct: 60, color: "var(--blue)" },
-        { k: "오늘 접수", v: `${dashboard.fraud.todayReceivedCaseCount}건`, d: "전체", dir: "up", pct: 45, color: "var(--red)" },
-        { k: "조사중", v: `${dashboard.fraud.investigatingCaseCount}건`, d: "처리 중", dir: "up", pct: 50, color: "var(--amber)" },
-        { k: "종결", v: `${dashboard.fraud.closedCaseCount}건`, d: "완료", dir: "down", pct: 80, color: "var(--green)" },
->>>>>>> dev/huijin
+        { k: "접수", v: `${dashboard.fraud.receivedCaseCount || 0}건`, d: "신규 접수", dir: "up", pct: 45, color: "var(--red)" },
+        { k: "조사중", v: `${dashboard.fraud.investigatingCaseCount || 0}건`, d: "처리 중", dir: "up", pct: 50, color: "var(--amber)" },
+        { k: "종결", v: `${dashboard.fraud.closedCaseCount || 0}건`, d: "완료", dir: "down", pct: 80, color: "var(--green)" },
       ]
     : [];
 
