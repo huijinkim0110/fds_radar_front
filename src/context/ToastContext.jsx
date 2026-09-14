@@ -8,7 +8,7 @@ export function ToastProvider({ children }) {
     const [onClick, setOnClick] = useState(null);
     const [type, setType] = useState("default");
 
-    const showToast = useCallback((text, clickHandler, toastType = "default", durationMs=duratinMs = DISPLAY_DURATION_MS) => {
+    const showToast = useCallback((text, clickHandler, toastType = "default", durationMs = DISPLAY_DURATION_MS) => {
         setMessage(text);
         setOnClick(() => clickHandler || null);
         setType(toastType);

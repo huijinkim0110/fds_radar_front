@@ -42,6 +42,7 @@ function ChatWidget() {
 
   const socketRef = useRef(null);
   const scrollRef = useRef(null);
+  const connectingAdminRef = useRef(false); // connectAdmin() 중복 호출 방지
 
   function addLocalMessage(senderType, content, navActions = []) {
     setBotMessages((prev) => [...prev, { senderType, content, navActions, createdAt: new Date().toISOString() }]);
@@ -145,21 +146,28 @@ function ChatWidget() {
 
   // 상담원 연결 - 배너 클릭 / 봇의 needsAdmin / 고객센터 페이지 요청 / 종료 후 재연결에서 공통으로 호출
   function connectAdmin() {
+    if (connectingAdminRef.current) return;
+    connectingAdminRef.currnet = true;
+
     setShowAdminTab(true);
     setAdminBanner(false);
     setActiveTab("admin");
 
-    getOrCreateAdminSession(userId).then((data) => {
-      setAdminSession(data);
-      setAdminMessages(data.messages || []);
-      requestAdmin(data.sessionId).catch(() => {});
+    getOrCreateAdminSession(userId)
+      .then((data) => {
+        setAdminSession(data);
+        setAdminMessages(data.messages || []);
+        requestAdmin(data.sessionId).catch(() => {});
 
-      disconnectChatSocket(socketRef.current);
-      socketRef.current = connectChatSocket(data.sessionId, (msg) => {
-        setAdminMessages((prev) => [...prev, msg]);
-        if (open) markUserRead(data.sessionId);
+        disconnectChatSocket(socketRef.current);
+        socketRef.current = connectChatSocket(data.sessionId, (msg) => {
+          setAdminMessages((prev) => [...prev, msg]);
+          if (open) markUserRead(data.sessionId);
+        });
+      })
+      .finally(() => {
+        connectingAdminRef.current = false;
       });
-    });
   }
 
   function handleSendAdminMessage() {
