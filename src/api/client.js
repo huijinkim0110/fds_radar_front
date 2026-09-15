@@ -2,13 +2,15 @@ import { MOCK } from "../data/mock.js";
 
 export const USE_MOCK = false;
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
+
 function authHeader() {
   const token = localStorage.getItem("accessToken");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
 async function request(path, options = {}) {
-  const res = await fetch(`/api${path}`, {
+  const res = await fetch(`${BASE_URL}/api${path}`, {
     headers: {
       "Content-Type": "application/json",
       ...authHeader(),
@@ -70,7 +72,7 @@ export const api = {
   },
 
   transfer: async ({ amount }) => {
-    const res = await fetch("http://localhost:9090/api/transactions/transfer?userId=1", {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/transactions/transfer?userId=1`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

@@ -57,7 +57,7 @@ export default function Cards() {
 
     setAdding(true);
     try {
-      const res = await fetch(`http://localhost:9090/api/cards?userId=${userId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/cards?userId=${userId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -88,7 +88,7 @@ export default function Cards() {
   async function handleCancelCard() {
     if (!window.confirm("정말 이 카드를 해지하시겠습니까?")) return;
     try {
-      const res = await fetch(`http://localhost:9090/api/cards/${selected.id}?userId=${userId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/cards/${selected.id}?userId=${userId}`, {
         method: "DELETE"
       });
       if (!res.ok) throw new Error();

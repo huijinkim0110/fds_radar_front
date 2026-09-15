@@ -1,7 +1,7 @@
 // 관리자용, 도메인 분리
 import axios from "axios";
 
-const BASE_URL = 'http://localhost:9090';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
 
 // 상담 목록 - statuses 생략 시 전체(WAITING + IN_PROGRESS + CLOSED), adminId 있으면 "내 상담"만
 export async function getSessions(statuses, adminId) {

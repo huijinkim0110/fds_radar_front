@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:9090";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
 
 // 유저 본인의 이상거래 목록 조회
 // TODO(로그인 기능 붙으면 수정): 지금은 userId를 직접 넘겨받아서 쿼리 파라미터로 전달
