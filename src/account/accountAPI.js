@@ -1,9 +1,9 @@
-import config from '../config/config';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
 
 // 계좌 개설
 export const createAccount = async (userId, accountData) => {
   const response = await fetch(
-    `${config.API_BASE_URL}/accounts?userId=${userId}`,
+    `${BASE_URL}/api/accounts?userId=${userId}`,
     {
       method: 'POST',
       headers: {
@@ -23,7 +23,7 @@ export const createAccount = async (userId, accountData) => {
 
 // 내 계좌 목록
 export const getMyAccounts = async (userId) => {
-  const response = await fetch(`/api/accounts?userId=${userId}`, { method: 'GET' });
+  const response = await fetch(`${BASE_URL}/api/accounts?userId=${userId}`, { method: 'GET' });
   if (!response.ok) throw new Error('계좌 목록 조회에 실패했습니다.');
   return response.json();
 };
@@ -32,7 +32,7 @@ export const getMyAccounts = async (userId) => {
 // 계좌 상세
 export const getAccount = async (userId, accountId) => {
   const response = await fetch(
-    `${config.API_BASE_URL}/accounts/${accountId}?userId=${userId}`,
+    `${BASE_URL}/api/accounts/${accountId}?userId=${userId}`,
     {
       method: 'GET',
     }
@@ -53,7 +53,7 @@ export const updateAccountLimit = async (
   limitData
 ) => {
   const response = await fetch(
-    `${config.API_BASE_URL}/accounts/${accountId}/limit?userId=${userId}`,
+    `${BASE_URL}/api/accounts/${accountId}/limit?userId=${userId}`,
     {
       method: 'PATCH',
       headers: {
@@ -74,7 +74,7 @@ export const updateAccountLimit = async (
 // 계좌 해지
 export const closeAccount = async (userId, accountId) => {
   const response = await fetch(
-    `${config.API_BASE_URL}/accounts/${accountId}?userId=${userId}`,
+    `${BASE_URL}/api/accounts/${accountId}?userId=${userId}`,
     {
       method: 'DELETE',
     }
@@ -89,7 +89,7 @@ export const closeAccount = async (userId, accountId) => {
 
 // 계좌 이체
 export const transfer = async (userId, receiverAccountNumber, amount) => {
-  const response = await fetch(`/api/transactions/transfer?userId=${userId}`, {
+  const response = await fetch(`${BASE_URL}/api/transactions/transfer?userId=${userId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ receiverAccountNumber, amount }),
@@ -100,7 +100,7 @@ export const transfer = async (userId, receiverAccountNumber, amount) => {
 
 // 내 수취인(최근 보낸 계좌) 목록
 export const getMyRecipients = async (userId) => {
-  const response = await fetch(`/api/recipients?userId=${userId}`, { method: "GET" });
+  const response = await fetch(`${BASE_URL}/api/recipients?userId=${userId}`, { method: "GET" });
   if (!response.ok) throw new Error("수취인 목록 조회에 실패했습니다.");
   return response.json();
 };
