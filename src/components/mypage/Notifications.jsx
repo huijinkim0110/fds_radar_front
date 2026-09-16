@@ -1,72 +1,44 @@
 import { useEffect, useMemo, useState } from "react";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
+import { useAuth } from "../../context/AuthContext";
+import {
+  getNotifications,
+  readNotifications,
+} from "../../api/user/notificationAPI";
 
 export default function Notifications() {
+  const { user } = useAuth();
+
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "security",
-      title: "이상거래가 탐지되었습니다.",
-      content:
-        "카드 결제에서 이상거래가 감지되었습니다. 거래 내역을 확인해주세요.",
-      date: "2026-09-04 14:30",
-      read: false,
-    },
-    {
-      id: 2,
-      type: "account",
-      title: "계좌 잠금 요청이 처리되었습니다.",
-      content: "요청하신 계좌 잠금 처리가 정상적으로 완료되었습니다.",
-      date: "2026-09-04 13:10",
-      read: false,
-    },
-    {
-      id: 3,
-      type: "service",
-      title: "새로운 서비스가 출시되었습니다.",
-      content:
-        "더 편리한 금융 생활을 위한 신규 기능을 확인해보세요.",
-      date: "2026-09-03 09:15",
-      read: true,
-    },
-    {
-      id: 4,
-      type: "card",
-      title: "카드 사용 안내",
-      content: "등록된 카드가 정상적으로 사용되었습니다.",
-      date: "2026-09-02 18:22",
-      read: true,
-    },
-  ]);
+  // DB 알림 조회
+  useEffect(() => {
+    if (!user?.userId) {
+      setLoading(false);
+      return;
+    }
 
-        useEffect(() => {
-        const savedReadIds = JSON.parse(
-          localStorage.getItem("readNotificationIds") || "[]"
-        );
+    async function loadNotifications() {
+      try {
+        setLoading(true);
 
-        setNotifications((prev) =>
-          prev.map((item) => ({
-            ...item,
-            read: item.read || savedReadIds.includes(item.id),
-          }))
-        );
-      }, []);
+        const data = await getNotifications(user.userId);
 
-      useEffect(() => {
-        const readIds = notifications
-          .filter((item) => item.read)
-          .map((item) => item.id);
+        setNotifications(data);
+      } catch (error) {
+        console.error("알림 조회 실패:", error);
+        setNotifications([]);
+      } finally {
+        setLoading(false);
+      }
+    }
 
-        localStorage.setItem(
-          "readNotificationIds",
-          JSON.stringify(readIds)
-        );
-      }, [notifications]);
-
+    loadNotifications();
+  }, [user?.userId]);
 
   const filteredNotifications = useMemo(() => {
     if (filter === "all") {
@@ -74,32 +46,73 @@ export default function Notifications() {
     }
 
     return notifications.filter(
-      (notification) => notification.type === filter
+      (notification) =>
+        getNotificationType(notification.notificationType) === filter
     );
   }, [filter, notifications]);
 
-  const toggleNotification = (id) => {
+  // 알림 클릭 + 읽음 처리
+  const toggleNotification = async (notification) => {
+    const id = notification.id;
+
     setExpandedId((prev) => (prev === id ? null : id));
 
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id
-          ? {
-              ...notification,
-              read: true,
-            }
-          : notification
-      )
-    );
+    // 이미 읽은 알림이면 펼치기만 실행
+    if (notification.read) {
+      return;
+    }
+
+    try {
+      await readNotifications(user.userId, id);
+
+      // 화면에서도 바로 읽음 상태로 변경
+      setNotifications((prev) =>
+        prev.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                read: true,
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error("알림 읽음 처리 실패:", error);
+    }
   };
 
-  const markAllRead = () => {
-    setNotifications((prev) =>
-      prev.map((notification) => ({
-        ...notification,
-        read: true,
-      }))
+  // 모두 읽음 처리
+  const markAllRead = async () => {
+    if (!user?.userId) return;
+
+    const unreadNotifications = notifications.filter(
+      (notification) => !notification.read
     );
+
+    if (unreadNotifications.length === 0) {
+      return;
+    }
+
+    try {
+      await Promise.all(
+        unreadNotifications.map((notification) =>
+          readNotifications(
+            user.userId,
+            notification.id
+          )
+        )
+      );
+
+      // 화면에서도 모두 읽음 상태로 변경
+      setNotifications((prev) =>
+        prev.map((notification) => ({
+          ...notification,
+          read: true,
+        }))
+      );
+    } catch (error) {
+      console.error("알림 전체 읽음 처리 실패:", error);
+    }
   };
 
   const filterButtons = [
@@ -168,7 +181,6 @@ export default function Notifications() {
           </div>
         </div>
 
-        {/* 상단 종 아이콘 */}
         <div
           style={{
             width: "96px",
@@ -253,7 +265,18 @@ export default function Notifications() {
             borderRadius: "12px",
           }}
         >
-          {filteredNotifications.length === 0 ? (
+          {loading ? (
+            <div
+              style={{
+                padding: "50px 0",
+                textAlign: "center",
+                color: "var(--muted)",
+                fontSize: "13px",
+              }}
+            >
+              알림을 불러오는 중입니다.
+            </div>
+          ) : filteredNotifications.length === 0 ? (
             <div
               style={{
                 padding: "50px 0",
@@ -266,22 +289,24 @@ export default function Notifications() {
             </div>
           ) : (
             filteredNotifications.map((notification) => {
-              const isOpen =
-                expandedId === notification.id;
+              const id = notification.id;
+
+              const type = getNotificationType(
+                notification.notificationType
+              );
+
+              const isOpen = expandedId === id;
 
               return (
                 <div
-                  key={notification.id}
+                  key={id}
                   style={{
-                    borderBottom:
-                      "1px solid var(--line)",
+                    borderBottom: "1px solid var(--line)",
                   }}
                 >
                   <div
                     onClick={() =>
-                      toggleNotification(
-                        notification.id
-                      )
+                      toggleNotification(notification)
                     }
                     style={{
                       minHeight: "82px",
@@ -303,17 +328,13 @@ export default function Notifications() {
                         width: "46px",
                         height: "46px",
                         borderRadius: "50%",
-                        background: getIconBackground(
-                          notification.type
-                        ),
+                        background: getIconBackground(type),
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <NotificationIcon
-                        type={notification.type}
-                      />
+                      <NotificationIcon type={type} />
                     </div>
 
                     {/* 제목 / 내용 */}
@@ -375,7 +396,7 @@ export default function Notifications() {
                         whiteSpace: "nowrap",
                       }}
                     >
-                      {notification.date}
+                      {formatDate(notification.createAt)}
                     </div>
 
                     {/* 펼치기 화살표 */}
@@ -387,8 +408,7 @@ export default function Notifications() {
                         transform: isOpen
                           ? "rotate(180deg)"
                           : "rotate(0deg)",
-                        transition:
-                          "transform 0.2s ease",
+                        transition: "transform 0.2s ease",
                       }}
                     >
                       <ChevronDownIcon />
@@ -399,8 +419,7 @@ export default function Notifications() {
                   {isOpen && (
                     <div
                       style={{
-                        margin:
-                          "0 18px 16px 84px",
+                        margin: "0 18px 16px 84px",
                         padding: "15px 18px",
                         background: "var(--panel2)",
                         borderRadius: "10px",
@@ -420,6 +439,40 @@ export default function Notifications() {
       </Panel>
     </>
   );
+}
+
+/* =========================
+   알림 데이터 처리
+========================= */
+
+function formatDate(date) {
+  if (!date) return "-";
+
+  return new Date(date).toLocaleString("ko-KR");
+}
+
+function getNotificationType(type) {
+  if (!type) return "service";
+
+  const value = String(type).toUpperCase();
+
+  if (
+    value.includes("FRAUD") ||
+    value.includes("SECURITY") ||
+    value.includes("LOGIN")
+  ) {
+    return "security";
+  }
+
+  if (
+    value.includes("ACCOUNT") ||
+    value.includes("CARD") ||
+    value.includes("LOCK")
+  ) {
+    return "account";
+  }
+
+  return "service";
 }
 
 /* =========================
@@ -469,7 +522,6 @@ function NotificationIcon({ type }) {
           strokeWidth="1.8"
           strokeLinejoin="round"
         />
-
         <path
           d="m9 12 2 2 4-4"
           stroke="#f05268"
@@ -499,7 +551,6 @@ function NotificationIcon({ type }) {
           stroke="#3478f6"
           strokeWidth="1.8"
         />
-
         <path
           d="M8 10V7a4 4 0 0 1 8 0v3"
           stroke="#3478f6"
@@ -525,21 +576,18 @@ function NotificationIcon({ type }) {
           strokeWidth="1.8"
           strokeLinejoin="round"
         />
-
         <path
           d="M7 14v4"
           stroke="#7657e8"
           strokeWidth="1.8"
           strokeLinecap="round"
         />
-
         <path
           d="M18 8.5 21 7"
           stroke="#7657e8"
           strokeWidth="1.8"
           strokeLinecap="round"
         />
-
         <path
           d="m18 13.5 3 1.5"
           stroke="#7657e8"
@@ -568,13 +616,11 @@ function NotificationIcon({ type }) {
           stroke="#20b486"
           strokeWidth="1.8"
         />
-
         <path
           d="M3 9h18"
           stroke="#20b486"
           strokeWidth="1.8"
         />
-
         <path
           d="M7 15h4"
           stroke="#20b486"
@@ -604,7 +650,6 @@ function BellSmallIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-
       <path
         d="M10 21h4"
         stroke="#3478f6"
