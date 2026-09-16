@@ -34,7 +34,8 @@ export default function FindPassword() {
     setCheckingEmail(true);
 
     try {
-      const response = await fetch("/api/auth/check-email", {
+      // [혜원] 절대경로로 수정 (405 오류 해결)
+      const response = await fetch(`${API_BASE}/api/auth/check-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,7 +111,8 @@ export default function FindPassword() {
     setLoading(true);
 
     try {
-      const response = await fetch("/api/auth/reset-password", {
+      // [혜원] 절대경로로 수정 (405 오류 해결)
+      const response = await fetch(`${API_BASE}/api/auth/reset-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
