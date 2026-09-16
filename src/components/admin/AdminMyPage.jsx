@@ -18,7 +18,7 @@ import KpiCard from "../KpiCard.jsx";
 
 // TODO: fraudReportAPI.js에 이미 관리자 전체조회 함수(예: getAdminReports)가 있다면
 // 아래 BASE_URL/직접 axios 호출 대신 그 함수를 import해서 쓰는 게 맞음.
-const REPORT_BASE_URL = "http://localhost:9090";
+const REPORT_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
 
 export default function AdminMyPage() {
   const navigate = useNavigate();

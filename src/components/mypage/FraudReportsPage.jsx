@@ -64,7 +64,7 @@ export default function FraudReportsPage() {
     const fetchReports = async () => {
       try {
         const response = await fetch(
-          `http://localhost:9090/api/fraud-reports/user/${userId}`
+          `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/fraud-reports/user/${userId}`
         );
 
         if (!response.ok) {
@@ -132,7 +132,7 @@ export default function FraudReportsPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:9090/api/fraud-reports/users/${userId}`,
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/fraud-reports/users/${userId}`,
         {
           method: "POST",
           headers: {

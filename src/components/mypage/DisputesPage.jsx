@@ -65,7 +65,7 @@ useEffect(() => {
   const fetchDisputes = async () => {
     try {
       const response = await fetch(
-        `http://localhost:9090/api/dispute-requests/user/${userId}`
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/dispute-requests/user/${userId}`
       );
 
       if (!response.ok) {
@@ -142,7 +142,7 @@ useEffect(() => {
 
   try {
     const response = await fetch(
-      `http://localhost:9090/api/dispute-requests/users/${userId}`,
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/dispute-requests/users/${userId}`,
       {
         method: "POST",
         headers: {

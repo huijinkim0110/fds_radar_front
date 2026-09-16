@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = "http://localhost:9090";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
 
 // 관리자 처리 대기 중인 잠금 요청 목록
 export async function getPendingLockRequests() {

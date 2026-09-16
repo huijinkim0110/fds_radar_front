@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:9090/api/dispute-requests";
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/dispute-requests`;
 
 // [D파트 추가] 관리자 - 이의제기 전체 조회
 export function getAllDisputeRequests() {

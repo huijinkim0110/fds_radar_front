@@ -2,7 +2,7 @@
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
-const WS_URL = 'http://localhost:9090/ws/chat';
+const WS_URL = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/ws/chat`;
 
 // STOMP 클라이언트 생성 + 연결
 // onMessage : 새 메시지 수신 시 호출될 콜백(subscribe 대상 topic에서 옴)

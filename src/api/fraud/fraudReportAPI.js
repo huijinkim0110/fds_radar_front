@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:9090/api/fraud-reports";
+const BASE_URL = `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/fraud-reports`;
 
 // [D파트 추가] 관리자 - 신고 전체 조회
 export function getAllFraudReports() {

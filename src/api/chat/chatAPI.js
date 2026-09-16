@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = 'http://localhost:9090';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
 const AI_BASE_URL = 'http://localhost:8002';
 
 // 활성 세션 조회 or 생성
