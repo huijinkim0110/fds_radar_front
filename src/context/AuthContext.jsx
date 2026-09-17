@@ -34,8 +34,17 @@ export function AuthProvider({ children }) {
     try {
       let deviceIdentifier = localStorage.getItem("deviceIdentifier");
 
+      // crypto.randomUUID()를 사용할 수 없는 환경(AWS HTTP 등)에서도
+      // 기기 식별자를 생성할 수 있도록 fallback 처리
       if (!deviceIdentifier) {
-        deviceIdentifier = crypto.randomUUID();
+        deviceIdentifier =
+          typeof crypto !== "undefined" &&
+          typeof crypto.randomUUID === "function"
+            ? crypto.randomUUID()
+            : `device-${Date.now()}-${Math.random()
+                .toString(36)
+                .substring(2, 10)}`;
+
         localStorage.setItem(
           "deviceIdentifier",
           deviceIdentifier
