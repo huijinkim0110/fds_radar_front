@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { apiFetch } from "../../api/apiClient.js";
 import { useLocation } from "react-router-dom";
 import TopBar from "../TopBar";
 import Panel from "../Panel";
@@ -12,37 +13,23 @@ export default function FraudReportsPage() {
 
   const location = useLocation();
 
-  // 탭 상태
   const [activeTab, setActiveTab] = useState("history");
-
-  // 신고 내역
   const [reports, setReports] = useState([]);
 
-  // 신고 작성
   const [selectedTransaction, setSelectedTransaction] = useState("");
   const [reason, setReason] = useState("");
   const [detail, setDetail] = useState("");
 
-  // 거래 목록
   const [transactions, setTransactions] = useState([]);
 
-
-  // =========================================================
-  // 이상거래 목록 조회
-  // =========================================================
   useEffect(() => {
-    getMyFraudCases(userId)
+    getMyFraudCases()
       .then((data) => {
         setTransactions(
           data.map((raw) => ({
-            // 이상거래 확인 페이지에서 사용하는 ID
             id: raw.fraudCaseId,
-
-            // 신고 API에서 실제로 필요한 거래 ID
             transactionId: raw.transactionId,
-
             userName: raw.userName,
-
             merchant: raw.merchantName,
             amount: raw.amount,
             occurredAt: raw.transactionOccurredAt,
@@ -57,24 +44,11 @@ export default function FraudReportsPage() {
       });
   }, []);
 
-  // =========================================================
-  // 신고 내역 조회
-  // =========================================================
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:9090/api/fraud-reports/user/${userId}`
-        );
-
-        if (!response.ok) {
-          throw new Error("신고 내역 조회 실패");
-        }
-
-        const data = await response.json();
-
+        const data = await apiFetch(`/api/fraud-reports/user/${userId}`);
         console.log("신고 내역 응답:", data);
-
         setReports(data);
       } catch (error) {
         console.error("신고 내역 조회 실패:", error);
@@ -84,9 +58,6 @@ export default function FraudReportsPage() {
     fetchReports();
   }, []);
 
-  // =========================================================
-  // 이상거래 확인 페이지에서 "모르는 거래"를 눌러 넘어온 경우
-  // =========================================================
   useEffect(() => {
     if (
       location.state?.targetTransaction &&
@@ -94,7 +65,6 @@ export default function FraudReportsPage() {
     ) {
       const target = location.state.targetTransaction;
 
-      // target.id = fraudCaseId
       const matchedTransaction = transactions.find(
         (transaction) => transaction.id === target.id
       );
@@ -119,9 +89,6 @@ export default function FraudReportsPage() {
     }
   }, [location, transactions]);
 
-  // =========================================================
-  // 신고 접수
-  // =========================================================
   const handleSubmitReport = async (e) => {
     e.preventDefault();
 
@@ -131,50 +98,28 @@ export default function FraudReportsPage() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:9090/api/fraud-reports/users/${userId}`,
+      const newReport = await apiFetch(
+        `/api/fraud-reports/users/${userId}`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
           body: JSON.stringify({
             transactionId: Number(selectedTransaction),
-            reasonCategory: reason, // [D파트 담당자 수정] 선택형 사유는 reasonCategory로
-            reason: detail,          // [D파트 담당자 수정] 상세 내용을 reason으로 (기존엔 유실되고 있었음)
+            reasonCategory: reason,
+            reason: detail,
           }),
         }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-
-        console.error(
-          "신고 접수 서버 응답:",
-          response.status,
-          errorText
-        );
-
-        throw new Error(
-          `신고 접수 실패 (${response.status}): ${errorText}`
-        );
-      }
-
-      const newReport = await response.json();
-
       console.log("신고 접수 완료:", newReport);
 
-      // 새 신고를 목록 맨 위에 추가
       setReports((prev) => [newReport, ...prev]);
 
       alert("거래 신고가 성공적으로 접수되었습니다.");
 
-      // 초기화
       setSelectedTransaction("");
       setReason("");
       setDetail("");
 
-      // 신고 내역 탭으로 이동
       setActiveTab("history");
     } catch (error) {
       console.error("신고 접수 실패:", error);
@@ -182,43 +127,25 @@ export default function FraudReportsPage() {
     }
   };
 
-  // =========================================================
-  // 신고 취소
-  // =========================================================
-  // 현재 백엔드 FraudReportController에는 DELETE API가 없으므로
-  // 실제 취소 기능은 일단 제거하지 않고 버튼만 표시하지 않음.
-  // 나중에 DELETE API를 백엔드에 추가하면 다시 연결하면 됨.
-
-  // =========================================================
-  // 신고 상태 한글 변환
-  // =========================================================
   const getStatusText = (status) => {
     switch (status) {
       case "RECEIVED":
         return "처리 중";
-
       case "PROCESSED":
         return "처리 완료";
-
       case "REJECTED":
         return "반려";
-
       default:
         return status;
     }
   };
 
-  // =========================================================
-  // 신고 상태 색상
-  // =========================================================
   const getStatusColor = (status) => {
     switch (status) {
       case "PROCESSED":
         return "#22c55e";
-
       case "REJECTED":
         return "#ef4444";
-
       case "RECEIVED":
       default:
         return "#f59e0b";
@@ -233,9 +160,6 @@ export default function FraudReportsPage() {
         search={false}
       />
 
-      {/* =====================================================
-          상단 탭
-      ====================================================== */}
       <div
         style={{
           display: "flex",
@@ -290,9 +214,6 @@ export default function FraudReportsPage() {
         </button>
       </div>
 
-      {/* =====================================================
-          탭 1 : 신고 내역
-      ====================================================== */}
       {activeTab === "history" && (
         <Panel
           title="신청/신고 현황"
@@ -318,10 +239,6 @@ export default function FraudReportsPage() {
               }}
             >
               {reports.map((report) => {
-                // -------------------------------------------------
-                // 백엔드 report.transactionId와
-                // fraudCases의 transactionId를 연결
-                // -------------------------------------------------
                 const transaction = transactions.find(
                   (item) =>
                     item.transactionId ===
@@ -349,9 +266,6 @@ export default function FraudReportsPage() {
                       gap: "10px",
                     }}
                   >
-                    {/* ---------------------------------------------
-                        상단
-                    ---------------------------------------------- */}
                     <div
                       style={{
                         display: "flex",
@@ -402,9 +316,6 @@ export default function FraudReportsPage() {
                       </span>
                     </div>
 
-                    {/* ---------------------------------------------
-                        신고한 거래 정보
-                    ---------------------------------------------- */}
                     <div>
                       <div
                         style={{
@@ -433,7 +344,6 @@ export default function FraudReportsPage() {
                           : "거래 정보를 불러올 수 없습니다."}
                       </div>
 
-                      {/* [D파트 담당자 수정] 신고유형(선택형 사유)과 상세내용을 분리해서 표시 */}
                       <div
                         style={{
                           fontSize: "12px",
@@ -460,9 +370,6 @@ export default function FraudReportsPage() {
                         )}
                       </div>
 
-                    {/* ---------------------------------------------
-                        하단
-                    ---------------------------------------------- */}
                     <div
                       style={{
                         marginTop: "4px",
@@ -506,18 +413,12 @@ export default function FraudReportsPage() {
         </Panel>
       )}
 
-      {/* =====================================================
-          탭 2 : 새로운 거래 신고
-      ====================================================== */}
       {activeTab === "new" && (
         <Panel
           title="거래 신고 접수"
           sub="본인이 이용하지 않은 의심 거래와 사유를 입력해주세요."
         >
           <form onSubmit={handleSubmitReport}>
-            {/* ---------------------------------------------
-                신고할 거래
-            ---------------------------------------------- */}
             <div style={{ marginBottom: "22px" }}>
               <label
                 style={{
@@ -567,9 +468,6 @@ export default function FraudReportsPage() {
               </select>
             </div>
 
-            {/* ---------------------------------------------
-                신고 사유
-            ---------------------------------------------- */}
             <div style={{ marginBottom: "22px" }}>
               <label
                 style={{
@@ -595,7 +493,6 @@ export default function FraudReportsPage() {
                   "본인이 하지 않은 거래",
                   "결제 금액이 다름",
                   "알 수 없는 가맹점",
-                  // [D파트 담당자 추가] 이의제기 기능 통합에 따라 추가된 사유
                   "중복 결제",
                   "서비스 미제공/미이용",
                   "취소 후 미환급",
@@ -629,9 +526,6 @@ export default function FraudReportsPage() {
               </div>
             </div>
 
-            {/* ---------------------------------------------
-                상세 내용
-            ---------------------------------------------- */}
             <div style={{ marginBottom: "22px" }}>
               <label
                 style={{
@@ -669,9 +563,6 @@ export default function FraudReportsPage() {
               />
             </div>
 
-            {/* ---------------------------------------------
-                버튼
-            ---------------------------------------------- */}
             <div
               style={{
                 display: "flex",

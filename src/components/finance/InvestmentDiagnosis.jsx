@@ -30,7 +30,6 @@ function InvestmentDiagnosis() {
 
 
   const { user } = useAuth();
-  const userId = user?.userId ?? 1;
 
   const navigate = useNavigate();
 
@@ -90,7 +89,7 @@ function InvestmentDiagnosis() {
     };
 
     const request = isLoggedIn
-        ? submitDiagnosis({ userId: userId, ...payload })
+        ? submitDiagnosis(payload)
         : previewDiagnosis(payload);
 
     request

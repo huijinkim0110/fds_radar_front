@@ -1,71 +1,67 @@
-import axios from "axios";
+import { apiFetch } from '../apiClient';
 
-const BASE_URL = 'http://localhost:9090';
 const AI_BASE_URL = 'http://localhost:8002';
 
 // 활성 세션 조회 or 생성
-export async function getOrCreateSession(userId) {
-    const response = await axios.get(`${BASE_URL}/chat/sessions`, {
-        params: { userId },
-    });
-    return response.data;
+export async function getOrCreateSession(guestId) {
+    const query = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+    return apiFetch(`/chat/sessions${query}`);
 }
 
-// 상담원 관련 진행 중 세션 있는지 가볍게 확인(위젯 열 때 배너 표시용, 메시지 이력 없음)
-export async function getActiveAdminSession(userId) {
-    const response = await axios.get(`${BASE_URL}/chat/sessions/active-admin`, {
-        params: { userId },
-    });
-    return response.data; // { hasActiveSession, sessionId, status}
+// 상담원 관련 진행 중 세션 있는지 확인
+export async function getActiveAdminSession(guestId) {
+    const query = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+    return apiFetch(`/chat/sessions/active-admin${query}`);
 }
 
-// 상담원 세션 조회 or 생성 - "상담원 연결" 액션(배너/고객센터)에서 호출
-export async function getOrCreateAdminSession(userId) {
-    const response = await axios.get(`${BASE_URL}/chat/sessions/admin`, {
-        params: { userId },
-    });
-    return response.data;
+// 상담원 세션 조회 or 생성
+export async function getOrCreateAdminSession(guestId) {
+    const query = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+    return apiFetch(`/chat/sessions/admin${query}`);
 }
 
 // 새 대화 시작 - 현재 세션 닫기
-export async function closeSession(sessionId) {
-    await axios.post(`${BASE_URL}/chat/sessions/${sessionId}/close`)
+export async function closeSession(sessionId, guestId) {
+    const query = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+    return apiFetch(`/chat/sessions/${sessionId}/close${query}`, { method: 'POST' });
 }
 
-// 자유입력 메시지 -> FastAPI 챗봇 서버로 전송 (의도분류 + 답변)
-export async function sendFreeTextMessage(userId, sessionId, message) {
-    const response = await axios.post(`${AI_BASE_URL}/chat`, {
-        userId,
-        sessionId,
-        message
+// 자유입력 메시지 -> FastAPI 챗봇 서버 (백엔드 인증과 무관, 그대로 axios 유지 가능)
+export async function sendFreeTextMessage(sessionId, message, guestId) {
+    const token = localStorage.getItem('accessToken');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${AI_BASE_URL}/chat`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ sessionId, message, guestId: token ? null : guestId }),
     });
-    return response.data; // { reply, needsAdmin, navActions: [{path, label}] }
+    return response.json();
 }
 
-// 자유입력 메시지 저장(USER/BOT 공용) - FastAPI 응답 받은 후 호출해서 DB에 이력 남기기
-export async function saveChatMessage(sessionId, senderType, senderId, content) {
-    const response = await axios.post(`${BASE_URL}/chat/sessions/${sessionId}/messages`, {
-        senderType,
-        senderId,
-        content
+// 메시지 저장(USER/BOT 공용)
+export async function saveChatMessage(sessionId, senderType, senderId, content, guestId) {
+    const query = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+    return apiFetch(`/chat/sessions/${sessionId}/messages${query}`, {
+        method: 'POST',
+        body: JSON.stringify({ senderType, senderId, content }),
     });
-    return response.data;
 }
 
-// 상담원 연결 요청 - 서버가 가장 한가한 관리자로 자동 배정
-export async function requestAdmin(sessionId) {
-    await axios.post(`${BASE_URL}/chat/sessions/${sessionId}/request-admin`);
+// 상담원 연결 요청
+export async function requestAdmin(sessionId, guestId) {
+    const query = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+    return apiFetch(`/chat/sessions/${sessionId}/request-admin${query}`, { method: 'POST' });
 }
 
-// 사용자가 챗봇 위젯 열람 - 관리자 답장 읽음 처리
-export async function markUserRead(sessionId) {
-    await axios.patch(`${BASE_URL}/chat/sessions/${sessionId}/user-read`);
+// 관리자 답장 읽음 처리
+export async function markUserRead(sessionId, guestId) {
+    const query = guestId ? `?guestId=${encodeURIComponent(guestId)}` : '';
+    return apiFetch(`/chat/sessions/${sessionId}/user-read${query}`, { method: 'PATCH' });
 }
 
-// 내 상담 내역 조회 - 봇 세션 제외
-export async function getSessionHistory(userId) {
-    const response = await axios.get(`${BASE_URL}/chat/sessions/history`, {
-        params: { userId },
-    });
-    return response.data;
+// 내 상담 내역 조회 (로그인 필수 - 게스트 지원 안 함)
+export async function getSessionHistory() {
+    return apiFetch('/chat/sessions/history');
 }

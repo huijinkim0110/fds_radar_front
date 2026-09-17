@@ -1,21 +1,13 @@
-import axios from "axios";
+import { apiFetch } from '../apiClient';
 
-const BASE_URL = "http://localhost:9090/api/financial-profiles";
-
-export async function getFinancialProfile(userId) {
-    const response = await axios.get(`${BASE_URL}/${userId}`);
-    return response.data;
+export async function getFinancialProfile() {
+    return apiFetch('/api/financial-profiles/me');
 }
 
-export async function hasFinancialProfile(userId) {
-    const response = await axios.get(`${BASE_URL}/exists`, {
-        params: { userId },
-    });
-
-    return response.data;
+export async function hasFinancialProfile() {
+    return apiFetch('/api/financial-profiles/exists');
 }
 
 export async function upsertFinancialProfile(dto) {
-    const response = await axios.post(BASE_URL, dto);
-    return response.data;
+    return apiFetch('/api/financial-profiles', { method: 'POST', body: JSON.stringify(dto) });
 }

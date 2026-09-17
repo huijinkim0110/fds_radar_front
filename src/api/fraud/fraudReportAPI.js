@@ -1,15 +1,6 @@
-import axios from "axios";
+import { apiFetch } from '../apiClient';
 
-const BASE_URL = "http://localhost:9090/api/fraud-reports";
+export const getAllFraudReports = () => apiFetch('/api/fraud-reports/admin');
 
-// [D파트 추가] 관리자 - 신고 전체 조회
-export function getAllFraudReports() {
-  return axios.get(`${BASE_URL}/admin`).then((res) => res.data);
-}
-
-// [D파트 추가] 관리자 - 신고 상태 변경
-export function updateFraudReportStatus(reportId, status) {
-  return axios
-    .patch(`${BASE_URL}/${reportId}/status`, { status })
-    .then((res) => res.data);
-}
+export const updateFraudReportStatus = (reportId, status) =>
+    apiFetch(`/api/fraud-reports/${reportId}/status?status=${status}`, { method: 'PATCH' });

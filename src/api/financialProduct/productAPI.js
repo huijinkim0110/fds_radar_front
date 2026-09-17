@@ -1,21 +1,15 @@
-import axios from 'axios';
-
-const BASE_URL = 'http://localhost:9090';
+import { apiFetch } from '../apiClient';
 
 export async function getProducts(params = {}) {
-    const response = await axios.get(`${BASE_URL}/products`, {
-        params: {
-            productTypes: params.productTypes?.length ? params.productTypes.join(',') : undefined,
-            riskLevels: params.riskLevels?.length ? params.riskLevels.join(',') : undefined,
-            sortType: params.sortType || undefined,
-            page: params.page ?? 0,
-            size: params.size ?? 12,
-        },
-    });
-    return response.data;
+    const query = new URLSearchParams();
+    if (params.productTypes?.length) query.set('productTypes', params.productTypes.join(','));
+    if (params.riskLevels?.length) query.set('riskLevels', params.riskLevels.join(','));
+    if (params.sortType) query.set('sortType', params.sortType);
+    query.set('page', params.page ?? 0);
+    query.set('size', params.size ?? 12);
+    return apiFetch(`/products?${query.toString()}`);
 }
 
 export async function getProductDetail(productId) {
-    const response = await axios.get(`${BASE_URL}/products/${productId}`);
-    return response.data;
+    return apiFetch(`/products/${productId}`);
 }

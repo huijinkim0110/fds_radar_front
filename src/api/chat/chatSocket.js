@@ -24,10 +24,10 @@ export function connectChatSocket(sessionId, onMessage, onConnect) {
 }
 
 // 메시지 전송
-export function sendChatSocketMessage(client, sessionId, senderType, senderId, content) {
+export function sendChatSocketMessage(client, sessionId, senderType, senderId, content, userId, guestId) {
     client.publish({
         destination: `/app/chat/${sessionId}`,
-        body: JSON.stringify({ senderType, senderId, content }),
+        body: JSON.stringify({ senderType, senderId, content, userId, guestId }),
     });
 }
 

@@ -11,7 +11,6 @@ const GOAL_TYPE_OPTIONS = Object.keys(GOAL_TYPE_LABELS);
 
 export default function FinancialGoalList() {
     const { user } = useAuth();
-    const userId = user?.userId ?? 1; 
 
     const [goals, setGoals] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,7 +31,7 @@ export default function FinancialGoalList() {
     function loadGoals() {
         setLoading(true);
         setError(null);
-        getGoals(userId)
+        getGoals()
             .then(setGoals)
             .catch(() => setError('재무목표를 불러오지 못했습니다.'))
             .finally(() => setLoading(false));
@@ -54,7 +53,6 @@ export default function FinancialGoalList() {
 
         setSubmitting(true);
         createGoal({
-            userId: userId,
             goalType: form.goalType,
             goalName: form.goalName,
             targetAmount: Number(form.targetAmount),

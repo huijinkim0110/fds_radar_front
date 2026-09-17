@@ -19,7 +19,6 @@ import { useAuth } from "../../context/AuthContext.jsx";
 export default function DiagnosisResults() {
     
     const { user } = useAuth();
-    const userId = user?.userId ?? 1;
 
     const navigate = useNavigate();
 
@@ -36,7 +35,7 @@ export default function DiagnosisResults() {
     const [recHistory, setRecHistory] = useState(null);
 
     useEffect(() => {
-        getRecentProfiles(userId)
+        getRecentProfiles()
             .then(setProfiles)
             .catch(() => setError('진단 이력을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));
@@ -45,7 +44,7 @@ export default function DiagnosisResults() {
     // 전체 추천 이력을 한 번만 불러옴(모든 진단 시점 것 포함)
     function ensureRecHistoryLoaded() {
         if (recHistory !== null) return; // 이미 불러왔으면 재요청 안함
-        getRecommendationHistory(userId)
+        getRecommendationHistory()
             .then(setRecHistory)
             .catch(() => setRecHistory([]));
     }
@@ -93,7 +92,7 @@ export default function DiagnosisResults() {
         setRecLoading(true);
         setRecResults(null);
 
-        getUnifiedRecommendations({ userId: userId })
+        getUnifiedRecommendations({})
             .then((data) => {
                 setRecResults(data.results);
                 setGoalMissing(data.goalMissing);

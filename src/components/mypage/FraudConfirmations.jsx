@@ -55,7 +55,6 @@ function mapStatus(caseStatus, fraudDecision, confirmation) {
 export default function FraudConfirmations() {
 
 const { user } = useAuth();
-const userId = user?.userId ?? 1;
 
     const navigate = useNavigate();
     const [filter, setFilter] = useState("all");
@@ -71,7 +70,7 @@ const userId = user?.userId ?? 1;
     function loadCases() {
         setLoading(true);
         setError(null);
-        getMyFraudCases(userId)
+        getMyFraudCases()
             .then((data) => setFraudCases(data.map(mapCase)))
             .catch(() => setError('이상거래 내역을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));

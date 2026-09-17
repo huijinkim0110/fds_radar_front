@@ -226,25 +226,25 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!userId) return;
-    getMyAccounts(userId).then(setAccounts).catch(() => {});
-    getMyCards(userId).then(setCards).catch(() => {});
+    getMyAccounts().then(setAccounts).catch(() => {});
+    getMyCards().then(setCards).catch(() => {});
   }, [userId]);
 
   useEffect(() => {
     if (!userId) return;
-    getFavorites(userId).then((list) => setFavoriteCount(list.length)).catch(() => {});
-    getPortfolio(userId).then((list) => setSubscriptions(list)).catch(() => {});
-    getGoals(userId).then(setGoals).catch(() => {});
-    hasDiagnosisHistory(userId).then(setHasDiagnosis).catch(() => {});
-    hasFinancialProfile(userId).then(setHasFinProfile).catch(() => {});
+    getFavorites().then((list) => setFavoriteCount(list.length)).catch(() => {});
+    getPortfolio().then((list) => setSubscriptions(list)).catch(() => {});
+    getGoals().then(setGoals).catch(() => {});
+    hasDiagnosisHistory().then(setHasDiagnosis).catch(() => {});
+    hasFinancialProfile().then(setHasFinProfile).catch(() => {});
   }, [userId]);
 
   useEffect(() => {
-    if (hasDiagnosis && userId) getLatestProfile(userId).then(setLatestProfile).catch(() => {});
+    if (hasDiagnosis && userId) getLatestProfile().then(setLatestProfile).catch(() => {});
   }, [hasDiagnosis, userId]);
 
   useEffect(() => {
-    if (hasFinProfile && userId) getFinancialProfile(userId).then(setFinancialProfile).catch(() => {});
+    if (hasFinProfile && userId) getFinancialProfile().then(setFinancialProfile).catch(() => {});
   }, [hasFinProfile, userId]);
 
   const totalBalance = accounts.reduce((sum, a) => sum + Number(a.balance), 0);
