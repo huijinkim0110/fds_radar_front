@@ -115,7 +115,7 @@ export default function Accounts() {
 
     setAdding(true);
     try {
-      const res = await fetch(`http://localhost:9090/api/accounts?userId=${userId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/accounts?userId=${userId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -146,7 +146,7 @@ export default function Accounts() {
   async function handleCloseAccount() {
     if (!window.confirm("정말 이 계좌를 해지하시겠습니까?")) return;
     try {
-      const res = await fetch(`http://localhost:9090/api/accounts/${selected.id}?userId=${userId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/accounts/${selected.id}?userId=${userId}`, {
         method: "DELETE"
       });
       if (!res.ok) throw new Error();
