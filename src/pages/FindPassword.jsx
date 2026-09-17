@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout.jsx";
 
+const API_BASE = "http://3.34.234.112:9090";
+
 export default function FindPassword() {
   const navigate = useNavigate();
 
