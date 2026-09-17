@@ -69,9 +69,9 @@ export default function ProductDetail() {
 
     try {
       const { hasHistory, result } = await withMinDuration((async () => {
-        const hasHistory = await hasDiagnosisHistory(userId);
+        const hasHistory = await hasDiagnosisHistory();
         if (!hasHistory) return { hasHistory };
-        const result = await checkSuitability(userId, productId);
+        const result = await checkSuitability(productId);
         return { hasHistory, result };
       })());
 
@@ -101,7 +101,7 @@ export default function ProductDetail() {
     setShowForm(false);
 
     try {
-      const history = await withMinDuration(getCheckHistory(userId, productId));
+      const history = await withMinDuration(getCheckHistory(productId));
 
       if (!history || history.length === 0) {
         setGateStep('suggestCheck');
@@ -181,7 +181,7 @@ export default function ProductDetail() {
 
           <div style={styles.titleRow}>
             <h1 style={styles.title}>{product.productName}</h1>
-            <FavoriteButton userId={userId} productId={productId} />
+            <FavoriteButton productId={productId} />
           </div>
 
           <div style={styles.institution}>{product.institutionName}</div>
@@ -368,7 +368,6 @@ export default function ProductDetail() {
                   </div>
                 ) : (
                   <SubscribeForm
-                    userId={userId}
                     product={product}
                     onCancel={() => setGateStep('idle')}
                   />
@@ -416,7 +415,6 @@ export default function ProductDetail() {
                 {riskAcknowledged && (
                   <div style={{ marginTop: 20 }}>
                     <SubscribeForm 
-                      userId={userId}
                       product={product}
                       onCancel={() => {
                         setGateStep('idle');

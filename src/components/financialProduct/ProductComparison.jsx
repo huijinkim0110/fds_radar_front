@@ -7,9 +7,6 @@ import { getUserComparisons, getComparisonDetail } from "../../api/financialProd
 import { PRODUCT_TYPE_LABELS, RISK_LEVEL_LABELS } from "../../constants/financialProduct/productLabels";
 import TopBar from "../TopBar.jsx";
 import Panel from "../Panel.jsx";
-import { useAuth } from "../../context/AuthContext.jsx";
-
-
 
 const FIELDS = [
   { key: "institutionName", label: "금융사" },
@@ -40,9 +37,6 @@ function isBest(key, item, items) {
 
 function ProductComparison() {
 
-const { user } = useAuth();
-const userId = user?.userId ?? 1;
-
   const { comparisonId: activeId, items: activeItems, removeProduct, saveComparison, clearComparison, isSaved, maxItems } = useComparison();
   const confirm = useConfirm();
   const { showToast } = useToast();
@@ -58,7 +52,7 @@ const userId = user?.userId ?? 1;
   const [visibleFields, setVisibleFields] = useState(FIELDS.map((f) => f.key));
 
   useEffect(() => {
-    getUserComparisons(userId).then(setPastComparisons).catch(() => {});
+    getUserComparisons().then(setPastComparisons).catch(() => {});
   }, [activeId]);
 
   useEffect(() => {
@@ -83,7 +77,7 @@ const userId = user?.userId ?? 1;
 
     try {
       await saveComparison(name);
-      getUserComparisons(userId).then(setPastComparisons).catch(() => {});
+      getUserComparisons().then(setPastComparisons).catch(() => {});
     } catch (err) {
       alert("저장에 실패했습니다.");
     }

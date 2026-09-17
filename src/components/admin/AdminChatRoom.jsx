@@ -31,7 +31,7 @@ function AdminChatRoom() {
         if (!adminId) return;
         let cancelled = false;
 
-        markSessionInProgress(sessionId, adminId)
+        markSessionInProgress(sessionId)
             .then(() => {
                 if (cancelled) return;
 
@@ -70,7 +70,7 @@ function AdminChatRoom() {
     function handleSend() {
         if (!inputText.trim() || !socketRef.current) return;
 
-        sendChatSocketMessage(socketRef.current, sessionId, 'ADMIN', adminId, inputText);
+        sendChatSocketMessage(socketRef.current, sessionId, 'ADMIN', adminId, inputText, adminId, null);
         setInputText('');
     }
 

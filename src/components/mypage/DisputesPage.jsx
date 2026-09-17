@@ -5,6 +5,7 @@ import Panel from "../Panel";
 import { getMyFraudCases } from "../../api/fraud/fraudUserAPI";
 import { getMyTransactions } from "../../api/transaction/transactionAPI";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { apiFetch } from "../../api/apiClient.js";
 
 
 
@@ -36,7 +37,7 @@ export default function DisputesPage() {
 // =========================================================
 useEffect(() => {
   if (!userId) return;
-  getMyTransactions(userId)
+  getMyTransactions()
     .then((data) => {
       const list = data.content ? data.content : data;
 
@@ -64,15 +65,7 @@ useEffect(() => {
   // =========================================================
   const fetchDisputes = async () => {
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/dispute-requests/user/${userId}`
-      );
-
-      if (!response.ok) {
-        throw new Error("이의 제기 내역 조회 실패");
-      }
-
-      const data = await response.json();
+      const data = await apiFetch(`/api/dispute-requests/user/${userId}`);
       console.log("이의 제기 내역 응답:", data);
       setDisputes(data);
     } catch (error) {
@@ -141,24 +134,13 @@ useEffect(() => {
   console.log("전송될 userId:", userId);
 
   try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:9090"}/api/dispute-requests/users/${userId}`,
+    const newDispute = await apiFetch(
+      `/api/dispute-requests/users/${userId}`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(payload),
       }
     );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("이의 제기 접수 서버 응답:", response.status, errorText);
-      throw new Error(`이의 제기 접수 실패 (${response.status}): ${errorText}`);
-    }
-
-    const newDispute = await response.json();
     console.log("이의 제기 접수 완료:", newDispute);
 
     alert("이의 제기가 성공적으로 접수되었습니다.");

@@ -1,21 +1,12 @@
-import axios from "axios";
+import { apiFetch } from '../apiClient';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
-
-// 유저 본인의 이상거래 목록 조회
-// TODO(로그인 기능 붙으면 수정): 지금은 userId를 직접 넘겨받아서 쿼리 파라미터로 전달
-export async function getMyFraudCases(userId) {
-    const response = await axios.get(`${BASE_URL}/api/fraud-cases`, {
-        params: { userId },
-    });
-    return response.data;
+export async function getMyFraudCases() {
+    return apiFetch('/api/fraud-cases');
 }
 
-// 6차: 사용자가 본인거래 여부(MINE/NOT_MINE)를 직접 응답
 export async function confirmFraudCase(fraudCaseId, confirmation) {
-    const response = await axios.patch(
-        `${BASE_URL}/api/fraud-cases/${fraudCaseId}/confirmation`,
-        { confirmation }
-    );
-    return response.data;
+    return apiFetch(`/api/fraud-cases/${fraudCaseId}/confirmation`, {
+        method: 'PATCH',
+        body: JSON.stringify({ confirmation }),
+    });
 }

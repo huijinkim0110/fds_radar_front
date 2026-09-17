@@ -22,7 +22,6 @@ const RISK_COLOR = {
 function ProductList() {
 
 const { user } = useAuth();
-const userId = user?.userId ?? 1;
 
   const navigate = useNavigate();
 
@@ -162,7 +161,6 @@ const userId = user?.userId ?? 1;
 
   <div onClick={(e) => e.stopPropagation()}>
     <FavoriteButton
-      userId={userId}
       productId={p.productId}
     />
   </div>

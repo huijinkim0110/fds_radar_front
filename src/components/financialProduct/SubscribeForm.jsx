@@ -20,7 +20,7 @@ const METHOD_LABELS = {
     MIXED: '혼합(일시납+월납)',
 };
 
-export default function SubscribeForm({ userId, product, onCancel }) {
+export default function SubscribeForm({ product, onCancel }) {
     const navigate = useNavigate();
     const allowedMethods = ALLOWED_METHODS[product.productType] ?? ['LUMP_SUM'];
 
@@ -43,7 +43,7 @@ export default function SubscribeForm({ userId, product, onCancel }) {
     const needsMonthly = paymentMethod === 'INSTALLMENT' || paymentMethod === 'MIXED';
 
     useEffect(() => {
-        getMyAccounts(userId)
+        getMyAccounts()
             .then((list) => {
                 const withdrawable = list.filter((a) => a.accountType === 'CHECKING');
                 setAccounts(withdrawable);
@@ -53,10 +53,10 @@ export default function SubscribeForm({ userId, product, onCancel }) {
             .catch(() => setError('계좌 목록을 불러오지 못했습니다.'))
             .finally(() => setAccountsLoading(false));
 
-        getGoals(userId)
+        getGoals()
             .then((list) => setGoals(list.filter((g) => g.goalStatus === 'IN_PROGRESS')))
             .catch(() => {}); // 목표는 선택사항이라 실패해도 가입 자체는 막지 않음
-    }, [userId]);
+    }, []);
 
     function handleSubmit(e) {
         e.preventDefault();
@@ -104,7 +104,6 @@ export default function SubscribeForm({ userId, product, onCancel }) {
 
         setSubmitting(true);
         subscribe({
-            userId,
             productId: product.productId,
             accountId: Number(accountId),
             goalId: goalId ? Number(goalId) : null,

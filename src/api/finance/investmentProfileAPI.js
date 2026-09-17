@@ -1,35 +1,22 @@
-import axios from 'axios';
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
+import { apiFetch } from '../apiClient';
 
 export async function submitDiagnosis(diagnosisData) {
-    const response = await axios.post(`${BASE_URL}/investment-profiles`, diagnosisData);
-    return response.data;
+    return apiFetch('/investment-profiles', { method: 'POST', body: JSON.stringify(diagnosisData) });
 }
 
-// 비로그인 사용자용 - DB에 저장하지 않고 진단 결과만 받아옴(체험용)
+// 비로그인 사용자용 - 저장 없이 진단 결과만
 export async function previewDiagnosis(diagnosisData) {
-    const response = await axios.post(`${BASE_URL}/investment-profiles/preview`, diagnosisData);
-    return response.data;
+    return apiFetch('/investment-profiles/preview', { method: 'POST', body: JSON.stringify(diagnosisData) });
 }
 
-export async function getRecentProfiles(userId, limit = 3) {
-    const response = await axios.get(`${BASE_URL}/investment-profiles`, {
-        params: { userId, limit },
-    });
-    return response.data;
+export async function getRecentProfiles(limit = 3) {
+    return apiFetch(`/investment-profiles?limit=${limit}`);
 }
 
-export async function getLatestProfile(userId) {
-    const response = await axios.get(`${BASE_URL}/investment-profiles/latest`, {
-        params: {userId},
-    });
-    return response.data;
+export async function getLatestProfile() {
+    return apiFetch('/investment-profiles/latest');
 }
 
-export async function hasDiagnosisHistory(userId) {
-    const response = await axios.get(`${BASE_URL}/investment-profiles/exists`, {
-        params: {userId},
-    });
-    return response.data;
+export async function hasDiagnosisHistory() {
+    return apiFetch('/investment-profiles/exists');
 }

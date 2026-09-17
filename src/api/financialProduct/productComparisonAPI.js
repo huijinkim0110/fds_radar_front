@@ -1,40 +1,18 @@
-import axios from "axios";
+import { apiFetch } from '../apiClient';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
+export const createComparison = (comparisonName) =>
+    apiFetch(`/product-comparisons?comparisonName=${encodeURIComponent(comparisonName)}`, { method: 'POST' });
 
-export async function createComparison(userId, comparisonName) {
-    const response = await axios.post(`${BASE_URL}/product-comparisons`, null, {
-        params: { userId, comparisonName }
-    });
-    return response.data;
-}
+export const addItem = (comparisonId, productId) =>
+    apiFetch(`/product-comparisons/${comparisonId}/items?productId=${productId}`, { method: 'POST' });
 
-export async function addItem(comparisonId, productId) {
-    const response = await axios.post(`${BASE_URL}/product-comparisons/${comparisonId}/items`, null, {
-        params: { productId }
-    });
-    return response.data;
-}
+export const removeItem = (comparisonId, comparisonItemId) =>
+    apiFetch(`/product-comparisons/${comparisonId}/items/${comparisonItemId}`, { method: 'DELETE' });
 
-export async function removeItem(comparisonId, comparisonItemId) {
-    await axios.delete(`${BASE_URL}/product-comparisons/${comparisonId}/items/${comparisonItemId}`);
-}
+export const getComparisonDetail = (comparisonId) =>
+    apiFetch(`/product-comparisons/${comparisonId}`);
 
-export async function getComparisonDetail(comparisonId) {
-    const response = await axios.get(`${BASE_URL}/product-comparisons/${comparisonId}`);
-    return response.data;
-}
+export const getUserComparisons = () => apiFetch('/product-comparisons');
 
-export async function getUserComparisons(userId) {
-    const response = await axios.get(`${BASE_URL}/product-comparisons`, {
-        params: { userId }
-    });
-    return response.data;
-}
-
-export async function renameComparison(comparisonId, comparisonName) {
-    const response = await axios.patch(`${BASE_URL}/product-comparisons/${comparisonId}`, null, {
-        params: { comparisonName }
-    });
-    return response.data;
-}
+export const renameComparison = (comparisonId, comparisonName) =>
+    apiFetch(`/product-comparisons/${comparisonId}?comparisonName=${encodeURIComponent(comparisonName)}`, { method: 'PATCH' });

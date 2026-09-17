@@ -22,7 +22,6 @@ const EMPTY_FORM = {
 function FinancialProfile() {
 
     const { user } = useAuth();
-    const userId = user?.userId ?? 1;
 
     const [profile, setProfile] = useState(null);
     const [hasProfile, setHasProfile] = useState(null);
@@ -41,12 +40,12 @@ function FinancialProfile() {
         setLoading(true);
         setError(null);
 
-        hasFinancialProfile(userId)
+        hasFinancialProfile()
             .then((has) => {
                 setHasProfile(has);
 
                 if (has) {
-                    return getFinancialProfile(userId).then(setProfile);
+                    return getFinancialProfile().then(setProfile);
                 }
             })
             .catch(() => setError("재무 프로필을 불러오지 못했습니다."))
@@ -113,7 +112,6 @@ function FinancialProfile() {
         setSubmitting(true);
 
         upsertFinancialProfile({
-            userId: userId,
             occupation: form.occupation,
             incomeSource: form.incomeSource,
             monthlyIncome: Number(form.monthlyIncome),

@@ -34,7 +34,7 @@ function AdminChatList() {
     function loadSessions() {
         setLoading(true);
         setError(null);
-        getSessions(statusFilters, scope === "mine" ? adminId : undefined)
+        getSessions(statusFilters, scope === "mine")
             .then(setSessions)
             .catch(() => setError('상담 목록을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));

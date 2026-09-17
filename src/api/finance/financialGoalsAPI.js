@@ -1,26 +1,13 @@
-import axios from "axios";
+import { apiFetch } from '../apiClient';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
+export const getGoals = (includeCancelled = false) =>
+  apiFetch(`/financial-goals?includeCancelled=${includeCancelled}`);
 
-export async function getGoals(userId, includeCancelled = false) {
-    const response = await axios.get(`${BASE_URL}/financial-goals`, {
-        params: { userId, includeCancelled },
-    });
-    return response.data;
-}
+export const createGoal = (dto) =>
+  apiFetch('/financial-goals', { method: 'POST', body: JSON.stringify(dto) });
 
-export async function createGoal(dto) {
-    const response = await axios.post(`${BASE_URL}/financial-goals`, dto);
-    return response.data;
-}
+export const updateCurrentAmount = (goalId, amount) =>
+  apiFetch(`/financial-goals/${goalId}/current-amount?amount=${amount}`, { method: 'PATCH' });
 
-export async function updateCurrentAmount(goalId, amount) {
-    const response = await axios.patch(`${BASE_URL}/financial-goals/${goalId}/current-amount`, null, {
-        params: { amount },
-    });
-    return response.data;
-}
-
-export async function cancelGoal(goalId) {
-    await axios.patch(`${BASE_URL}/financial-goals/${goalId}/cancel`);
-}
+export const cancelGoal = (goalId) =>
+  apiFetch(`/financial-goals/${goalId}/cancel`, { method: 'PATCH' });

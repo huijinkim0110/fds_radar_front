@@ -3,7 +3,6 @@ import TopBar from "../TopBar.jsx";
 import TxTable from "../TxTable.jsx";
 import Panel from "../Panel.jsx";
 import { getMyTransactions } from "../../api/transaction/transactionAPI";
-import { useAuth } from "../../context/AuthContext.jsx";
 
 
 const TABS = ["전체", "정상", "검토중", "차단됨"];
@@ -51,10 +50,6 @@ function mapRow(raw) {
 
 export default function Transactions() {
 
-
-    const { user } = useAuth();
-    const userId = user?.userId ?? 1;   
-
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -64,7 +59,7 @@ export default function Transactions() {
     useEffect(() => {
         setLoading(true);
         setError(null);
-        getMyTransactions(userId)
+        getMyTransactions()
             .then((data) => setRows(data.content.map(mapRow)))
             .catch(() => setError('거래내역을 불러오지 못했습니다.'))
             .finally(() => setLoading(false));

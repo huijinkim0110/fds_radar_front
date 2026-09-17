@@ -15,13 +15,14 @@ import { connectChatSocket, sendChatSocketMessage, disconnectChatSocket } from "
 import { CHAT_MENU_TREE, NOT_IMPLEMENTED_MESSAGE, REQUIRES_AUTH_MESSAGE } from "../../constants/chat/chatMenuTree";
 import { useChatActions } from "../../hooks/chat/useChatActions";
 import { useChatWidget } from "../../context/ChatWidgetContext";
+import { getGuestId } from "../../utils/guestId";
 
 function ChatWidget() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const userId = user?.userId ?? 1;
   const isLoggedIn = !!user;
+  const guestId = isLoggedIn ? undefined : getGuestId();
 
   const { open, setOpen, pendingAdminConnect, clearPendingAdminConnect } = useChatWidget();
 
@@ -53,7 +54,7 @@ function ChatWidget() {
   // 봇 세션은 위젯을 열면 항상 자동으로 불러옴(기존 동작 그대로)
   useEffect(() => {
     if (!open || botSession) return;
-    getOrCreateSession(userId).then((data) => {
+    getOrCreateSession(guestId).then((data) => {
       setBotSession(data);
       setBotMessages(data.messages || []);
     });
@@ -62,14 +63,14 @@ function ChatWidget() {
   // 상담원 세션은 자동으로 안 불러오고, 진행 중인 상담이 있는지만 가볍게 확인해서 배너로 알림
   useEffect(() => {
     if (!open || showAdminTab) return;
-    getActiveAdminSession(userId).then((data) => {
+    getActiveAdminSession(guestId).then((data) => {
       setAdminBanner(data.hasActiveSession);
     });
   }, [open, showAdminTab]);
 
   // 위젯을 열면(상담원 탭이 있으면) 관리자 답장 읽음 처리
   useEffect(() => {
-    if (open && adminSession) markUserRead(adminSession.sessionId);
+    if (open && adminSession) markUserRead(adminSession.sessionId, guestId);
   }, [open, adminSession]);
 
   useEffect(() => {
@@ -132,12 +133,12 @@ function ChatWidget() {
     addLocalMessage("USER", text);
     setInputText("");
     setSending(true);
-    saveChatMessage(botSession.sessionId, "USER", userId, text);
+    saveChatMessage(botSession.sessionId, "USER", isLoggedIn ? user.userId : null, text, guestId);
 
-    sendFreeTextMessage(userId, botSession.sessionId, text)
+    sendFreeTextMessage(botSession.sessionId, text, guestId)
       .then((result) => {
         addLocalMessage("BOT", result.reply, result.navActions);
-        saveChatMessage(botSession.sessionId, "BOT", null, result.reply);
+        saveChatMessage(botSession.sessionId, "BOT", null, result.reply, guestId);
         if (result.needsAdmin) connectAdmin();
       })
       .catch(() => addLocalMessage("BOT", "오류가 발생했어요. 다시 시도해주세요."))
@@ -153,16 +154,16 @@ function ChatWidget() {
     setAdminBanner(false);
     setActiveTab("admin");
 
-    getOrCreateAdminSession(userId)
+    getOrCreateAdminSession(guestId)
       .then((data) => {
         setAdminSession(data);
         setAdminMessages(data.messages || []);
-        requestAdmin(data.sessionId).catch(() => {});
+        requestAdmin(data.sessionId, guestId).catch(() => {});
 
         disconnectChatSocket(socketRef.current);
         socketRef.current = connectChatSocket(data.sessionId, (msg) => {
           setAdminMessages((prev) => [...prev, msg]);
-          if (open) markUserRead(data.sessionId);
+          if (open) markUserRead(data.sessionId, guestId);
         });
       })
       .finally(() => {
@@ -172,7 +173,7 @@ function ChatWidget() {
 
   function handleSendAdminMessage() {
     if (!inputText.trim() || !socketRef.current || !adminSession) return;
-    sendChatSocketMessage(socketRef.current, adminSession.sessionId, "USER", userId, inputText);
+    sendChatSocketMessage(socketRef.current, adminSession.sessionId, "USER", isLoggedIn ? user.userId : null, inputText, isLoggedIn ? user.userId : null, guestId);
     setInputText("");
   }
 
@@ -181,7 +182,7 @@ function ChatWidget() {
     if (!botSession) return;
     if (!window.confirm("새 대화를 시작하시겠어요? 현재 대화는 이력에 저장돼요.")) return;
 
-    closeSession(botSession.sessionId).then(() => {
+    closeSession(botSession.sessionId, guestId).then(() => {
       setBotSession(null);
       setBotMessages([]);
       setMenuPath([]);
@@ -196,7 +197,7 @@ function ChatWidget() {
     disconnectChatSocket(socketRef.current);
     socketRef.current = null;
 
-    closeSession(adminSession.sessionId).then(() => {
+    closeSession(adminSession.sessionId, guestId).then(() => {
       setAdminSession((prev) => (prev ? { ...prev, status: "CLOSED" } : prev));
     });
   }

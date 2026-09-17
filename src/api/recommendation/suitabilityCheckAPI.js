@@ -1,18 +1,9 @@
-import axios from 'axios';
+import { apiFetch } from '../apiClient';
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
-
-export async function checkSuitability(userId, productId) {
-    const response = await axios.post(`${BASE_URL}/suitability-checks`, {
-        userId,
-        productId
-    });
-    return response.data;
+export async function checkSuitability(productId) {
+    return apiFetch('/suitability-checks', { method: 'POST', body: JSON.stringify({ productId }) });
 }
 
-export async function getCheckHistory(userId, productId) {
-    const response = await axios.get(`${BASE_URL}/suitability-checks`, {
-        params: { userId, productId }
-    });
-    return response.data;
+export async function getCheckHistory(productId) {
+    return apiFetch(`/suitability-checks?productId=${productId}`);
 }
