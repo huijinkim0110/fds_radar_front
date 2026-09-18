@@ -34,6 +34,13 @@ async function request(path, options = {}) {
 
 const delay = (data) => new Promise((r) => setTimeout(() => r(data), 300));
 
+function generateUUID() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `id-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`;
+}
+
 export const api = {
   login: async ({ email, password }) => {
     if (USE_MOCK) {
@@ -86,7 +93,7 @@ export const api = {
         recipientId: 1,
         amount,
         channel: "APP",
-        idempotencyKey: crypto.randomUUID(),
+        idempotencyKey: generateUUID(),
       }),
     });
     if (!res.ok) throw new Error("송금 실패");

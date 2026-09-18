@@ -1,19 +1,13 @@
-import axios from "axios";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
+import { apiFetch } from '../apiClient';
 
 // 알림 전체 조회
 export async function getNotifications(userId) {
-    const response = await axios.get(
-        `${BASE_URL}/api/users/${userId}/notifications`
-    );
-
-    return response.data;
+    return apiFetch(`/api/users/${userId}/notifications`);
 }
 
 // 알림 읽음 처리
 export async function readNotifications(userId, notificationId) {
-    await axios.patch(
-       `${BASE_URL}/api/users/${userId}/notifications/${notificationId}/read`
-    );
+    return apiFetch(`/api/users/${userId}/notifications/${notificationId}/read`, {
+        method: 'PATCH',
+    });
 }
