@@ -1,21 +1,16 @@
-import axios from "axios";
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:9090";
+import { apiFetch } from "../apiClient";
 
 // 오탐 목록 조회
 export async function getFalsePositives() {
-    const response = await axios.get(`${BASE_URL}/api/admin/fraud-analysis/false-positives`);
-    return response.data;
+    return apiFetch(`/api/admin/fraud-analysis/false-positives`);
 }
 
 // 미탐 목록 조회
 export async function getFalseNegatives() {
-    const response = await axios.get(`${BASE_URL}/api/admin/fraud-analysis/false-negatives`);
-    return response.data;
+    return apiFetch(`/api/admin/fraud-analysis/false-negatives`);
 }
 
 // 이상거래 분석 통계
 export async function getStats() {
-    const response = await axios.get(`${BASE_URL}/api/admin/fraud-analysis/stats`);
-    return response.data;
+    return apiFetch(`/api/admin/fraud-analysis/stats`);
 }
