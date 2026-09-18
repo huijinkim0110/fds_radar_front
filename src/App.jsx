@@ -74,11 +74,11 @@ function AppChatWidget() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <ThemeProvider>
-          <ComparisonProvider>
-            <ToastProvider>
-              <ConfirmProvider>
+      <ConfirmProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <ComparisonProvider>
+              <ToastProvider>
                 <ChatWidgetProvider>
                   <Routes>
                     <Route path="/" element={<Home />} />
@@ -130,11 +130,11 @@ function App() {
                   <Toast />
                   <AppChatWidget />
                 </ChatWidgetProvider>
-              </ConfirmProvider>
-            </ToastProvider>
-          </ComparisonProvider>
-        </ThemeProvider>
-      </AuthProvider>
+              </ToastProvider>
+            </ComparisonProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </ConfirmProvider>
     </BrowserRouter>
   );
 }

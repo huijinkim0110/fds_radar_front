@@ -304,7 +304,7 @@ export default function ProductDetail() {
                   <button
                     type="button"
                     style={styles.primaryButton}
-                    onClick={() => navigate('/mypage/diagnosis')}
+                    onClick={() => navigate('/investment-diagnosis', { state: { returnTo: `/products/${productId}` } })}
                   >
                     진단하러 가기
                   </button>

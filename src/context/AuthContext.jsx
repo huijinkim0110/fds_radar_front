@@ -1,5 +1,8 @@
 import { createContext, useContext, useState } from "react";
+import { useEffect, useRef } from "react";
 import { api } from "../api/client.js";
+import { refreshAccessToken } from "../api/apiClient.js";
+import { useConfirm } from "./ConfirmContext.jsx";
 
 import {
   registerUserDevice,
@@ -13,6 +16,52 @@ export function AuthProvider({ children }) {
     const saved = localStorage.getItem("user");
     return saved ? JSON.parse(saved) : null;
   });
+  const confirm = useConfirm();
+  const logoutTimerRef = useRef(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) scheduleAutoLogout(token);
+  }, []);
+
+  function scheduleAutoLogout(accessToken) {
+    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
+
+    try {
+      const payload = JSON.parse(atob(accessToken.split(".")[1]));
+      const delay = payload.exp * 1000 - Date.now();
+
+      const handleExpire = async () => {
+        const extend = await confirm(
+          "세션이 만료되었습니다.",
+          { confirmLabel: "연장하기", cancelLabel: "" }
+        );
+
+        if (!extend) {
+          logout();
+          window.location.href = "/";
+          return;
+        }
+
+        try {
+          const newAccessToken = await refreshAccessToken();
+          scheduleAutoLogout(newAccessToken);
+        } catch {
+          logout();
+          window.location.href = "/login";
+        }
+      };
+
+      if (delay <= 0) {
+        handleExpire();
+        return;
+      }
+
+      logoutTimerRef.current = setTimeout(handleExpire, delay);
+    } catch {
+      // 토큰 파싱 실패 시 무시
+    }
+  }
 
   async function login(credentials) {
     const data = await api.login(credentials);
@@ -29,7 +78,10 @@ export function AuthProvider({ children }) {
     };
 
     localStorage.setItem("user", JSON.stringify(userInfo));
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
     setUser(userInfo);
+    scheduleAutoLogout(data.accessToken);
 
     try {
       let deviceIdentifier = localStorage.getItem("deviceIdentifier");
@@ -81,6 +133,8 @@ export function AuthProvider({ children }) {
     setUser(null);
     localStorage.removeItem("user");
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    if (logoutTimerRef.current) clearTimeout(logoutTimerRef.current);
   }
 
   return (

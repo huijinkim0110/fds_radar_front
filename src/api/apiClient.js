@@ -24,7 +24,7 @@ function clearTokens() {
   localStorage.removeItem('user');
 }
 
-async function refreshAccessToken() {
+export async function refreshAccessToken() {
   const refreshToken = getRefreshToken();
   if (!refreshToken) throw new Error('refresh token 없음');
 

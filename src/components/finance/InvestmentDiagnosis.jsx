@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { submitDiagnosis, previewDiagnosis } from "../../api/finance/investmentProfileAPI";
 import { DIAGNOSIS_QUESTIONS, PRINCIPAL_PROTECTION_QUESTION } from "../../constants/finance/diagnosisQuestions";
@@ -32,6 +32,8 @@ function InvestmentDiagnosis() {
   const { user } = useAuth();
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const returnTo = location.state?.returnTo;
 
   const isLoggedIn = !!user;
 
@@ -122,9 +124,16 @@ function InvestmentDiagnosis() {
               당신의 투자성향은 <strong style={{ color: "var(--blue)" }}>{RISK_TENDENCY_LABELS[result.riskTendency]}</strong>입니다.
             </p>
             {isLoggedIn ? (
-              <button className="primary" style={{ width: "auto", padding: "13px 24px" }} onClick={() => navigate('/mypage/diagnosis/results')}>
-                추천 상품 보러 가기
-              </button>
+              <div style={{ display: "flex", gap: 10}}>
+                <button className="primary" style={{ width: "auto", padding: "13px 24px" }} onClick={() => navigate('/mypage/diagnosis/results')}>
+                  추천 상품 보러 가기
+                </button>
+                {returnTo && (
+                  <button type="button" className="minibtn" onClick={() => navigate(returnTo)}>
+                    이전 상품으로 돌아가기
+                  </button>
+                )}
+              </div>
             ) : (
               <div>
                 <p>결과는 저장되지 않았어요. 저장하고 맞춤 상품 추천까지 받으려면 로그인해주세요.</p>
