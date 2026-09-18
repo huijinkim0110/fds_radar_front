@@ -47,7 +47,7 @@ export default function AdminMyPage() {
     setLoading(true);
 
       Promise.all([
-      getAdminDashboard(adminId).then(setDashboard).catch(() => setDashboardError("대시보드를 불러오지 못했습니다.")),
+      getAdminDashboard().then(setDashboard).catch(() => setDashboardError("대시보드를 불러오지 못했습니다.")),
       getMyCases(adminId).then(setMyCases).catch(() => setCasesError("담당 사건 목록을 불러오지 못했습니다.")),
       getPendingLockRequests()
         .then((list) => setPendingLockCount(Array.isArray(list) ? list.length : 0))

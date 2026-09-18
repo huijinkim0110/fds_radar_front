@@ -94,7 +94,7 @@ export default function Accounts() {
 
     setSending(true);
     try {
-      await transfer(userId, form.receiverAccountNumber, amt);
+      await transfer(fromAccount.id, form.receiverAccountNumber, amt);
       setMsg("송금이 완료되었습니다.");
       if (isEmergency(fromAccount)) setEmergencyCount((c) => c + 1);
       getMyAccounts(userId).then((data) => {

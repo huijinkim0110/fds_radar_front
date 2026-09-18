@@ -19,10 +19,16 @@ export const closeAccount = (accountId) =>
   apiFetch(`/api/accounts/${accountId}`, { method: 'DELETE' });
 
 // 계좌 이체
-export const transfer = (receiverAccountNumber, amount) =>
+export const transfer = (fromAccountId, receiverAccountNumber, amount) =>
   apiFetch('/api/transactions/transfer', {
     method: 'POST',
-    body: JSON.stringify({ receiverAccountNumber, amount }),
+    body: JSON.stringify({
+      fromAccountId,
+      receiverAccountNumber,
+      amount,
+      channel: 'WEB',
+      idempotencyKey: crypto.randomUUID(),
+    }),
   });
 
 // 내 수취인 목록
