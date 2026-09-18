@@ -14,14 +14,42 @@ export default function Signup() {
   });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false);
+  const [emailMessage, setEmailMessage] = useState("");
 
   function set(field, value) {
     setForm({ ...form, [field]: value });
   }
 
+  const handleCheckEmail = async () => {
+    if (!form.email.trim()) {
+      setEmailChecked(false);
+      setEmailMessage("이메일을 입력 해주세요.");
+      return;
+    }
+
+    try {
+      const result = await api.checkEmail(form.email);
+    if (result.exists) {
+      setEmailChecked(false);
+      setEmailMessage("이미 가입된 이메일입니다.");
+    } else {
+      setEmailChecked(true);
+      setEmailMessage("사용 가능한 이메일입니다.");
+    }
+  } catch (error) {
+    setEmailChecked(false);
+    setEmailMessage("이메일 중복 확인에 실패했습니다.");
+  }
+};
+
   async function submit(e) {
     e.preventDefault();
     setErr("");
+
+    if (!emailChecked) {
+      return setErr("이메일 중복확인을 해주세요.");
+    }
 
     // 간단 프론트 검증 (백엔드 규칙이랑 맞춤)
     if (form.password.length < 8) {
@@ -62,10 +90,61 @@ export default function Signup() {
           <input placeholder="홍길동" value={form.name}
             onChange={(e) => set("name", e.target.value)} required />
         </div>
-        <div className="field">
+            <div className="field">
           <label>이메일</label>
-          <input type="email" placeholder="name@company.com" value={form.email}
-            onChange={(e) => set("email", e.target.value)} required />
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "stretch",
+              gap: "10px",
+            }}
+          >
+            <input
+              type="email"
+              placeholder="name@company.com"
+              value={form.email}
+              onChange={(e) => {
+                set("email", e.target.value);
+                setEmailChecked(false);
+                setEmailMessage("");
+              }}
+              required
+              style={{ flex: 1 }}
+            />
+
+            <button
+              type="button"
+              onClick={handleCheckEmail}
+              style={{
+                padding: "0 14px",
+                border: "1px solid #d9e2f2",
+                borderRadius: "10px",
+                background: "#f4f7fc",
+                color: "#2563eb",
+                fontSize: "13px",
+                fontWeight: "600",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              중복확인
+            </button>
+          </div>
+
+          {emailMessage && (
+            <div
+              style={{
+                marginTop: "7px",
+                paddingLeft: "2px",
+                fontSize: "13px",
+                fontWeight: "500",
+                color: emailChecked ? "#2563eb" : "#e5484d",
+              }}
+            >
+              {emailMessage}
+            </div>
+          )}
         </div>
         <div className="field">
           <label>비밀번호</label>

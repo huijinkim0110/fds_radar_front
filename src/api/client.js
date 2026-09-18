@@ -51,6 +51,12 @@ export const api = {
     return data;
   },
 
+  checkEmail: (email) =>
+    request("/auth/check-email", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+
   signup: ({ name, email, password, birthDate, phoneNumber }) =>
     USE_MOCK
       ? delay({ ok: true })
